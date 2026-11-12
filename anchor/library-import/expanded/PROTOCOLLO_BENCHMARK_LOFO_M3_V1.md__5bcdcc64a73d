@@ -1,0 +1,57 @@
+# Protocollo preregistrabile: M3, unigramma condizionato alla sezione (LOFO)
+
+- ID: `VOYNICH_BENCHMARK_LOFO_M3_V1`
+- Data: 2026-10-25
+- Baseline di parsing: Baseline 1.0 / RC1.2, immutata
+- Corpus: `ZL3b-n.txt`
+- SHA-256 corpus: `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc`
+- Report canonico: `parser_rc1_2_report.json`
+- Unità di split: folio, Leave-One-Folio-Out (LOFO)
+- Stato: `PREREGISTERED — SECTION MAP VALIDATION REQUIRED — M3 NOT YET RUN`
+
+## Ipotesi
+
+M3 migliora la previsione dei token di un folio escluso quando la sezione codicologica/illustrativa del folio è nota indipendentemente dal testo target.
+
+## Condizione di ammissibilità delle etichette
+
+Prima del calcolo dei punteggi deve essere congelata una tabella `folio -> section_label`, con fonte, regola di assegnazione e gestione esplicita dei casi incerti/misti. Le etichette devono derivare da una classificazione esterna o da metadati codicologici indipendenti dai token Voynich da valutare. Non è consentito inferire le etichette dalle frequenze dei token, dal tag di locus, dai risultati M0/M1 o da una classificazione ottimizzata sui punteggi predittivi.
+
+I campi del report parser RC1.2 non includono una sezione normalizzata. Gli attributi di header presenti nel corpus e i commenti descrittivi non saranno trattati automaticamente come etichette canoniche di sezione. La mappatura va validata e congelata separatamente prima di sbloccare l'esecuzione.
+
+## Split e perimetro
+
+- Un fold per ciascun folio del report canonico.
+- Tutti i loci dello stesso folio restano nello stesso fold.
+- La tokenizzazione usa esclusivamente i token del report canonico.
+- I contesti non attraversano i confini tra loci; M3 non usa contesto locale.
+- Nessuna rimozione post-hoc di folii o token.
+
+## Definizione del modello
+
+Per ogni fold, M3 stima una distribuzione unigramma distinta per ciascuna sezione dalle sole occorrenze del training appartenenti a quella sezione. Il vocabolario è costituito dai tipi osservati nel training più `<UNK>`. I token di test non presenti nel vocabolario del training sono mappati a `<UNK>`.
+
+Smoothing add-alpha con `alpha = 0.1`, fissato prima dell'esecuzione. Per la sezione `s`, il denominatore è `N_train,s + alpha * V`, dove `V` è il numero dei tipi nel vocabolario globale del training più `<UNK>`. Le occorrenze di una sezione esclusivamente nel folio di test non possono contribuire alla stima della distribuzione di quella sezione. Se nel training non restano token della sezione, la distribuzione è uniforme sul vocabolario del fold per effetto dello smoothing; il caso è segnalato esplicitamente.
+
+## Confronto primario
+
+Confronto appaiato M3 contro M0 sugli stessi folii LOFO e sugli stessi token valutabili. M0 è l'unigramma globale preregistrato. M1 resta un risultato storico archiviato e non viene ritoccato; M2 è fuori dalla batteria corrente.
+
+- Metrica primaria: cross-entropy out-of-sample in bit/token.
+- Metrica derivata: perplexity `2^H`.
+- OOV: conteggio e percentuale complessivi e per folio.
+- Incertezza: bootstrap appaiato per folio, 10.000 repliche, seed `20261025`, intervallo percentile al 95% della riduzione relativa di cross-entropy.
+- Soglia operativa: riduzione relativa M3 vs M0 almeno del 2% e limite inferiore dell'IC 95% maggiore di zero.
+- La soglia è un criterio operativo, non una costante universale.
+
+## Controlli e rendicontazione
+
+Pubblicare la mappatura delle sezioni e la relativa provenienza, il suo hash, gli eventuali folii non classificati o ambigui, i punteggi per folio, la distribuzione degli OOV, le sezioni senza dati di training e il confronto completo con M0. Gli esiti negativi sono conservati. Non si cambiano etichette, smoothing, soglia o split dopo aver visto i risultati.
+
+## Interpretazione
+
+Un vantaggio di M3 indicherebbe che le etichette di sezione aggiungono informazione predittiva fuori campione rispetto a un unigramma globale. Non dimostrerebbe una decifrazione, una lingua naturale o una spiegazione causale delle sezioni.
+
+## Immutabilità
+
+Il protocollo non modifica Baseline 1.0, corpus, parser o report canonico. M3 potrà essere eseguito solo dopo la convalida e il congelamento della mappatura indipendente `folio -> section_label`. Qualsiasi modifica successiva richiede una nuova versione del protocollo e la conservazione dei risultati precedenti.
