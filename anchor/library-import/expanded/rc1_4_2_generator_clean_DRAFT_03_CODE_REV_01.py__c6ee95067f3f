@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+"""RC1.4.2 V7.1, DRAFT 03_CODE REV 01, SOURCE-ONLY.
+
+SUPPORTED PUBLIC SURFACE: unqualified, non-I/O technical diagnostics and
+informational request identifiers. Importing this module must not open a file,
+load a frozen parser, start a child, generate an audit report, or publish bytes.
+
+There is deliberately NO supported official audit-generation or publication
+entry point here. Those operations belong only in an independently configured,
+externally authorized supervisor service. Creating this source is not a grant
+of permission to run it. F-01/F-02/F-03 require static source review.
+
+RP-01: OPEN. Gate: CLOSED_PENDING_VALIDATION.
+"""
+from __future__ import annotations
+
+import hashlib
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
+
+GATE = "CLOSED_PENDING_VALIDATION"
+RP_01 = "OPEN"
+SOURCE_STATUS = "DRAFT_03_CODE_REV_01_PENDING_STATIC_REVIEW_NOT_EXECUTED"
+
+
+class Blocked(RuntimeError):
+    """A required trust, integrity, or deployment precondition is absent."""
+
+
+class TechnicalByteEquality(str, Enum):
+    EQUAL = "EQUAL"
+    DIFFERENT = "DIFFERENT"
+
+
+@dataclass(frozen=True, slots=True)
+class DigestObservation:
+    algorithm: str
+    size: int
+    hex_digest: str
+    qualification: str = "UNQUALIFIED_TECHNICAL_OBSERVATION"
+
+
+@dataclass(frozen=True, slots=True)
+class RequestId:
+    """Informational correlation string; NOT authorization, a signature or token."""
+    value: str
+
+
+def digest_bytes(value: bytes) -> DigestObservation:
+    if type(value) is not bytes:
+        raise TypeError("EXPECTED_BYTES")
+    return DigestObservation("SHA-256", len(value), hashlib.sha256(value).hexdigest())
+
+
+def compare_raw_bytes(a: bytes, b: bytes) -> TechnicalByteEquality:
+    if type(a) is not bytes or type(b) is not bytes:
+        raise TypeError("EXPECTED_BYTES")
+    return TechnicalByteEquality.EQUAL if a == b else TechnicalByteEquality.DIFFERENT
+
+
+def compare_byte_maps(a: dict[str, bytes], b: dict[str, bytes]) -> dict[str, str]:
+    """No audit status, independence claim, PASS, or historical provenance."""
+    if type(a) is not dict or type(b) is not dict or set(a) != set(b):
+        raise ValueError("MAP_KEY_DIFFERENCE")
+    if any(type(name) is not str or type(v) is not bytes for x in (a, b)
+           for name, v in x.items()):
+        raise TypeError("MAP_SCHEMA")
+    return {name: compare_raw_bytes(a[name], b[name]).value for name in sorted(a)}
+
+
+def request_validation(label: str) -> RequestId:
+    """No trusted verifier is contacted; no authority or resource is allocated."""
+    if type(label) is not str or not label or len(label) > 200:
+        raise ValueError("INVALID_REQUEST_LABEL")
+    return RequestId(label)
+
+
+def _blocked_qualified_operation(*_args: Any, **_kwargs: Any) -> None:
+    raise Blocked("NO_TRUSTED_SERVICE_OR_EXTERNAL_AUTHORIZATION_BOUND_TO_THIS_API")
+
+
+def prepare_audit_from_verified_inputs(*args: Any, **kwargs: Any) -> None:
+    """Deprecated DRAFT 02 bypass API: PERMANENTLY BLOCKED."""
+    _blocked_qualified_operation(*args, **kwargs)
+
+
+def serialize_validation_artifacts(*args: Any, **kwargs: Any) -> None:
+    """Deprecated DRAFT 02 qualified serializer: PERMANENTLY BLOCKED."""
+    _blocked_qualified_operation(*args, **kwargs)
+
+
+def build_validation_report(*args: Any, **kwargs: Any) -> None:
+    """Deprecated DRAFT 02 unconditional report builder: PERMANENTLY BLOCKED."""
+    _blocked_qualified_operation(*args, **kwargs)
+
+
+def stage_new_audit_bundle(*args: Any, **kwargs: Any) -> None:
+    """Deprecated DRAFT 02 bool/rename publisher: PERMANENTLY BLOCKED."""
+    _blocked_qualified_operation(*args, **kwargs)
+
+
+def compare_generation_bytes(a: dict[str, bytes], b: dict[str, bytes]) -> dict[str, str]:
+    """Backward-compatible name for RAW EQUAL/DIFFERENT only; no audit status."""
+    return compare_byte_maps(a, b)
+
+
+if __name__ == "__main__":
+    raise SystemExit("BLOCKED_DRAFT_03_CODE_REV_01_SOURCE_ONLY: EXECUTION_NOT_AUTHORIZED")
