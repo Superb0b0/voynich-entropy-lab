@@ -1,0 +1,94 @@
+# ANCHOR-01 — audit di disponibilità e matrice preliminare
+
+**L’inventario preliminare è costruito; H-A3R resta non eseguibile.** Sono disponibili testi, posizioni storiche e immagini primarie. Mancano geometrie individuali validate e annotazioni visive indipendenti in cieco. L’assenza di questi dati non è un risultato negativo sull’associazione testo–immagine.
+
+## Risultati materiali
+
+| Componente | Verificato | Stato |
+|---|---:|---|
+| Loci ZL3b di tipo Lz | 299 | Estratti con identificativi e markup originali |
+| Loci di etichetta di figure umane, esclusa la stella centrale | 298 | Il collegamento geometrico resta da verificare |
+| Letture storiche zodiacali Grove–Stolfi | 467 | Più trascrittori per la stessa posizione |
+| Posizioni storiche distinte | 300 | 299 umane candidate e una stella centrale |
+| Figura storica senza etichetta | 1 | Gemini, f72r2.S.23 |
+| Pagine/pannelli | 12 | Non sono 12 folii indipendenti |
+| Folii fisici | 4 | f70, f71, f72, f73 |
+| Gruppi codicologici interessati | 3 | Quire 10, 11, 12; coniugato di f73 mancante/inferito |
+| Canvas Yale recuperati e ispezionati | 8 | Manifest completo di 213 canvas verificato |
+| Collegamenti geometrici validati | 0 | Non sostituiti da abbinamenti lessicali |
+| Attributi ciechi validati | 0 | Nessun secondo annotatore simulato |
+
+## Due correzioni all’ipotesi di partenza
+
+Esiste un inventario storico **parziale ma riutilizzabile**: Grove–Stolfi pubblica una tabella machine-readable con ubicazioni, letture e note su oggetti/figure. Quindi non occorre inventare tutti gli ID da zero. È però una fonte storica non cieca, con locatori diversi da ZL3b e senza una validazione contemporanea del collegamento immagine–locus. La si conserva come candidata, senza promuoverla a ground truth. Fonte: https://www.ic.unicamp.br/~stolfi/EXPORT/00-EXPORT/98-02-01-lotsa-labels/
+
+Il numero **299 Lz non equivale automaticamente a 299 etichette di ninfe**. In ZL3b `f70v2.33` è esplicitamente sotto il commento “Central star”. La lista storica include la stessa stella e, separatamente, una figura dei Gemelli senza etichetta. Le cardinalità coincidono globalmente ma i domini di oggetti sono diversi. Il generatore di inventario non forza un join uno-a-uno sulla sola uguaglianza dei conteggi.
+
+## Copertura per pagina
+
+| Pagina | Segno | Folio fisico | Lz | Umani candidati storici | Altri oggetti | Senza etichetta |
+|---|---|---|---:|---:|---:|---:|
+| f70v2 | Pisces | f70 | 30 | 29 | 1 | 0 |
+| f70v1 | Aries | f70 | 15 | 15 | 0 | 0 |
+| f71r | Aries | f71 | 15 | 15 | 0 | 0 |
+| f71v | Taurus | f71 | 15 | 15 | 0 | 0 |
+| f72r1 | Taurus | f72 | 15 | 15 | 0 | 0 |
+| f72r2 | Gemini | f72 | 29 | 30 | 0 | 1 |
+| f72r3 | Cancer | f72 | 30 | 30 | 0 | 0 |
+| f72v3 | Leo | f72 | 30 | 30 | 0 | 0 |
+| f72v2 | Virgo | f72 | 30 | 30 | 0 | 0 |
+| f72v1 | Libra | f72 | 30 | 30 | 0 | 0 |
+| f73r | Scorpio | f73 | 30 | 30 | 0 | 0 |
+| f73v | Sagittarius | f73 | 30 | 30 | 0 | 0 |
+
+Questi sono conteggi di loci e posizioni documentate, **non una segmentazione validata figura per figura sulle immagini**. Le fotografie Yale sono state ispezionate per assegnare i pannelli e confermare la disponibilità visiva; non si dichiara un secondo conteggio indipendente completo di tutte le figure.
+
+## Fonti fissate
+
+- **Testo primario:** ZL3b-n.txt, versione 3b del 13/05/2025, SHA-256 `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc`. Si conserva il testo EVA con markup: alternative, spazi incerti, caratteri illeggibili e legature non vengono risolti in questa fase. Nessuna mappatura CUVA è stata inventata.
+- **Immagini primarie:** manifest Yale https://collections.library.yale.edu/manifests/2002046, SHA-256 `317d58fd9ea90392a83d9858a91eada3d0b41416a3c835857dc0154bd123a309`. OID 1006200–1006207, servizi IIIF originali, dimensioni native e otto JPEG di consultazione. La snapshot VCAT ha la stessa impronta del manifest primario recuperato, ma non sostituisce l’autorità Yale.
+- **Posizioni storiche:** Grove–Stolfi, labtit-98-07-20.idx. Si conservano tutte le 467 letture zodiacali e si distinguono 300 posizioni, usando la lettura V per l’inventario degli oggetti, senza chiamarla consenso.
+- **Riferimenti GitHub letti:** `noah-chelednik/voynich-data` al commit `ecd4c8145524d90373535ea3d1617d8190dc8208` e `geoffitect/voynich` al commit `860d278a6fa72a39605a11513716e56298411d47`. File e Git blob sono registrati in `github_sources.json`.
+- **Pipeline visuale esistente:** il catalogo geoffitect ispezionato copre soltanto f71r, f73r e f73v nel nostro perimetro, con otto oggetti candidati complessivi, non centinaia di ninfe. Usa immagini PDF ridimensionate e associazioni testuali; le sue coordinate non sono state importate come bounding box Yale o annotazioni cieche.
+- **Codicologia:** tre righe della mappa R6 esistente, conservando i livelli documented/inferred. Nessun nuovo accoppiamento inventato.
+
+## Testo e ancoraggio geometrico
+
+I 299 loci mantengono ID, riga fisica, tipo IVTFF, testo grezzo, contesto e canvas. Per i 298 loci non centrali esiste un’indicazione oraria nel sorgente: è un indizio del trascrittore sulla posizione, non una misura in pixel né una verifica indipendente dell’associazione. Il file `figure_inventory_preliminary.csv` mantiene i locatori storici e lascia vuoto il nuovo `label_locus_id` per gli umani. La stella ha il riferimento documentale esplicito, ma è esclusa dal dominio umano e non dichiarata geometricamente validata.
+
+Non vengono create coordinate artificiali o associazioni per somiglianza delle parole. `crop_bbox` è vuoto. `degree_slot` è vuoto: l’ordinale di un anello non dimostra un grado zodiacale. I livelli certain/probable/ambiguous hanno conteggio zero perché la revisione geometrica non è ancora eseguita; **unassessed=300** distingue l’assenza di valutazione da una vera ambiguità accertata.
+
+Il sorgente ZL segnala esplicitamente incertezza nell’attribuzione delle etichette dell’anello interno di f70v1. Cinque posizioni storiche sono contrassegnate con questo avvertimento nel registro, senza trasformarlo in una confidenza numerica inventata. Il caso Gemini senza etichetta è conservato come esclusione documentale, non eliminato silenziosamente.
+
+## Attributi e variazione: solo ricognizione
+
+I candidati sono contenitore, indumento, orientamento del corpo e coda della stella. Le note storiche alimentano colonne dichiarate `historical_nonblind_unvalidated`; il silenzio di una nota vale unknown, non absent. La presenza della stella è quasi costante nelle descrizioni e non costituisce di per sé un buon target discriminante.
+
+La ricognizione storica rileva due esempi di variazione esplicita entro pagina:
+- f70v2: nove orientamenti “left” e uno “right” documentati, con altre 19 figure umane senza orientamento esplicito nella nota;
+- f72r1: cinque figure con contenitore e dieci senza. Questa distinzione coincide con anello interno/esterno, quindi è già spiegabile dal layout; non prova identificabilità dell’effetto testuale.
+
+Non si interpreta la mancanza di altra variazione nelle note come costanza delle figure. La variazione visuale validata, la sua distribuzione tra folii e la potenza sono **non ancora accertate**. La scelta del primario è differita; non viene selezionato un attributo usando le parole.
+
+## Perché il test resta in preparazione
+
+Il perimetro contiene quattro folii e tre gruppi codicologici, non centinaia di unità indipendenti. f72 concentra sei pannelli. Un futuro split deve mantenere insieme pannelli, recto/verso e, se il disegno lo richiede, coniugati. La sezione zodiacale è costante; non si dichiara di stimarne un effetto. Il folio escluso non è una categoria già nota utilizzabile come predittore.
+
+Mancano ancora geometrie individuali e revisione del join, un solo attributo scelto senza usare il testo, doppia annotazione cieca e analisi di potenza adeguata al raggruppamento. Per questo lo stato è **PREPARATION_DATASET_PENDING_VALIDATION**, non “nessuna associazione” e non una dimostrazione universale di non-identificabilità.
+
+La procedura proposta è in `ANNOTATION_PROTOCOL.md`: regola geometrica esplicita ancora DRAFT, separazione dei ruoli, pilot di affidabilità e controllo della variazione residua rispetto al layout. I 299 ID della worklist cieca non hanno ritagli né attributi compilati; non sono un dataset già annotato. La chiave del custode va separata dai materiali forniti agli annotatori. Le immagini complete allegate contengono testo e non sono materiali ciechi.
+
+EXP 3B e le precedenti analisi di etichette costituiscono storia esplorativa. Non è stata attestata una partizione mai vista per una conferma futura. L’assistente ha ispezionato testo e immagini: le sue osservazioni non valgono come annotazione cieca indipendente.
+
+## File consegnati e uso
+
+- `feasibility_matrix.csv`: copertura reale per pagina e stati mancanti;
+- `zodiac_label_loci.csv`: 299 etichette ZL; `zodiac_context_loci.csv`: testi circolari e altri loci del perimetro;
+- `figure_inventory_preliminary.csv`: 300 posizioni storiche con campi di collegamento/attributo esplicitamente pending o excluded;
+- `historical_readings.csv` e `historical_attribute_candidates.csv`: fonti candidate e distinzione tra attestato/ignoto;
+- `yale_page_canvas_map.csv`: riferimenti primari, pannelli condivisi e coordinate native del canvas;
+- `variation_by_page.csv`, `codicological_groups.csv`, `existing_visual_pipeline_coverage.csv`: vincoli di disegno;
+- `blind_annotation_worklist.csv` e `custodian_blind_key.csv`: preparazione dei ruoli, non annotazioni compiute;
+- `build_inventory.py`, `STATUS.json`, `github_sources.json`, controlli e hash: riproducibilità e provenienza.
+
+**RC1.4.2 resta CLOSED_PENDING_VALIDATION; f085v, RP-01, builder, PCA, clustering e profili visivi non sono stati toccati. Nessun test inferenziale o associazione testo–attributo è stato calcolato.**
