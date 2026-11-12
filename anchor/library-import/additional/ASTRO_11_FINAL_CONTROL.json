@@ -1,0 +1,98 @@
+{
+  "verdict": "POSITIVO",
+  "input_sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+  "seed": 20261112,
+  "n_draws": 20000,
+  "sampling": "uniform without replacement; @Ri and @Ro; all folios except f69v; f69r included",
+  "excluded": "@Cc continuous circular text; not the same unit as individual radial inscriptions",
+  "n_f69v_Ri": 28,
+  "o_f69v_Ri": 20,
+  "rate_f69v": 0.7142857142857143,
+  "n_f69r_Ro": 22,
+  "o_f69r_Ro": 7,
+  "rate_f69r": 0.3181818181818182,
+  "fisher_two_sided_p": 0.009535644505758898,
+  "fisher_odds_ratio": 5.357142857142857,
+  "n_radial_other": 114,
+  "other_o": 50,
+  "other_o_rate": 0.43859649122807015,
+  "baseline_sample_n": 28,
+  "baseline_mean_count": 12.28685,
+  "baseline_mean_rate": 0.43881607142857143,
+  "baseline_empirical_95_interval_counts": [
+    8,
+    17
+  ],
+  "baseline_empirical_95_interval_rate": [
+    0.2857142857142857,
+    0.6071428571428571
+  ],
+  "baseline_max_count": 22,
+  "baseline_tail_p_high": 0.0006999650017499125,
+  "baseline_counts": {
+    "4": 3,
+    "5": 16,
+    "6": 70,
+    "7": 228,
+    "8": 623,
+    "9": 1226,
+    "10": 2179,
+    "11": 3022,
+    "12": 3444,
+    "13": 3284,
+    "14": 2610,
+    "15": 1689,
+    "16": 925,
+    "17": 458,
+    "18": 159,
+    "19": 51,
+    "20": 8,
+    "21": 3,
+    "22": 2
+  },
+  "comparison_by_folio": {
+    "f57v": {
+      "n": 4,
+      "o": 2
+    },
+    "f67r1": {
+      "n": 12,
+      "o": 5
+    },
+    "f67v1": {
+      "n": 17,
+      "o": 10
+    },
+    "f67v2": {
+      "n": 8,
+      "o": 6
+    },
+    "f68r3": {
+      "n": 8,
+      "o": 0
+    },
+    "f68v1": {
+      "n": 8,
+      "o": 5
+    },
+    "f68v2": {
+      "n": 12,
+      "o": 5
+    },
+    "f68v3": {
+      "n": 8,
+      "o": 3
+    },
+    "f69r": {
+      "n": 22,
+      "o": 7
+    },
+    "f70r1": {
+      "n": 15,
+      "o": 7
+    }
+  },
+  "criterion": "POSITIVO iff Fisher bilateral p<0.05 and observed o-count > empirical 97.5th percentile of other radial inscriptions",
+  "status_comparison_f69r": "ESPLORATIVO",
+  "status_cyclic_order": "NULLO (closed; not rerun)"
+}
