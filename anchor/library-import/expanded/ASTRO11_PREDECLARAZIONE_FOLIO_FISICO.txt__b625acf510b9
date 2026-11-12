@@ -1,0 +1,5 @@
+ASTRO-11: precisazione di unita' prima del calcolo valido.
+L'unita' richiesta dall'utente e' il foglio fisico/verso: negli identificativi IVTFF f67v1, f67v2 etc. il numero finale designa pannelli e deve essere eliminato; f67v1 e f67v2 diventano f67v. Lo stesso per f68r3, f68v1/2/3, f70r1.
+Loci ammessi @Ri/@Ro. Conteggio n: numero delle iscrizioni; k: quelle la cui iniziale EVA trascritta e' letteralmente o. Minimo 8 iscrizioni per foglio fisico.
+Se numero di fogli fisici idonei <10: INCONCLUSIVO, senza p o permutazione. Se >=10: p di rango con pareggi inclusi, POSITIVO solo con p<0.05, altrimenti NULLO; variante folio-label 20000, seed 20261112.
+Il controllo precedente che non aggregava i pannelli e' invalidato per unita' errata, non e' una variante inferenziale. Non interpretare il confronto originario f69v/f69r, che resta ESPLORATIVO.
