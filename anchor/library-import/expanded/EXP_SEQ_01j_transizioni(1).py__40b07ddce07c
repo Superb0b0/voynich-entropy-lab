@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+"""EXP-SEQ-01j: matrice descrittiva di transizione, dalle coppie EXP-SEQ-01i, una coppia per blocco; non modifica sorgenti."""
+from pathlib import Path
+import pandas as pd
+import numpy as np
+from collections import Counter
+ROOT=Path(__file__).resolve().parent
+src=ROOT/'EXP_SEQ_01i_output/coppie_classi.csv'
+out=ROOT/'EXP_SEQ_01j_output';out.mkdir(exist_ok=True)
+df=pd.read_csv(src)
+# Pivot univoco per coppia: una sola etichetta per ciascuna prima parola.
+k=['block','folio','currier','block_class']
+f=df.pivot_table(index=k, columns='form',values=['first_2','first_3'],aggfunc='first').reset_index()
+f.columns=['_'.join(c).strip('_') if isinstance(c,tuple) else c for c in f.columns]
+def cat(r,p):
+ if r[f'{p}_qo-']==1:return 'qo-'
+ if r[f'{p}_d-']==1:return 'd-'
+ return 'altre'
+f['r2']=f.apply(lambda r:cat(r,'first_2'),axis=1)
+f['r3']=f.apply(lambda r:cat(r,'first_3'),axis=1)
+f['d2_q3']=((f.r2=='d-')&(f.r3=='qo-')).astype(int)
+f['q2_d3']=((f.r2=='qo-')&(f.r3=='d-')).astype(int)
+f['q3']= (f.r3=='qo-').astype(int)
+f['d2']= (f.r2=='d-').astype(int)
+rows=[]
+for (lang,klass),g in f.groupby(['currier','block_class'],sort=True):
+ for a in ['d-','qo-','altre']:
+  for b in ['d-','qo-','altre']:
+   rows.append(dict(currier=lang,classe_blocco=klass,riga2=a,riga3=b,n=int(((g.r2==a)&(g.r3==b)).sum())))
+pd.DataFrame(rows).to_csv(out/'matrici_transizione.csv',index=False)
+sums=[]
+for label,g in [('A tutte',f[f.currier=='A']),('B tutte',f[f.currier=='B'])]+[(f'{lang} {cl}',g) for (lang,cl),g in f.groupby(['currier','block_class'])]:
+ n=len(g); a=int(g.d2.sum());q=int(g.q3.sum());both=int(g.d2_q3.sum());rev=int(g.q2_d3.sum());
+ # under independence conditional on marginal cell counts
+ expected=a*q/n if n else 0
+ # hypergeometric exact right-tail and two-sided (conditional on pooled margins) 
+ from scipy.stats import hypergeom
+ rv=hypergeom(n,q,a)
+ p_right=float(rv.sf(both-1))
+ # odds ratio with correction if zeros
+ tab=pd.crosstab(g.d2,g.q3).reindex(index=[0,1],columns=[0,1],fill_value=0)
+ sums.append(dict(gruppo=label,n=n,folio_n=g.folio.nunique(),d_r2=a,qo_r3=q,d2_verso_qo3=both,qo2_verso_d3=rev,atteso_indipendenza=round(expected,2),rischio_q3_con_d2=round(100*both/a,2) if a else None,rischio_q3_senza_d2=round(100*(q-both)/(n-a),2) if n>a else None,p_hypergeom_right=round(p_right,5),none_none=int(tab.loc[0,0]),not_d2_q3=int(tab.loc[0,1]),d2_not_q3=int(tab.loc[1,0])))
+pd.DataFrame(sums).to_csv(out/'riepilogo.csv',index=False)
+f.to_csv(out/'coppie_uniche.csv',index=False)
+print(pd.DataFrame(sums).to_string(index=False))
+print('\nA matrix\n',pd.crosstab(f[f.currier=='A'].r2,f[f.currier=='A'].r3).to_string())
+print('\nB matrix\n',pd.crosstab(f[f.currier=='B'].r2,f[f.currier=='B'].r3).to_string())
