@@ -1,0 +1,39 @@
+# PARSER_SPEC_V1_RC1_4
+
+Status: syntactically validated against the frozen ZL3b-n corpus; independent IVTT 2.4 differential reproducibility for this exact release remains pending.
+
+## Frozen input
+- File: ZL3b-n.txt
+- SHA-256: bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc
+- Bytes: 411671
+- Physical lines: 8510
+- Source file is read-only; the parser never modifies it.
+
+## Scope and rules
+- Parse only P-family locus records; retain the complete locus ID and tag.
+- Allowed P tags: *P0, *Pb, +P0, +P1, +Pb, +Pc, +Pr, =P0, =Pt, @P0, @P1, @Pb.
+- Numeric folio IDs and the special identifier fRos are valid.
+- Recognize <@H=2> and <@H=3> as local nonstandard annotations, replace each with a token boundary (space), and log exact physical line, locus, marker, and action. Other unknown angle markers fail closed.
+- Join physical continuation lines only when the trailing slash and following '/ ' line satisfy the IVTFF continuation rule; malformed/orphan continuations fail closed.
+- Remove inline comments.
+- Replace standard structural markers <$>, <%>, <->, <~>, and <d> with spaces.
+- Preserve text inside curly-brace groups while removing the delimiters.
+- Exclude square-bracket alternatives as a whole; do not select a reading.
+- Extract ASCII alphabetic sequences and lowercase them.
+- Empty cleaned P loci are retained in the audit inventory, not silently discarded.
+
+## Frozen corpus results
+- P-coded locus lines: 4130
+- Canonical P loci: 4130
+- fRos P loci: 11
+- Tokens under this parser profile: 35492
+- Distinct token types: 6980
+- Folio identifiers represented: 207 (including fRos)
+- Physical lines: 8510
+- Local markers: <@H=2> at line 8277; <@H=3> at line 8297
+- Unit tests: pass
+
+The token count is specific to this declared normalization profile. It must not be substituted for earlier counts made under a different tokenization rule. No conditional-coupling result was inspected or used to set the text-length threshold.
+
+## Statistical-unit rule
+The folio is the primary statistical unit. IVTFF subunits are subordinate. Where one image_id maps to multiple IVTFF units, aggregate unit-level counts once at folio_key; never duplicate semantic scores by IVTFF unit. Yale canvas coverage is a separate photographic property and remains not_assessed unless individually verified.
