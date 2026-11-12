@@ -1,0 +1,4 @@
+from pathlib import Path
+import hashlib
+p=Path('/mnt/data/ZL3b-n(8).txt')
+print(hashlib.sha256(p.read_bytes()).hexdigest())
