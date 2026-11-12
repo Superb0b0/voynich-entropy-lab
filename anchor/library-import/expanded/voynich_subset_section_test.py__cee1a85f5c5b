@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+"""Exhaustive section-subset diagnostic for an existing RC1.2 parser report.
+
+This is a diagnostic, not a canonical corpus pipeline. It does not re-tokenize.
+Section labels are supplied externally in a TSV: folio<TAB>section. Each record's
+folio identifier must map to exactly one section. Special foldout identifier
+fRos is assigned explicitly through --special-section (default Cosmological).
+"""
+from __future__ import annotations
+import argparse, csv, itertools, json, re, sys
+from collections import Counter, defaultdict
+from pathlib import Path
+
+
+def read_map(path: Path) -> dict[str, str]:
+    out = {}
+    with path.open(encoding='utf-8-sig', newline='') as f:
+        reader = csv.DictReader(f, delimiter='\t')
+        if not reader.fieldnames or not {'folio','section'}.issubset(reader.fieldnames):
+            raise ValueError('TSV must contain folio and section columns')
+        for row in reader:
+            folio, sec = row['folio'].strip(), row['section'].strip()
+            if not folio or not sec: continue
+            if folio in out and out[folio] != sec:
+                raise ValueError(f'conflicting section mapping for {folio}: {out[folio]} / {sec}')
+            out[folio] = sec
+    return out
+
+
+def normalize_folio(folio: str) -> str:
+    if folio == 'fRos': return 'fRos'
+    m = re.fullmatch(r'f(\d+[rv])\d*', folio)
+    if m: return m.group(1)
+    return folio
+
+
+def summarize(records):
+    toks = [t for r in records for t in r['tokens']]
+    return {'loci': len(records), 'tokens': len(toks), 'types': len(set(toks)),
+            'ttr': len(set(toks))/len(toks) if toks else None}
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--report', type=Path, required=True, help='RC1.2 JSON report')
+    ap.add_argument('--sections', type=Path, required=True, help='independent TSV folio<TAB>section')
+    ap.add_argument('--out', type=Path, required=True, help='JSON output report')
+    ap.add_argument('--target-tokens', type=int, default=34139)
+    ap.add_argument('--target-types', type=int, default=7271, help='estimated historical types; not a verified count')
+    ap.add_argument('--special-section', default='Cosmological', help='section assigned to fRos; explicit assumption')
+    ap.add_argument('--top', type=int, default=20)
+    a = ap.parse_args()
+
+    report = json.loads(a.report.read_text(encoding='utf-8'))
+    records = report['records']
+    section_map = read_map(a.sections)
+    section_map['fRos'] = a.special_section
+    assigned, missing = [], []
+    for r in records:
+        fol = normalize_folio(r['folio'])
+        sec = section_map.get(fol)
+        if sec is None:
+            missing.append({'folio_in_report': r['folio'], 'normalized_folio': fol, 'locus_id': r['locus_id']})
+        else:
+            rr = dict(r); rr['section'] = sec; assigned.append(rr)
+    if missing:
+        print(f'BLOCKED: {len(missing)} records lack section mapping; first 20: {missing[:20]}', file=sys.stderr)
+        return 2
+
+    by_section = defaultdict(list)
+    for r in assigned: by_section[r['section']].append(r)
+    section_summaries = {sec: summarize(recs) for sec, recs in sorted(by_section.items())}
+    sections = sorted(by_section)
+    full = summarize(assigned)
+    combos = []
+    for n in range(len(sections)+1):
+        for excluded_tuple in itertools.combinations(sections, n):
+            excluded = set(excluded_tuple)
+            kept = [r for r in assigned if r['section'] not in excluded]
+            sm = summarize(kept)
+            combos.append({'excluded_sections': list(excluded_tuple), **sm,
+                'token_delta_from_target': sm['tokens']-a.target_tokens,
+                'type_delta_from_target': sm['types']-a.target_types,
+                'target_tokens_exact': sm['tokens']==a.target_tokens,
+                'target_types_exact': sm['types']==a.target_types,
+                'both_exact': sm['tokens']==a.target_tokens and sm['types']==a.target_types})
+    combos.sort(key=lambda x: (abs(x['token_delta_from_target']), abs(x['type_delta_from_target']), len(x['excluded_sections'])))
+    out = {
+      'status': 'DIAGNOSTIC_ONLY',
+      'input_report': str(a.report),
+      'input_source': report.get('source', {}),
+      'section_map': str(a.sections),
+      'section_map_note': 'Map derived from embedded section labels in a Voynich Explorer HTML artifact, not verified as the PREREG3 map or as a canonical codicological concordance.',
+      'special_case': {'folio': 'fRos', 'assigned_section': a.special_section, 'status': 'EXPLICIT_ASSUMPTION_REQUIRES_REVIEW'},
+      'historical_targets': {'tokens': a.target_tokens, 'types': a.target_types, 'types_status': 'ESTIMATE_IF_DERIVED_FROM_ROUNDED_TTR; NOT_VERIFIED'},
+      'full_corpus': full,
+      'section_summaries': section_summaries,
+      'missing_mapping_records': missing,
+      'subset_type_bound': {'max_types_any_subset': full['types'], 'target_types': a.target_types,
+         'impossible_if_same_tokenization_and_pure_subset': a.target_types > full['types']},
+      'closest_combinations': combos[:a.top],
+      'exact_token_matches': [x for x in combos if x['target_tokens_exact']],
+      'exact_type_matches': [x for x in combos if x['target_types_exact']],
+      'exact_both_matches': [x for x in combos if x['both_exact']],
+      'interpretation': 'Section filtering alone cannot yield more distinct types than the full corpus under the same tokenization. Combination results are conditional on this section map and the RC1.2 token sequences.'
+    }
+    a.out.parent.mkdir(parents=True, exist_ok=True)
+    a.out.write_text(json.dumps(out, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+    print(json.dumps({'status': out['status'], 'full_corpus': full, 'sections': section_summaries,
+       'n_section_combinations': len(combos), 'n_exact_token_matches': len(out['exact_token_matches']),
+       'n_exact_type_matches': len(out['exact_type_matches']), 'n_exact_both_matches': len(out['exact_both_matches']),
+       'subset_type_bound': out['subset_type_bound'], 'closest': combos[:min(8,a.top)], 'output': str(a.out)}, ensure_ascii=False, indent=2))
+
+if __name__ == '__main__': main()
