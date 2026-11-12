@@ -1,0 +1,234 @@
+{
+  "input": "/mnt/data/ZL3b-n(7).txt",
+  "input_sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+  "parser": "^<f69r.NUM,@Ro> and ^<f69v.NUM,@Ri>; first ASCII EVA character, unchanged transcription; 28 cyclic positions",
+  "n_f69r_Ro": 22,
+  "n_f69v_Ri": 28,
+  "f69r_o_initial": 7,
+  "f69v_o_initial": 20,
+  "odds_ratio": 5.357142857142857,
+  "fisher_one_sided_p": 0.0058225359011661836,
+  "f69v_exact_unique_strings": 26,
+  "f69v_duplicate_strings": {
+    "okeod": 3
+  },
+  "f69v_okeod_loci": [
+    "f69v.14",
+    "f69v.18",
+    "f69v.27"
+  ],
+  "observed_cyclic_equal_initial_neighbors": 17,
+  "permutation_reps": 20000,
+  "permutation_seed": 20261112,
+  "permutation_mean": 15.0267,
+  "permutation_95pct_interval": [
+    12,
+    19
+  ],
+  "permutation_one_sided_p": 0.18774061296935154,
+  "f69v_initials": "oooyyoyooooooyossoysoooooooo",
+  "f69v_data": [
+    {
+      "locus": "f69v.4",
+      "text": "okeey,sar"
+    },
+    {
+      "locus": "f69v.5",
+      "text": "okeo,dy"
+    },
+    {
+      "locus": "f69v.6",
+      "text": "ochoyk"
+    },
+    {
+      "locus": "f69v.7",
+      "text": "ykeey"
+    },
+    {
+      "locus": "f69v.8",
+      "text": "ytory"
+    },
+    {
+      "locus": "f69v.9",
+      "text": "oeesy"
+    },
+    {
+      "locus": "f69v.10",
+      "text": "ytody"
+    },
+    {
+      "locus": "f69v.11",
+      "text": "okody"
+    },
+    {
+      "locus": "f69v.12",
+      "text": "otody"
+    },
+    {
+      "locus": "f69v.13",
+      "text": "oke[a:o]l"
+    },
+    {
+      "locus": "f69v.14",
+      "text": "okeod"
+    },
+    {
+      "locus": "f69v.15",
+      "text": "oteeys"
+    },
+    {
+      "locus": "f69v.16",
+      "text": "oteol"
+    },
+    {
+      "locus": "f69v.17",
+      "text": "ykeydy"
+    },
+    {
+      "locus": "f69v.18",
+      "text": "okeod"
+    },
+    {
+      "locus": "f69v.19",
+      "text": "saral"
+    },
+    {
+      "locus": "f69v.20",
+      "text": "saiir"
+    },
+    {
+      "locus": "f69v.21",
+      "text": "okolar"
+    },
+    {
+      "locus": "f69v.22",
+      "text": "ykeody"
+    },
+    {
+      "locus": "f69v.23",
+      "text": "sarydy"
+    },
+    {
+      "locus": "f69v.24",
+      "text": "otchy"
+    },
+    {
+      "locus": "f69v.25",
+      "text": "okeey,dy"
+    },
+    {
+      "locus": "f69v.26",
+      "text": "okey,[d:g]"
+    },
+    {
+      "locus": "f69v.27",
+      "text": "okeod"
+    },
+    {
+      "locus": "f69v.28",
+      "text": "okodchy"
+    },
+    {
+      "locus": "f69v.29",
+      "text": "okeody"
+    },
+    {
+      "locus": "f69v.30",
+      "text": "okchey[s:r]"
+    },
+    {
+      "locus": "f69v.31",
+      "text": "oar.alys"
+    }
+  ],
+  "f69r_data": [
+    {
+      "locus": "f69r.21",
+      "text": "chodchy.chotal"
+    },
+    {
+      "locus": "f69r.22",
+      "text": "okeo.sho.qotam"
+    },
+    {
+      "locus": "f69r.23",
+      "text": "okeodar.oteody"
+    },
+    {
+      "locus": "f69r.24",
+      "text": "ykeeos.al,dair,dar"
+    },
+    {
+      "locus": "f69r.25",
+      "text": "ykeey.dal.oky"
+    },
+    {
+      "locus": "f69r.26",
+      "text": "doly.dal.dar.chyky"
+    },
+    {
+      "locus": "f69r.27",
+      "text": "okchol.qokol.daly"
+    },
+    {
+      "locus": "f69r.28",
+      "text": "ykechody.otar"
+    },
+    {
+      "locus": "f69r.29",
+      "text": "dary.dar.aloly"
+    },
+    {
+      "locus": "f69r.30",
+      "text": "okeeocthy.okar.ar"
+    },
+    {
+      "locus": "f69r.31",
+      "text": "chey.ar.cthorary"
+    },
+    {
+      "locus": "f69r.32",
+      "text": "sair.chekey.sairam"
+    },
+    {
+      "locus": "f69r.33",
+      "text": "okeeo.dal.okar.a[r:s]"
+    },
+    {
+      "locus": "f69r.34",
+      "text": "sol.aiir.okeytam"
+    },
+    {
+      "locus": "f69r.35",
+      "text": "okeos.ar,ald"
+    },
+    {
+      "locus": "f69r.36",
+      "text": "docheeo.kody.sar"
+    },
+    {
+      "locus": "f69r.37",
+      "text": "dchokey.shkchodyal"
+    },
+    {
+      "locus": "f69r.38",
+      "text": "chor.al.[a:y]lchy.ral"
+    },
+    {
+      "locus": "f69r.39",
+      "text": "sair,al.okody.otedy"
+    },
+    {
+      "locus": "f69r.40",
+      "text": "okody.cheody.sar"
+    },
+    {
+      "locus": "f69r.41",
+      "text": "chokeod.okeey"
+    },
+    {
+      "locus": "f69r.42",
+      "text": "dkochy.cthody.dy"
+    }
+  ]
+}
