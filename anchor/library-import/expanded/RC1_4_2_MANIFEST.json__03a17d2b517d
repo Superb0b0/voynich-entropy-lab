@@ -1,0 +1,76 @@
+{
+  "builder_executed": false,
+  "clustering_executed": false,
+  "conditional_coupling_executed": false,
+  "gate_status": "CLOSED_PENDING_VALIDATION",
+  "metadata_raw_sha256": "NOT_AVAILABLE",
+  "output_files": {
+    "RC1_4_2_candidate_register.csv": {
+      "bytes": 16099
+    },
+    "RC1_4_2_exclusion_register.csv": {
+      "bytes": 3946
+    },
+    "RC1_4_2_unresolved_register.csv": {
+      "bytes": 217
+    },
+    "RC1_4_2_validation_report.json": {
+      "bytes": 11291
+    }
+  },
+  "output_sha256": {
+    "RC1_4_2_candidate_register.csv": "cd2f55ae8386a91febf099bde31b7720cc6abd48f906f6e863a25668d73482ec",
+    "RC1_4_2_exclusion_register.csv": "ca77688ef2a80d23000a53b350cdd398c6da2d64286e2257f025b9edd6973f11",
+    "RC1_4_2_unresolved_register.csv": "8be8ac8cd6d5739092dd091a9833d7109163a6bed673a820b501f8c149c83d9a",
+    "RC1_4_2_validation_report.json": "0b2018a846d382543d4dc4f424e58fa6338dc670ae24a00b83f57fc175188402"
+  },
+  "pca_executed": false,
+  "profile_promotion_executed": false,
+  "record_counts": {
+    "candidate_register": 196,
+    "exclusion_register": 50,
+    "unresolved_register": 1
+  },
+  "reproducibility": {
+    "all_identical": true,
+    "artifacts_compared": [
+      "RC1_4_2_candidate_register.csv",
+      "RC1_4_2_exclusion_register.csv",
+      "RC1_4_2_unresolved_register.csv",
+      "RC1_4_2_validation_report.json",
+      "RC1_4_2_MANIFEST.json"
+    ],
+    "comparison": "byte_for_byte",
+    "independent_second_generation": "PASS"
+  },
+  "revision": "RC1.4.2",
+  "source_files": [
+    "RC1_4_2_CONFIG_v7_1.json",
+    "voynich_profiles.json",
+    "folio_ivtff_crosswalk.csv",
+    "ZL3b-n.txt",
+    "ivtff_parser_rc1_4.py",
+    "ivtff_parser_rc1_4_offset_aware_report.json",
+    "ivtff_parser_rc1_4_offset_aware_validation.json",
+    "RC1_4_2_MULTIPANEL_DISJOINTNESS_VALIDATION.json",
+    "corpus_metadata.csv"
+  ],
+  "source_integrity_status": {
+    "corpus_metadata.csv": "NOT_RUN"
+  },
+  "source_sha256": {
+    "RC1_4_2_CONFIG_v7_1.json": "abed55bd3d44be25e751cafa0a2f3279f857175232ec8d884610e810e850e3f0",
+    "RC1_4_2_MULTIPANEL_DISJOINTNESS_VALIDATION.json": "4b031cc395720bda4353e23edbc1da6aadc94e80e3b0c728e108d600a718ccab",
+    "ZL3b-n.txt": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    "corpus_metadata.csv": "NOT_AVAILABLE_RAW_BYTES_NOT_ACQUIRED",
+    "folio_ivtff_crosswalk.csv": "769fcd2c94f93c232cc4828cd98e9ff16ff42d50baf051886d0dada00b4b3041",
+    "ivtff_parser_rc1_4.py": "075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d",
+    "ivtff_parser_rc1_4_offset_aware_report.json": "ca87c5d1f55bb1a6671dff62eb6afae58f9e7d084287605edf1eff443e9b6843",
+    "ivtff_parser_rc1_4_offset_aware_validation.json": "c8534cf29e9e16295a0418f34ed4beef8d7c622c0b58ca1783ac3463ba81a7ad",
+    "voynich_profiles.json": "7ec540723dffa59a06e6c4f4f971bdf2d3e69bf0e5760fae43300ab4e73b7546"
+  },
+  "status": "VALIDATION_PENDING",
+  "validation_artifacts_generated": true,
+  "validation_report_sha256": "0b2018a846d382543d4dc4f424e58fa6338dc670ae24a00b83f57fc175188402",
+  "validation_status": "FAIL_CLOSED_PENDING_REQUIRED_INPUT"
+}
