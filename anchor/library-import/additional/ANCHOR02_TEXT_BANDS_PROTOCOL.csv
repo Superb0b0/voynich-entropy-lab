@@ -1,0 +1,6 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: ANCHOR02_TEXT_BANDS_PROTOCOL.csv>
+index,zone,center_x_px,center_y_px,r_inner_approx_px,r_outer_approx_px,status,note
+0,OUTER_ARC,1975,1800,1030,1530,EXPLORATORY_NOT_SEGMENTED,"External circumference text, approximate"
+1,MIDDLE_ARC,1975,1800,690,1080,EXPLORATORY_NOT_SEGMENTED,"Between outer and inner figures, approximate"
+2,INNER_ARC,1975,1800,380,740,EXPLORATORY_NOT_SEGMENTED,"Text bordering fish centre, approximate"
