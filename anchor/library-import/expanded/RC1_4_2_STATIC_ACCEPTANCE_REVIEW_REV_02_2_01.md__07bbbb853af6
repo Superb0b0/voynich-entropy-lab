@@ -1,0 +1,77 @@
+# RC1.4.2 V7.1 | Revisione statica di accettabilità della DRAFT 03_CODE rev. 02.2
+
+**Data della revisione:** 10 novembre 2026 (UTC).  
+**Oggetto:** `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_2.md` (255 righe, 43.792 byte, SHA-256 `c3f57f4cacd8b17c2d7a452020db3479cd7518415e02cf194adbd6634cfde58e`).  
+**Appendice autonoma:** `RC1_4_2_APPENDICE_NORMATIVA_A01_A02_REV_02_2.md` (12.932 byte, SHA-256 `1406fbb7364215ebe78efbd9cb1e03b32f43cf761eed269b11170cbf4ac64467`).  
+**Base conservata:** rev. 02.1 (30.496 byte, SHA-256 `4271b2351ddc8fac147fca120220b932dabe2aafaa9b9ae6964cad81cbf0b6a3`); rev. 02 (23.479 byte, SHA-256 `cb9e0098baf0eb29ea0e798e84ac834cce1c60a5a6e27d956443968794351a6b`); sorgente Python DRAFT 02 (41.856 byte, SHA-256 `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325`).  
+**Metodo:** ispezione testuale in sola lettura, confronto tra revisioni, verifica locale SHA-256 dei byte dei file, verifica di integrità ZIP. Nessun import o avvio dei moduli della pipeline, dei parser o del builder. Il ricalcolo locale dei digest **non** è una firma, un'attestazione esterna o una prova di correttezza metodologica.  
+
+## Esito
+
+**`SPECIFICATION_ADEQUATE_AS_ACCEPTANCE_CONTRACT`**, limitatamente alla **completezza prescrittiva e alla possibilità di ispezione statica dei criteri di accettazione del futuro sorgente**. Non equivale a `STATIC_SOURCE_ACCEPTANCE: PASS`: quel sorgente corretto non è stato ancora implementato né ispezionato. Non equivale a revisione indipendente esterna, a validazione ambientale, a chiusura di DOC-04 o a risoluzione di RP-01.
+
+**Lacune normative bloccanti nel testo rev. 02.2: nessuna rilevata entro il perimetro specificato.** Due scelte di dettaglio restano per la futura *policy di implementazione*, B-01 e B-02, senza riaprire A-01/A-02. L'adeguatezza prescrittiva non significa sicurezza dimostrata.
+
+## A-01 e A-02: controllo puntuale
+
+| Requisito | Evidenza nel testo integrale | Esito prescrittivo | Limite |
+|---|---|---|---|
+| A-01: backend obbligatorio e separazione dalla root host | §7.2, rr. 153–160: mount namespace privato, `pivot_root(new_root, put_old)`, `umount2(..., MNT_DETACH)`, reset `cwd` e negazione di percorsi alla vecchia root | `ADEQUATE_AS_SPECIFICATION` | Efficacia del confinamento da verificare sul target |
+| A-01: dipendenze e file concessi | §7.2, rr. 161–163: root a elenco chiuso, manifest con percorso/versione/byte/SHA-256, nessun `/proc` e `/sys`, controllo fd, import path, link, mount e rete | `ADEQUATE_AS_SPECIFICATION` | Il manifest reale non è ancora compilato né approvato |
+| A-01: blocco prima del parser | §7.2, r. 166; tabella rr. 185–192: condizioni `BLOCKED` e ordine di allestimento | `ADEQUATE_AS_SPECIFICATION` | Non è una prova di effettiva resistenza a race |
+| A-02: capability a elenco chiuso | §7.2, r. 170: `CapEff`, `CapPrm`, `CapInh`, `CapAmb`, `CapBnd` tutti vuoti, senza eccezioni | `ADEQUATE_AS_SPECIFICATION` | Fattibilità del parser senza capability ancora `NOT_RUN`; se fallisce, `BLOCKED`, non deroga tacita |
+| A-02: identità, drop e no-new-privs | §7.2, rr. 174–181: UID/GID reali/effettivi/salvati, gruppi, `PR_CAPBSET_DROP`, `PR_SET_NO_NEW_PRIVS`, `PR_SET_DUMPABLE`, ordine e verifica post-drop | `ADEQUATE_AS_SPECIFICATION` | Applicazione da dimostrare su kernel e runner reali |
+
+Il documento **non** equipara `pivot_root` a una garanzia assoluta, né il solo svuotamento dei set capability a una validazione ambientale; esplicita le rispettive limitazioni (rr. 166, 181, 194). La policy a set vuoti non deve essere rilassata soltanto per comodità: ogni nuova eccezione richiederebbe una revisione contrattuale distinta.
+
+## R-02 e S-01–S-05: controllo di non regressione
+
+| Requisito | Evidenza nel testo | Esito |
+|---|---|---|
+| R-02 | §4.2, rr. 79–89: `dirfd`, `openat2(RESOLVE_BENEATH | RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS)`, `RESOLVE_NO_XDEV` secondo policy, `renameat2(RENAME_NOREPLACE)`, nessun fallback di tipo check-then-rename | `ADEQUATE_AS_NORMATIVE_REQUIREMENT`; efficacia `NOT_RUN` |
+| S-01 | §2, rr. 39–50: `EQUAL`/`DIFFERENT` non convertibili automaticamente in `AUDIT_VALIDATED_REPEATABILITY` | `ADEQUATE_AS_SPECIFICATION` |
+| S-02 | §3 e §7.2, rr. 52–67, 149–196: buffer verificati, snapshot, path-based parser confinato, fail-closed | `ADEQUATE_AS_SPECIFICATION` |
+| S-03 | §4, rr. 69–89: verificatore fuori processo, materiale autenticato, autorizzazione scoped, no-replace | `ADEQUATE_AS_SPECIFICATION` |
+| S-04 | §5, rr. 91–102: `compare_two_read_only_directories()` è `READ_ONLY_IO`, non pura | `ADEQUATE_AS_SPECIFICATION` |
+| S-05 | §6, rr. 104–124: revisione di sorgente distinta da validazione operativa e provenienza storica | `ADEQUATE_AS_SPECIFICATION` |
+| F-01/F-02/F-03 | §1, §8 e §10: obbligo di modifica futura, nessuna invocazione o pubblicazione ufficiale ora | `OPEN` nel codice DRAFT 02 |
+
+## Precisazioni non bloccanti per la futura implementazione
+
+- **B-01 | Bootstrap dei privilegi del runner.** La specifica fissa il confine di fiducia e la separazione tra runner e parser, ma la policy futura dovrà scegliere e vincolare il modello di setup, ad esempio dominio iniziale privilegiato oppure user namespace appropriato, con credenziali e limiti dichiarati. È una decisione implementativa da documentare e verificare prima di qualsiasi sessione, non una ragione per riaprire A-01 nel contratto attuale.
+- **B-02 | Device e risorse speciali.** L'assenza di `/dev` generico e l'allowlist di device sono già prescritti (r. 162). Per un eventuale nodo di dispositivo, una prova basata sul «SHA-256 dell'inode» non è una specifica corretta di identità del device: in un futuro manifest occorreranno tipo di file, major/minor, proprietà, permessi, modalità di creazione, ruolo e policy di accesso, oltre ai controlli appropriati. Se non serve alcun device, il suo accesso resta negato. Nessun dispositivo viene autorizzato da questo verbale.
+
+**Osservazione sulla proposta esterna relativa a `/proc`:** la rev. 02.2 *sceglie esplicitamente* l'assenza di `/proc` nella root del parser (r. 162). Non occorre introdurre una deroga preemptiva: se le dipendenze del futuro ambiente richiedessero `/proc`, il comportamento coerente è `BLOCKED`, seguito, se giustificato, da revisione separata della policy. Analogamente, i cinque set di capability vuoti sono un requisito preciso, non un'affermazione empirica che il parser funzioni già in tali condizioni.
+
+## Invarianza, qualifica dell'accettazione e stato
+
+```text
+specification_review_result: SPECIFICATION_ADEQUATE_AS_ACCEPTANCE_CONTRACT
+scope: NORMATIVE_STATIC_SPECIFICATION_ONLY
+blocking_specification_residuals: NONE_IDENTIFIED
+nonblocking_future_policy_decisions: B-01,B-02
+A-01: ADEQUATE_AS_SPECIFICATION; NOT_IMPLEMENTED
+A-02: ADEQUATE_AS_SPECIFICATION; NOT_IMPLEMENTED
+R-01: ADEQUATE_WITH_A01_A02_AS_SPECIFICATION
+R-02: ADEQUATE_AS_NORMATIVE_REQUIREMENT; NOT_IMPLEMENTED
+S-01_to_S-05: ADEQUATE_AS_SPECIFICATION; NOT_IMPLEMENTED
+F-01: OPEN
+F-02: OPEN
+F-03: OPEN
+code_remediation_required: true
+DOC-01_to_DOC-03: RESOLVED_DOCUMENTALLY
+DOC-04: PENDING_EXTERNAL_ATTESTATION
+RP-01: OPEN
+f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data: false
+gate: CLOSED_PENDING_VALIDATION
+STATIC_SOURCE_ACCEPTANCE: NOT_EVALUATED_FUTURE_SOURCE
+FUTURE_OPERATIONAL_VALIDATION: NOT_RUN
+parser_or_generator_executed: false
+new_empirical_PASS: NONE
+five_validation_artifacts: NOT_GENERATED
+previous_files_modified: false
+external_independent_attestation: NOT_PRESENT
+```
+
+**Decisione:** è ora possibile preparare, **in una futura istruzione separata**, una specifica di implementazione per il nuovo sorgente, mantenendo la medesima architettura fail-closed. La presente revisione **non** consente di importare i parser, eseguire il builder, generare i cinque file di validazione o aprire il gate; non approva il nuovo generatore e non chiude RP-01. Eventuali affermazioni circa l'effettiva sicurezza del futuro runner, il funzionamento del parser con capability vuote o la correttezza delle produzioni restano `NOT_RUN`.
