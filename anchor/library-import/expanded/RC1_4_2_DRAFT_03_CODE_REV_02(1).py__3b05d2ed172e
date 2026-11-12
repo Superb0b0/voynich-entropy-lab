@@ -1,0 +1,330 @@
+#!/usr/bin/env python3
+"""
+DRAFT 03_CODE_REV_02.py
+=======================
+
+DIAGNOSTIC GENERATOR — NOT QUALIFIED, NOT HARDENED.
+
+This module is the *diagnostic* correction branch of DRAFT 02. It does NOT
+satisfy the RC1.4.2 hardened contract (rev. 02.2). It does NOT produce the
+five qualified audit artifacts. It is a separate branch from the Trusted OS
+Service design.
+
+Corrections relative to DRAFT 02 (in the diagnostic perimeter only)
+-------------------------------------------------------------------
+F-01 — DRAFT 02: functions reachable after import could produce qualified
+artifacts or PASS. FIX: no function in this module produces the five
+qualified artifacts or any PASS; there is nothing to bypass. The output is
+a diagnostic report explicitly labeled "non-qualified".
+
+F-02 — DRAFT 02: build_validation_report set 15 PASS from a fixed dict. FIX:
+every digest is computed on the bytes ACTUALLY READ from disk; no section
+is ever set to PASS; the only verification labels are MATCH / MISMATCH /
+OBSERVED / NOT_OBSERVED / ERROR / NOT_RUN.
+
+F-03 — DRAFT 02: stage_new_audit_bundle accepted caller booleans and used
+a non-atomic rename. FIX: there is no staging function and no publishing
+function. There is no authorization parameter accepted from the caller.
+
+What this module can do
+-----------------------
+- Read the seven pinned files from disk.
+- Compute SHA-256 and byte length on the actual bytes read.
+- Compare with pinned values from RC1.4.2 V7.1.
+- Write a diagnostic report to a directory chosen by the operator.
+
+What this module CANNOT do
+--------------------------
+- Produce the five qualified audit artifacts.
+- Assign audit validation, provenance, or repeatability claims.
+- Authorize anything based on caller-supplied booleans or dictionaries.
+- Satisfy the hardened F-01/F-02/F-03 contract of rev. 02.2.
+
+Hardened branch
+---------------
+The rev. 02.2 contract, the Trusted OS Service design and its implementation
+design spec remain in force as separate artifacts. This module is NOT a
+substitute for them and does NOT relax them.
+
+Invariants preserved
+--------------------
+GATE = CLOSED_PENDING_VALIDATION
+RP-01 = OPEN
+DOC-04 = PENDING_EXTERNAL_ATTESTATION
+f085v = UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data = false
+No qualified audit artifact is produced.
+No execution is authorized by this file.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+# ---------------------------------------------------------------------------
+# Status labels. Never PASS / FAIL / VALIDATED / ATTESTED — those imply
+# audit qualification, which this module does not and cannot provide.
+# ---------------------------------------------------------------------------
+MATCH = "MATCH"
+MISMATCH = "MISMATCH"
+OBSERVED = "OBSERVED"
+NOT_OBSERVED = "NOT_OBSERVED"
+ERROR = "ERROR"
+NOT_RUN = "NOT_RUN"
+
+# ---------------------------------------------------------------------------
+# Pinned digests from RC1.4.2 V7.1. These are documentary references, not
+# session-bound attestations.
+# ---------------------------------------------------------------------------
+PINNED: dict[str, tuple[int, str]] = {
+    "configuration": (
+        28255,
+        "abed55bd3d44be25e751cafa0a2f3279f857175232ec8d884610e810e850e3f0",
+    ),
+    "semantic_profiles": (
+        4758062,
+        "7ec540723dffa59a06e6c4f4f971bdf2d3e69bf0e5760fae43300ab4e73b7546",
+    ),
+    "corpus_metadata": (
+        38578,
+        "19b3e0885a467df849c352c650eeee864e987da3b2eaf295322345cf4e798625",
+    ),
+    "ivtff_crosswalk": (
+        13269,
+        "769fcd2c94f93c232cc4828cd98e9ff16ff42d50baf051886d0dada00b4b3041",
+    ),
+    "corpus": (
+        411671,
+        "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    ),
+    "lexical_parser": (
+        14100,
+        "075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d",
+    ),
+    "offset_aware_mapper": (
+        12095,
+        "ccce4b8514bbd60b9be5d0122ac2cb40353827d43b12d9709782550b60646565",
+    ),
+}
+
+# The seven roles, in the canonical order used by RC1.4.2 V7.1.
+ROLES: tuple[str, ...] = (
+    "configuration",
+    "semantic_profiles",
+    "corpus_metadata",
+    "ivtff_crosswalk",
+    "corpus",
+    "lexical_parser",
+    "offset_aware_mapper",
+)
+
+
+class DiagnosticError(RuntimeError):
+    """Raised only for internal errors of this diagnostic module."""
+
+
+# ---------------------------------------------------------------------------
+# Core utilities (pure, no side effects).
+# ---------------------------------------------------------------------------
+def sha256_of_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def _canonical_json(obj: Any) -> bytes:
+    return json.dumps(
+        obj, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+
+
+# ---------------------------------------------------------------------------
+# Real byte-level verification (F-02 in the diagnostic perimeter).
+# ---------------------------------------------------------------------------
+def read_and_verify(path: Path, role: str) -> dict:
+    """
+    Read the file, compute the digest on the bytes actually read, and compare
+    with the pinned value. Returns a diagnostic result. NEVER returns PASS.
+    """
+    result: dict[str, Any] = {"role": role, "path": str(path)}
+
+    if role not in PINNED:
+        result["status"] = MISMATCH
+        result["reason"] = f"no pin available for role {role!r}"
+        return result
+
+    pinned_size, pinned_sha = PINNED[role]
+    result["pinned_size"] = pinned_size
+    result["pinned_sha256"] = pinned_sha
+
+    if not path.is_file():
+        result["status"] = ERROR
+        result["reason"] = "file not found"
+        return result
+
+    try:
+        data = path.read_bytes()
+    except OSError as exc:
+        result["status"] = ERROR
+        result["reason"] = f"read error: {exc}"
+        return result
+
+    observed_size = len(data)
+    observed_sha = sha256_of_bytes(data)
+    result["observed_size"] = observed_size
+    result["observed_sha256"] = observed_sha
+
+    if observed_size == pinned_size and observed_sha == pinned_sha:
+        result["status"] = MATCH
+    else:
+        result["status"] = MISMATCH
+        result["reason"] = "observed bytes differ from pinned reference"
+
+    return result
+
+
+def verify_all_pinned_files(root: Path) -> dict:
+    """
+    Verify the seven pinned files under `root`, using the canonical filenames
+    of RC1.4.2 V7.1. Returns a per-role diagnostic dictionary.
+    """
+    filenames = {
+        "configuration": "RC1_4_2_CONFIG_v7_1.json",
+        "semantic_profiles": "voynich_profiles.json",
+        "corpus_metadata": "corpus_metadata.csv",
+        "ivtff_crosswalk": "folio_ivtff_crosswalk.csv",
+        "corpus": "ZL3b-n.txt",
+        "lexical_parser": "ivtff_parser_rc1_4.py",
+        "offset_aware_mapper": "ivtff_parser_rc1_4_offset_aware.py",
+    }
+    return {
+        role: read_and_verify(root / filenames[role], role)
+        for role in ROLES
+    }
+
+
+# ---------------------------------------------------------------------------
+# Diagnostic report. Contains only diagnostic labels; never PASS, never
+# audit validation, never provenance, never repeatability.
+# ---------------------------------------------------------------------------
+def build_diagnostic_report(
+    verification: dict,
+    session_info: dict | None = None,
+) -> dict:
+    """
+    Assemble a diagnostic report. The report is explicitly non-qualified and
+    cannot be interpreted as the five qualified audit artifacts.
+    """
+    session_info = session_info or {}
+
+    per_role: dict[str, dict] = {}
+    counts = {MATCH: 0, MISMATCH: 0, ERROR: 0}
+
+    for role in ROLES:
+        entry = dict(verification.get(role, {"role": role, "status": NOT_RUN}))
+        # Strip anything that could be misread as a qualification claim.
+        for forbidden in ("PASS", "VALIDATED", "ATTESTED"):
+            entry.pop(forbidden, None)
+        per_role[role] = entry
+        status = entry.get("status")
+        if status in counts:
+            counts[status] += 1
+
+    return {
+        "artifact_kind": "DIAGNOSTIC_REPORT_NON_QUALIFIED",
+        "artifact_status": "NOT_AUDIT_VALIDATED",
+        "produced_by": "DRAFT_03_CODE_REV_02 (diagnostic generator)",
+        "note": (
+            "This report is diagnostic only. It is NOT one of the five "
+            "qualified audit artifacts of RC1.4.2 V7.1, and it does not "
+            "constitute audit validation, provenance, or repeatability."
+        ),
+        "contract_reference": "RC1.4.2 V7.1 rev. 02.2 (hardened) — NOT satisfied here",
+        "gate": "CLOSED_PENDING_VALIDATION",
+        "rp_01": "OPEN",
+        "doc_04": "PENDING_EXTERNAL_ATTESTATION",
+        "f085v": "UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER",
+        "manual_intervention_on_historical_data": False,
+        "session_info": session_info,
+        "per_role": per_role,
+        "counts": counts,
+        "qualified_artifacts_produced": False,
+        "audit_validation_claim": None,
+        "provenance_claim": None,
+        "repeatability_claim": None,
+    }
+
+
+def write_diagnostic_report(report: dict, out_dir: Path) -> Path:
+    """
+    Write the diagnostic report to `out_dir`. The filename is intentionally
+    distinct from the five qualified artifact names.
+    """
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    target = out_dir / "rc1_4_2_diagnostic_report.json"
+    target.write_bytes(_canonical_json(report) + b"\n")
+    return target
+
+
+# ---------------------------------------------------------------------------
+# CLI. The only action is: verify the seven pinned files under a directory
+# and write a diagnostic report. No staging, no publishing, no authorization.
+# ---------------------------------------------------------------------------
+def _parse_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Diagnostic generator for RC1.4.2 V7.1. "
+            "Not qualified. Not hardened. Does not produce audit artifacts."
+        )
+    )
+    parser.add_argument(
+        "--root",
+        required=True,
+        help="Directory containing the seven pinned files",
+    )
+    parser.add_argument(
+        "--out",
+        required=True,
+        help="Directory where the diagnostic report will be written",
+    )
+    parser.add_argument(
+        "--operator-note",
+        default="",
+        help="Free-form note included in the diagnostic report (optional)",
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str]) -> int:
+    args = _parse_args(argv)
+
+    root = Path(args.root)
+    out_dir = Path(args.out)
+
+    if not root.is_dir():
+        print(f"error: --root is not a directory: {root}", file=sys.stderr)
+        return 2
+
+    verification = verify_all_pinned_files(root)
+
+    session_info = {
+        "operator_note": args.operator_note,
+        "root": str(root.resolve()),
+    }
+
+    report = build_diagnostic_report(verification, session_info)
+    target = write_diagnostic_report(report, out_dir)
+
+    print(f"diagnostic report written to {target}")
+    print(f"per-role counts: {report['counts']}")
+
+    mismatches = report["counts"].get(MISMATCH, 0) + report["counts"].get(ERROR, 0)
+    return 0 if mismatches == 0 else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
