@@ -1,0 +1,124 @@
+{
+  "report": "ANCHOR research repository transfer status",
+  "date": "2026-11-12",
+  "branch": "anchor-rev3-staging-20261112",
+  "base_branch": "main",
+  "status": "PARTIAL_UPLOAD_WITH_CATALOG",
+  "summary": {
+    "new_files_in_branch": 52,
+    "byte_identical_from_original_zip": 8,
+    "library_text_reader_noncanonical_copies": 42,
+    "documentation_files": 2,
+    "library_project_files_catalogued": 413
+  },
+  "source_archives": {
+    "rev3": {
+      "name": "Voynich_ANCHOR_rev3.zip",
+      "sha256": "0ed5f5f234c6b0b5acdbbb8e5ddf5d76a86bc94c427f31b2924a49a05ba0064f",
+      "binary_zip_uploaded": false,
+      "extracted_files_uploaded": true
+    },
+    "rev2": {
+      "name": "Voynich_ANCHOR_v1_1_schema_revision2.zip",
+      "sha256": "9d0ffceec94c641639024255ee280b68b493c4364541f6ede56ce90dc8accb06",
+      "binary_zip_uploaded": false,
+      "schema_sha256": "fdff56233ee75bc7330a82b50562cb8829af60dbaf2fe181498f920d7fa425b1"
+    },
+    "anchor02_entry": {
+      "name": "ANCHOR02_import_rev3.zip",
+      "sha256": "6a3d010de22d5b1a45f5d793170383cfcd8767bc190e4143a796d1b0d62c3bee",
+      "binary_zip_uploaded": false,
+      "entry_uploaded": true
+    }
+  },
+  "tests": {
+    "native_command": "python tests/test_anchor_schema.py",
+    "native_result": "59 cases, 0 anomalies",
+    "pytest_result": "collection error due to helper function named test; native suite passes",
+    "scientific_validation": false
+  },
+  "integrity": {
+    "exactness_method": "Git blob SHA-1 comparison between original raw extracted ZIP entries and fetched GitHub blob IDs",
+    "exact_files": [
+      {
+        "path": "anchor/evidence-rev3/imported-entry/ANC-0001.json",
+        "blob_sha": "9ab36e454326a58ab34b947475f0ac1f49721e5c"
+      },
+      {
+        "path": "anchor/evidence-rev3/original-extracted/README.md",
+        "blob_sha": "dfc40ace5d7ec45239acecdf391edfbd714d7ae7"
+      },
+      {
+        "path": "anchor/evidence-rev3/original-extracted/REV2_SHA256.txt",
+        "blob_sha": "7f948b76892558725386ceaed1eb88fc409f5c98"
+      },
+      {
+        "path": "anchor/evidence-rev3/original-extracted/SHA256SUMS",
+        "blob_sha": "3c0328dfb4040ed70f27a0fc4e44078e0417f040"
+      },
+      {
+        "path": "anchor/evidence-rev3/original-extracted/anchor_entry.schema.json",
+        "blob_sha": "b3d5b263919e3fbc53cff9631a45b5ed82f15ac0"
+      },
+      {
+        "path": "anchor/evidence-rev3/original-extracted/requirements.txt",
+        "blob_sha": "4a5b3e022966c3e25cb811aabc1bcb93fc9fa97d"
+      },
+      {
+        "path": "anchor/evidence-rev3/original-extracted/tests/test_anchor_schema.py",
+        "blob_sha": "cb9a7966add4eb757b137918d586e227425bf487"
+      },
+      {
+        "path": "anchor/evidence-rev3/original-extracted/validate_anchor.py",
+        "blob_sha": "acaed251ce7d646b6cb9842047c5b300a0d29c31"
+      }
+    ],
+    "noncanonical_warning": "Other text files were copied through the Library text reader, which may alter formatting and original bytes. Do NOT treat historical SHA-256 hashes as applicable to these copies."
+  },
+  "uploaded_text_reader_paths": [
+    "anchor/library-import/additional/ANCHOR02_CLAUDE_VISUAL_REVIEW.csv",
+    "anchor/library-import/additional/ANCHOR02_COORDINATE_PROVENANCE_AUDIT.csv",
+    "anchor/library-import/additional/ANCHOR02_HEAD_INVENTORY_EXPLORATORY.csv",
+    "anchor/library-import/additional/ANCHOR02_INNER_LABEL_SPATIAL_AUDIT.csv",
+    "anchor/library-import/additional/ANCHOR02_INNER_TEXT_REGIONS_PROVISIONAL.csv",
+    "anchor/library-import/additional/ANCHOR02_PAGE_COORDINATES_RECOVERED.csv",
+    "anchor/library-import/additional/ANCHOR02_PAIRWISE_MATCHES_VERIFIED.csv",
+    "anchor/library-import/additional/ANCHOR02_PREREQUISITES_CHECK(1).py",
+    "anchor/library-import/additional/ANCHOR02_PREREQUISITES_CHECK.py",
+    "anchor/library-import/additional/ANCHOR02_REGION_HEAD_PROXIMITY_AUDIT.csv",
+    "anchor/library-import/additional/ANCHOR02_TEXT_BANDS_PROTOCOL.csv",
+    "anchor/library-import/additional/ANCHOR02_TEXT_REGION_TRIAGE_V1.csv",
+    "anchor/library-import/additional/ANCHOR02_TEXT_REGION_TRIAGE_V2.csv",
+    "anchor/library-import/additional/ANCHOR02_VISUAL_CANDIDATES_CLAUDE.csv",
+    "anchor/library-import/additional/ASTRO11_FOLIO_FINAL.json",
+    "anchor/library-import/additional/ASTRO11_FOLIO_TABLE.csv",
+    "anchor/library-import/additional/ASTRO_11_FINAL_CONTROL.json",
+    "anchor/library-import/additional/ASTRO_11_RIESCUZIONE.json",
+    "anchor/library-import/additional/astro11_final_control.py",
+    "anchor/library-import/additional/astro11_folio_final.py",
+    "anchor/library-import/additional/astro11_reexecution.py",
+    "anchor/library-import/additional/verify_voynich_input.py",
+    "anchor/library-import/text/ADDENDUM_V1_1.md",
+    "anchor/library-import/text/ANCHOR-01-R01-GATE-FREEZE_v1_0.json",
+    "anchor/library-import/text/ANCHOR-01-R01-GATE-FREEZE_v1_0.md",
+    "anchor/library-import/text/ANCHOR-01-R01-GATE-FREEZE_v1_1.md",
+    "anchor/library-import/text/ANCHOR02_create_models.py",
+    "anchor/library-import/text/ANCHOR02_modello_etichette_f70v2.csv",
+    "anchor/library-import/text/ANCHOR02_protocol_v1_1.txt",
+    "anchor/library-import/text/ANCHOR02_test_v1_1.py",
+    "anchor/library-import/text/ANCHOR_02_REPORT_IT.md",
+    "anchor/library-import/text/ASTRO11_PREDECLARAZIONE_FOLIO_FISICO.txt",
+    "anchor/library-import/text/AUDIT_23_CORRECTIONS.md",
+    "anchor/library-import/text/FREEZE_RECEIPT_v1_0.json",
+    "anchor/library-import/text/FREEZE_RECEIPT_v1_1.json",
+    "anchor/library-import/text/GEOMETRY_DIAGNOSTIC_ADDENDUM.md",
+    "anchor/library-import/text/VOYNICH_ANCHOR_03_04_REPORT_IT.md",
+    "anchor/library-import/text/VOYNICH_ANCHOR_05_07_REPORT_IT.md",
+    "anchor/library-import/text/calibrazione_pre_freeze.json",
+    "anchor/library-import/text/calibrazione_vettoriale.py",
+    "anchor/library-import/text/f70v2_glifi_pre_freeze.csv",
+    "anchor/library-import/text/figure_senza_etichetta.csv"
+  ],
+  "not_uploaded": "Most catalogued archives, images, and other binary files. Catalog does not assert upload.",
+  "safety": "Comparison main...branch found only new files; original tracked files remain unchanged. RC1.4.2 unchanged."
+}
