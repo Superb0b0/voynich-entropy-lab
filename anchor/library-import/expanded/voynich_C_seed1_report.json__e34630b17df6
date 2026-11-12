@@ -1,0 +1,36 @@
+{
+  "status": "executed_synthetic_generator_C_only",
+  "not_a_voynich_result": true,
+  "seed": 1,
+  "token_count": 27755,
+  "line_count": 3084,
+  "sha256_corpus": "84d625a40bc920cd1c28ae8824c38177cfc3e82676f82c9e06c82941ba744583",
+  "metrics": {
+    "conditional_character_entropy_bits": 2.3348524633096415,
+    "vocabulary_size": 10596,
+    "hapax_types": 4360,
+    "zipf_loglog_slope_top_80pct": -0.6331247036144599,
+    "token_length_mean": 5.535795352188795,
+    "token_length_median": 6,
+    "adjacent_line_type_jaccard_mean": 0.006473914643988751,
+    "bpe_even_merges": 64,
+    "bpe_odd_merges": 64,
+    "bpe_shared_unique_pairs": 55,
+    "bpe_overlap_over_max_set_size": 0.859375
+  },
+  "parameters": {
+    "copy_probability": 0.12,
+    "mutation_probability": 0.18,
+    "tokens_per_line": 9,
+    "lines_per_folio": 20,
+    "bpe_max_merges": 64,
+    "bpe_min_pair_count": 3,
+    "split": "alternating global line parity"
+  },
+  "limitations": [
+    "Only generator C was run; no A, B, D, or E comparisons yet.",
+    "Synthetic parameters are illustrative and not fitted to the Voynich.",
+    "The BPE overlap metric is set overlap of learned pairs, not automatically comparable to the prior reported 59/64 without reproducing that exact calculation.",
+    "Adjacent-line copying is sparse in this run; this does not establish resemblance to the Voynich."
+  ]
+}
