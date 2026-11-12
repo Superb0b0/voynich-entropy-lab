@@ -1,0 +1,92 @@
+# RC1.4.2 V7.1 | Revisione statica di accettabilità della specifica DRAFT 03_CODE rev. 02
+
+**Natura:** lettura documentale e ispezione statica del testo; non è un'esecuzione del generatore né una validazione ambientale.
+**Documento esaminato:** `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02.md` (183 righe; 23.479 byte; SHA-256 registrato `cb9e0098baf0eb29ea0e798e84ac834cce1c60a5a6e27d956443968794351a6b`).
+**Confronto:** `rc1_4_2_generator_clean_DRAFT_02.py` (lettura statica, senza import).
+**Esito binario per il contratto di accettazione statica completo:** `SPECIFICATION_INADEQUATE`.
+**Qualifica dell'esito:** `SUBSTANTIALLY_ADEQUATE_WITH_TWO_NORMATIVE_RESIDUALS`.
+
+## 1. Verifica S-01–S-05
+
+| Rilievo | Valutazione della prescrizione | Evidenza e criterio statico futuro |
+|---|---|---|
+| S-01 | ADEQUATE_AS_SPECIFICATION | §2, righe 37–46: `TECHNICAL_BYTE_EQUALITY` solo `EQUAL`/`DIFFERENT`, senza `PASS`; inventario di call site, enum e tipi. La sorgente precedente resta aperta: DRAFT 02 r. 679 emette `technical_repeatability: PASS`. |
+| S-02 | PARTIAL, R-01 | §3, righe 54–61: acquisizione dei buffer, snapshot, verifica byte-per-byte, parser path-based, fallback bloccato; alla r. 57 il backend Linux è ancora solo esemplificativo. |
+| S-03 | PARTIAL, R-02 | §4, righe 67–83: verificatore esterno, policy autenticata, revoca, `renameat2(RENAME_NOREPLACE)` e `O_EXCL`; alla r. 78 i descrittori ancorati e la risoluzione sicura dei percorsi sono esemplificativi. |
+| S-04 | ADEQUATE_AS_SPECIFICATION | §5, righe 87–96: confronto tra directory correttamente `READ_ONLY_IO`; trasformazioni pure separate da I/O e attestazioni. |
+| S-05 | ADEQUATE_AS_SPECIFICATION | §6, righe 100–118: `STATIC_SOURCE_ACCEPTANCE` separata da `FUTURE_OPERATIONAL_VALIDATION_NOT_RUN`. Nessuna prova runtime dedotta dalla sola analisi statica. |
+
+## 2. Verifica degli ulteriori cinque criteri
+
+| Criterio | Esito | Fondamento |
+|---|---|---|
+| F-01, API qualificate protette anche dopo import | SPECIFIED, NOT IMPLEMENTED | §1.1, righe 23–33; §8, r. 136. Protezione limitata alle API ufficialmente supportate, non all'interprete Python arbitrario. |
+| F-02, PASS fondato sui byte consumati nella stessa sessione | SPECIFIED, WITH R-01 | §3, righe 54–61; §8, r. 137. I byte realmente consumati non sono ancora provati: verifica ambientale `NOT_RUN`. |
+| F-03, niente booleani auto-dichiarati | SPECIFIED, WITH R-02 | §4.1–4.2, righe 67–83; §8, r. 138. Nessun verificatore esterno è qui implementato o autorizzato. |
+| Criteri statici distinguibili da prove future | SATISFIED AS WRITTEN | §6 separa ispezionabilità della struttura da efficacia runtime del backend. |
+| Preservazione degli originali | SATISFIED AS SCOPE | §1 e §10 vietano le modifiche; nessun file precedente è stato scritto durante questa revisione. Non è un nuovo controllo crittografico indipendente sugli input. |
+
+## 3. Rilievi residui e sostituzioni prescrittive
+
+### R-01, isolare il parser e i byte dello snapshot
+
+**Testo da sostituire:** §3, riga 57, «ad esempio un mount namespace Linux ...».
+
+**Requisito proposto:**
+
+> Per il backend Linux prescritto, il runner fidato crea una snapshot tree privata a partire esclusivamente dai buffer acquisiti, verifica integralmente i byte dello snapshot prima del parsing e avvia i parser in un mount namespace dedicato. La snapshot tree è esposta tramite mount/bind mount read-only; la propagazione dei mount è controllata; il parser non dispone di accesso a originali o altre copie mutabili, di descrittori scrivibili verso lo snapshot, né della capacità di rimontarlo o alterarlo (incluse capacità privilegiate di amministrazione dei mount). L'area di snapshot resta non modificabile da soggetti esterni al confine di fiducia per tutta la sessione. Il runner fornisce esclusivamente percorsi interni allo snapshot. Se l'isolamento e il controllo dei privilegi non possono essere verificati, l'intero percorso di audit resta `BLOCKED`. La dimostrazione della tenuta runtime, dei digest effettivamente consumati e dell'assenza di race è differita a validazione ambientale autorizzata.
+
+**Accettazione statica futura:** configurazione e call graph del runner includono obbligatoriamente il backend sopra descritto; il ramo senza backend o con controlli falliti è `BLOCKED`, senza import del parser, output, report o `PASS`.
+
+**Limite esplicito:** un mount namespace isolato e un bind mount read-only NON rendono sicuro il sistema contro un altro soggetto privilegiato in grado di modificare il backing store o rimontare il filesystem; la disponibilità del backend e il modello di minaccia devono essere attestati nella futura sessione autorizzata.
+
+### R-02, risoluzione dei percorsi e pubblicazione senza sostituzione
+
+**Testo da sostituire:** §4.2, riga 78, «per esempio descriptor `dirfd` e risoluzione controllata ...».
+
+**Requisito proposto:**
+
+> Il verificatore fidato mantiene aperti descrittori delle directory radice di input e output, appartenenti al dominio fidato e non scrivibili dal chiamante. La risoluzione delle componenti esistenti utilizza `openat2()` ancorato al pertinente `dirfd` e i vincoli `RESOLVE_BENEATH | RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS` (e `RESOLVE_NO_XDEV` se il contratto vieta attraversamenti di mount); fallisce se una componente è ambigua, non sicura o non supportata. Il nome del target finale è un'unica componente relativa verificata e non viene risolta mediante un controllo `exists()` seguito da rename. La pubblicazione della directory avviene tramite `renameat2` con `RENAME_NOREPLACE`, con descrittori delle directory genitrici già ancorati al dominio fidato, sorgente e destinazione sullo stesso filesystem, senza fallback a `rename()` ordinario. In assenza dei syscall e delle semantiche richieste, o in caso di conflitto o race, il runner resta `BLOCKED` e non pubblica. Protezioni sul root, permessi di staging e `fsync` restano requisiti distinti.
+
+**Accettazione statica futura:** l'API di pubblicazione è raggiungibile esclusivamente dal verificatore autorizzato; non compare alcun percorso di pubblicazione `check-then-rename`, path relativo non ancorato, fallback di sostituzione, né staging nel source-only.
+
+**Limite esplicito:** il controllo statico può verificare quali syscall e flag sono invocati nel sorgente, non l'efficacia concreta delle garanzie su kernel e filesystem.
+
+## 4. Cosa non va dichiarato
+
+- Non convertire `TECHNICAL_BYTE_EQUALITY: EQUAL` in `AUDIT_VALIDATED_REPEATABILITY: PASS`.
+- Non chiamare «pure» le funzioni con lettura del filesystem.
+- Non descrivere la rev. 02 come implementazione di F-01–F-03.
+- Non attribuire al semplice uso di `openat2`, di `renameat2` o di un namespace Linux un PASS di sicurezza runtime.
+- Non far derivare la chiusura di RP-01 da una qualunque futura ripetibilità del nuovo generatore.
+- Non trattare la presente revisione statica come approvazione o attestazione esterna.
+
+## 5. Stato invariato
+
+```text
+specification_review_result: SPECIFICATION_INADEQUATE
+scope: STATIC_ACCEPTANCE_CONTRACT_NOT_YET_FULLY_NORMATIVE
+S-01: SPECIFIED_NOT_IMPLEMENTED
+S-02: SPECIFIED_NOT_IMPLEMENTED; R-01 OPEN
+S-03: SPECIFIED_NOT_IMPLEMENTED; R-02 OPEN
+S-04: SPECIFIED_NOT_IMPLEMENTED
+S-05: SPECIFIED_NOT_IMPLEMENTED
+F-01: OPEN
+F-02: OPEN
+F-03: OPEN
+code_remediation_required: true
+DOC-01_to_DOC-03: RESOLVED_DOCUMENTALLY
+DOC-04: PENDING_EXTERNAL_ATTESTATION
+RP-01: OPEN
+f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data: false
+gate: CLOSED_PENDING_VALIDATION
+STATIC_SOURCE_ACCEPTANCE: NOT_EVALUATED_FUTURE_SOURCE
+FUTURE_OPERATIONAL_VALIDATION: NOT_RUN
+parser_generator_builder_execution: NOT_RUN
+five_audit_artifacts: NOT_GENERATED
+new_empirical_PASS: NONE
+existing_files_modified: false
+```
+
+**Decisione:** la prossima revisione ammissibile è un'appendice o rev. 02.1 **spec-only** che renda obbligatori R-01 e R-02. Il successivo giudizio `SPECIFICATION_ADEQUATE_AS_ACCEPTANCE_CONTRACT` potrà riguardare solo la specifica, non l'efficacia operativa del codice futuro.
