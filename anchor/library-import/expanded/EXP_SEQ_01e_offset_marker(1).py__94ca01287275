@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+"""Solo esplorazione in lettura: sequenza dopo <%> nel corpus IVTFF congelato.
+Non esegue parser RC1.4. Limiti: nessuna attribuzione linguistica causale.
+"""
+from pathlib import Path
+import csv,re
+from collections import defaultdict,Counter
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from EXP_SEQ_01a_gradiente_posizionale import read_loci, HEADER, P_TAGS
+BASE=Path(__file__).resolve().parent
+CORPUS=BASE/'ZL3b-n.txt'
+OUT=BASE/'EXP_SEQ_01e_output'
+FORMS={'qo':lambda w:w.startswith('qo'),'dy':lambda w:w.endswith('dy'),'aiin':lambda w:w.endswith('aiin')}
+
+def read_flags():
+    flags={}
+    for line in CORPUS.read_text(encoding='utf8').splitlines():
+        m=HEADER.match(line)
+        if not m or ',' not in m.group(1): continue
+        key,tag=m.group(1).split(',',1)
+        if tag in P_TAGS:
+            body=m.group(2)
+            flags[key]={'start':'<%>' in body,'end':'<$>' in body,'tag':tag,'line':body}
+    return flags
+
+def main():
+    flags=read_flags();records=read_loci(CORPUS)
+    blocks=[];active=None;last_folio=None; unanchored=0; unexpected=0
+    for loc,folio,lang,sect,hand,tokens in records:
+        if folio!=last_folio:
+            if active is not None: blocks.append(active)
+            active=None;last_folio=folio
+        fl=flags[loc]
+        if fl['start']:
+            if active is not None: blocks.append(active)
+            active=[]
+        if active is None:
+            unanchored+=1
+        else:
+            active.append(dict(locus=loc,folio=folio,currier=lang,section=sect,hand=hand,tokens=tokens,tag=fl['tag'],start=fl['start'],end=fl['end']))
+        if fl['end'] and active is not None:
+            blocks.append(active);active=None
+    if active:blocks.append(active)
+    rows=[]; lengths=Counter()
+    for block in blocks:
+        lengths[len(block)]+=1
+        for offset,item in enumerate(block):
+            if item['currier'] not in ('A','B') or len(item['tokens'])<3:continue
+            rr=dict(block_size=len(block),offset=offset,offset_class=('3+' if offset>=3 else str(offset)),n_token=len(item['tokens']),**{k:item[k] for k in ('locus','folio','currier','section','hand','tag')})
+            for name,fn in FORMS.items():
+                rr[f'{name}_1']=int(fn(item['tokens'][0]));rr[f'{name}_2']=int(fn(item['tokens'][1]));rr[f'{name}_last']=int(fn(item['tokens'][-1]))
+            rows.append(rr)
+    OUT.mkdir(exist_ok=True)
+    with (OUT/'EXP_SEQ_01e_loci_offsets.csv').open('w',newline='') as f:
+        writer=csv.DictWriter(f,fieldnames=list(rows[0]));writer.writeheader();writer.writerows(rows)
+    aggregates=[]
+    for condition,subset in [('all',rows),('len6_10',[r for r in rows if 6<=r['n_token']<=10]),('block4plus_len6_10',[r for r in rows if 6<=r['n_token']<=10 and r['block_size']>=4])]:
+        for currier in ('A','B'):
+            for offset in ('0','1','2','3+'):
+                grp=[r for r in subset if r['currier']==currier and r['offset_class']==offset]
+                if not grp:continue
+                z=dict(condition=condition,currier=currier,offset=offset,n=len(grp),n_folios=len(set(r['folio'] for r in grp)),mean_line_length=round(sum(r['n_token'] for r in grp)/len(grp),2))
+                for name in FORMS:
+                    a=sum(r[name+'_1'] for r in grp);b=sum(r[name+'_2'] for r in grp);c=sum(r[name+'_last'] for r in grp)
+                    z[name+'_first_pct']=round(100*a/len(grp),3);z[name+'_second_pct']=round(100*b/len(grp),3);z[name+'_last_pct']=round(100*c/len(grp),3)
+                    z[name+'_delta12_pp']=round(100*(a-b)/len(grp),3)
+                aggregates.append(z)
+    with (OUT/'EXP_SEQ_01e_aggregati.csv').open('w',newline='') as f:
+        writer=csv.DictWriter(f,fieldnames=list(aggregates[0]));writer.writeheader();writer.writerows(aggregates)
+    for form in FORMS:
+        fig,axs=plt.subplots(1,2,figsize=(10.8,4.2),sharey=True)
+        for ax,lang in zip(axs,('A','B')):
+            for condition,linestyle in [('len6_10','-'),('block4plus_len6_10','--')]:
+                sub=[r for r in aggregates if r['condition']==condition and r['currier']==lang]
+                ax.plot([r['offset'] for r in sub],[r[form+'_first_pct']-r[form+'_second_pct'] for r in sub],marker='o',linestyle=linestyle,label=condition)
+            ax.axhline(0,linestyle=':',linewidth=1)
+            ax.set_title('Currier '+lang)
+            ax.set_xlabel('Offset dal <%> (3+ raggruppato)')
+            ax.grid(alpha=.2)
+        axs[0].set_ylabel(f'{form}: prima − seconda (punti percentuali)')
+        axs[1].legend(fontsize=8)
+        fig.suptitle(f'EXP-SEQ-01e | {form} e distanza da <%>')
+        fig.tight_layout()
+        fig.savefig(OUT/f'EXP_SEQ_01e_{form}.png',dpi=160)
+        plt.close(fig)
+    print('blocks',len(blocks),'unanchored',unanchored,'row_count',len(rows),'block lengths',lengths.most_common(10))
+    for r in aggregates:
+        if r['condition'] in ('len6_10','block4plus_len6_10'):
+            print(r['condition'],r['currier'],r['offset'], 'n',r['n'],'qo_first',r['qo_first_pct'],'qo_second',r['qo_second_pct'],'delta',r['qo_delta12_pp'])
+
+if __name__=='__main__':main()
