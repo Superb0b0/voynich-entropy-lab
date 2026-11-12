@@ -1,0 +1,24 @@
+# RC1.4.2 | Registro locale di integrità della rev. 02.2
+
+- Data/ora del calcolo: `2026-11-10T11:17:33+00:00`
+- Algoritmo: `SHA-256`
+- Metodo: lettura diretta dei byte da file con Python `hashlib.sha256` (solo documenti e digest, **nessun modulo Voynich importato o eseguito**)
+- Natura: evidenza **locale** di identità dei byte; non è attestazione esterna, firma, approvazione del contenuto o PASS operativo.
+
+| File | Byte | SHA-256 |
+|---|---:|---|
+| `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_2.md` | 43792 | `c3f57f4cacd8b17c2d7a452020db3479cd7518415e02cf194adbd6634cfde58e` |
+| `RC1_4_2_APPENDICE_NORMATIVA_A01_A02_REV_02_2.md` | 12932 | `1406fbb7364215ebe78efbd9cb1e03b32f43cf761eed269b11170cbf4ac64467` |
+| `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_1.md` | 30496 | `4271b2351ddc8fac147fca120220b932dabe2aafaa9b9ae6964cad81cbf0b6a3` |
+| `RC1_4_2_STATIC_ACCEPTANCE_REVIEW_REV_02_1_01.md` | 8677 | `cd3c74f3160edc936497503e6a0a82131d0de0770f28f7470e602183f691a8e6` |
+| `rc1_4_2_generator_clean_DRAFT_02.py` | 41856 | `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325` |
+
+## Perimetro e risultato
+
+- L’integrazione della specifica è limitata ad **A-01/A-02**, con richiamo e sincronizzazioni in R-01/S-02 e nel registro finale.
+- R-02, S-01, S-04 e S-05 non sono modificati nel merito.
+- Tutte le versioni precedenti restano immutate.
+- Stato della nuova specifica: `PROPOSED_STATIC_ACCEPTANCE_CONTRACT_PENDING_REVIEW`.
+- A-01 e A-02: `SPECIFIED_NOT_IMPLEMENTED`.
+- RP-01: `OPEN`; gate: `CLOSED_PENDING_VALIDATION`; DOC-04: `PENDING_EXTERNAL_ATTESTATION`.
+- Futuro sorgente: `NOT_EVALUATED_FUTURE_SOURCE`; generatore/parser/builder: `NOT_RUN`; nuovi `PASS` empirici: `NONE`.
