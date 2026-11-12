@@ -1,0 +1,218 @@
+# RC1.4.2 V7.1 | DRAFT 03_CODE_IMPLEMENTATION_DESIGN_SPEC
+
+**Tipo:** progettazione implementativa dettagliata **spec-only**, non codice Python, non builder, non autorizzazione.  
+**Data:** 10 novembre 2026.  
+**Stato:** `IMPLEMENTATION_DESIGN_PROPOSED_PENDING_STATIC_REVIEW`.  
+**Base prescrittiva:** `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_2.md` (`SPECIFICATION_ADEQUATE_AS_ACCEPTANCE_CONTRACT`, esclusivamente sul piano del documento).  
+**Base progettuale:** `RC1_4_2_DRAFT_03_CODE_DESIGN_SPEC.md` (`DESIGN_SPEC_ADEQUATE`, revisione statica **interna**, non attestazione esterna).  
+**Oggetto di correzione futuro:** `rc1_4_2_generator_clean_DRAFT_02.py`, 41.856 byte, SHA-256 `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325`.  
+**Regola assoluta:** nessun componente della pipeline è autorizzato all'import o all'esecuzione mediante questo documento. Gli input, i parser, il mapper, DRAFT 02, rev. 02/02.1/02.2 e tutti i verbali restano immutati.
+
+## 0. Decisioni e criteri di arresto
+
+Questo documento trasforma il design accettato in **contratti di interfaccia, ordine delle operazioni, schema di evidenza, mappa di funzioni e matrice di revisione del futuro sorgente**. Non materializza una implementazione `DRAFT 03_CODE`, non esegue i parser e non produce i cinque file di validazione. Tutte le eventuali azioni runtime qui descritte sono requisiti **futuri e condizionati**, non azioni eseguite.
+
+- **F-01:** il processo importabile non può offrire **API ufficiali qualificate** che producano cinque artefatti, un report con `PASS`, una attestazione o una pubblicazione senza passare dal supervisore esterno autorizzato. Le trasformazioni generiche di byte restano possibili; non sono attestazioni.
+- **F-02:** il futuro assessment deve dipendere da byte realmente acquisiti dal supervisore e consumati tramite snapshot confinato; non da `dict`, `hashes` o status scritti dal chiamante.
+- **F-03:** nessun booleano di caller vale come autorizzazione. Solo il verificatore esterno riconosce credenziali, scope e nonce; la destinazione è ancorata e il publish non sovrascrive.
+- **Fail-closed:** se anche una sola precondizione non è verificabile => `BLOCKED`: non importare parser, non generare o qualificare gli artefatti, non pubblicare, non attribuire alcun nuovo `PASS`.
+- **Vincolo contrattuale non negoziabile:** la configurazione V7.1 congelata mantiene `validation_artifact_generation_allowed=false` e il gate `CLOSED_PENDING_VALIDATION`. Una futura eccezione audit-only dovrà essere approvata e comprovata **separatamente**, senza cambiare retroattivamente il contenuto della configurazione. In assenza di tale atto, la generazione resta vietata. Nessuna eccezione potrebbe autorizzare builder analitici, PCA, clustering, conditional coupling o promozione profili.
+
+**Distinzione delle evidenze:** `SPECIFICATION_ADEQUATE_AS_ACCEPTANCE_CONTRACT` e `DESIGN_SPEC_ADEQUATE` ≠ `STATIC_SOURCE_ACCEPTANCE: PASS` ≠ `FUTURE_OPERATIONAL_VALIDATION: PASS` ≠ provenienza storica RP-01.
+
+## 1. Pacchetti previsti e dipendenze vietate
+
+Questi nomi sono **componenti da progettare**, non moduli già creati:
+
+| Componente | Dominio di fiducia e responsabilità | API concettuali in ingresso/uscita | Dipendenze proibite |
+|---|---|---|---|
+| `diagnostics_core` | Non fidato; calcoli puri e diagnostica | `digest_bytes(raw) -> DigestObservation`; `compare_raw_bytes(a,b) -> EQUAL\|DIFFERENT`; normalizzazione/canonicalizzazione generica | Nessuna emissione di `PASS` audit; no import di parser, filesystem di output, firme o `VerifiedAuthorization` |
+| `request_frontend` | Non fidato; raccoglie richieste | `request_validation(request) -> RequestId` | Non produce sessioni autorizzate; `RequestId` **non** è firma, capability, token bearer o permesso |
+| `trusted_authorization_verifier` | Servizio fuori processo e fuori controllo del caller | `authorize(envelope, trusted_policy) -> SessionRef\|BLOCKED` | Vietati booleani `signed_addendum_verified_externally`, policy fornite dal caller o `VerifiedAuthorization` costruiti da dict |
+| `trusted_input_acquirer` | Processo supervisore con handle di input fidati | `acquire(session, pinned_manifest) -> SnapshotRef\|BLOCKED` | Nessuna accettazione di hash dichiarati dal caller; nessuna seconda rilettura host dentro parser |
+| `isolated_parser_runner` | Processo non privilegiato, radice filesystem confinata | `parse(session_ref, snapshot_ref, runtime_ref) -> UntrustedParserMessage\|BLOCKED` | Nessuna apertura di percorsi originali host, nessun publisher, nessun `PASS` attestato |
+| `trusted_evidence_validator` | Supervisore; separa schema e prova di integrità | `validate_message(session, message, snapshot) -> VerifiedEvidenceRef\|BLOCKED` | Non accetta un `EvidenceBundle` grezzo o un `dict` del figlio come prova sufficiente |
+| `trusted_assessment_engine` | Supervisore; produce eventuali assessment individuali | `assess_control(control_id, VerifiedEvidenceRef, session) -> ControlAssessment` | Divieto di 15 `PASS` precostituiti; no stato storico RP-01 derivato dal nuovo codice |
+| `trusted_qualified_serializer` | Supervisore; formatta soltanto se ammesso | `serialize(session, assessments) -> QualifiedFiveBytes\|BLOCKED` | Non esportabile al caller come utilità per costruire bundle qualificati da dict |
+| `trusted_publisher` | Servizio con root di output fidata e policy autonoma | `publish(session, QualifiedFiveBytes, trusted_destination) -> PublicationResult\|BLOCKED` | No `rename()` ordinario, `Path.exists()` come garanzia di race, sovrascrittura o output scelto arbitrariamente dal caller |
+
+**L'oggetto `SessionRef` è un identificatore opaco lato servizio** riferito a stato verificato custodito nel suo dominio. Non è un oggetto Python autenticabile solo perché ha un tipo particolare. Nessun token o `RequestId` inoltrato dal chiamante può sostituire la verifica di firma, policy e scope. Un servizio eventualmente raggiungibile via IPC non deve esporre bypass che eludano queste precondizioni.
+
+## 2. Contratto della richiesta e catena di fiducia (D-02 e D-04)
+
+**Richiesta non fidata:** `operation_kind`, identificatore descrittivo `RequestId`, destinazione proposta, riferimenti proposti ai file. Ogni valore del caller è trattato come dato, mai come autorizzazione.
+
+**Busta di autorizzazione esterna da verificare realmente nel dominio fidato:** versione/schema, issuer approvato, audience del supervisore, `key_id` di una radice attendibile, firma sull'intero contenuto canonico, ID autorizzazione, `session_nonce` unico, emissione/scadenza UTC, scope esatto `validation_artifacts_only`, digest del contratto/config e dei sette file pinned, versione/digest del futuro sorgente, output root ammessa, profilo Linux, policy revision, limiti di risorsa e dichiarazione che gate e RP-01 rimangono invariati. La policy identifica gli algoritmi consentiti, i campi obbligatori e l'esatta semantica di canonizzazione; nessun fallback ad algoritmo o chiave scelta dal caller.
+
+**Radice di fiducia, gestione delle chiavi e revoca:** dovranno essere specificati con identità concrete **dall'amministratore del deployment** in un distinto record approvato, comprensivo di issuer, key IDs/fingerprint, fonte della root of trust non sovrascrivibile dal caller, autorizzazioni per rotazione/revoca, freshness, anti-replay (stato di nonce server-side e garanzia di unicità), incident response, durata e proprietà del servizio. Oggi: `PENDING_DEPLOYMENT_APPROVAL`, `NOT_ISSUED`; non sono state generate credenziali e non esiste autorizzazione operativa.
+
+**Sequenza normativa:** richiesta (`RequestId` informativo) → verifica esterna di firma e policy → controllo gate/addendum audit-only distinto → registrazione dell'uso del nonce nel dominio fidato → creazione di `SessionRef` interna → acquisizione degli input. La menzione di un futuro anti-replay store è un requisito architetturale e **non** costituisce la creazione odierna di un registro di audit. Qualsiasi evento non soddisfatto => `BLOCKED`.
+
+## 3. Manifest pinned concreto (D-01): cinque input e due parser
+
+I digest sotto sono riferimenti identificativi congelati. **«Presente» indica la disponibilità nell'area locale ispezionata per redigere questa specifica, non una verifica durante una sessione di generazione autorizzata.** L'associazione input→parser nel futuro deployment dovrà essere verificata sui byte realmente acquisiti.
+
+| Ruolo / file canonico | Byte attesi | SHA-256 pinned | Situazione dei byte nell'area locale ispezionata |
+|---|---:|---|---|
+| Config: `RC1_4_2_CONFIG_v7_1.json` | 28.255 | `abed55bd3d44be25e751cafa0a2f3279f857175232ec8d884610e810e850e3f0` | Presente; byte/digest ricalcolati localmente |
+| Profili: `voynich_profiles.json` | 4.758.062 | `7ec540723dffa59a06e6c4f4f971bdf2d3e69bf0e5760fae43300ab4e73b7546` | Presente; byte/digest ricalcolati localmente |
+| Yale: `corpus_metadata.csv` | 38.578 | `19b3e0885a467df849c352c650eeee864e987da3b2eaf295322345cf4e798625` | Non presente nella cartella locale esaminata; valore pinned da V7.1 ed evidenze documentali precedenti, non ricalcolato qui |
+| Crosswalk: `folio_ivtff_crosswalk.csv` | 13.269 | `769fcd2c94f93c232cc4828cd98e9ff16ff42d50baf051886d0dada00b4b3041` | Presente; byte/digest ricalcolati localmente |
+| Corpus: `ZL3b-n.txt` | 411.671 | `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc` | Non presente nella cartella locale esaminata; valore pinned da DRAFT 02, non ricalcolato qui |
+| Parser: `ivtff_parser_rc1_4.py` | 14.100 | `075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d` | Presente; byte/digest ricalcolati localmente; **non importato** |
+| Mapper OA: `ivtff_parser_rc1_4_offset_aware.py` | 12.095 | `ccce4b8514bbd60b9be5d0122ac2cb40353827d43b12d9709782550b60646565` | Presente; byte/digest ricalcolati localmente; **non importato** |
+
+**Controllo ulteriore:** quando applicabile ai byte originali di `corpus_metadata.csv` e `voynich_profiles.json`, confrontare anche i Git blob pinned rispettivamente `eb05cb69d4847f6acb34a9d095e05c38369010d2` e `560779cf06e15a167799d210f6a0d4ecf1b8c8e1`, senza considerarli sostituti dello SHA-256 del file. Il file config congelato conserva la sua nota storica `raw_sha256_verified=false` per metadata; non va alterato per adeguarlo a evidenze raccolte successivamente. La riconciliazione fra le due epoche probatorie avviene in un documento separato, non in un rewrite dei dati storici.
+
+**Manifest del runtime ancora da produrre, non inventato:** per ciascun binario, loader, libreria dinamica, modulo Python, estensione, file di configurazione, script/nuovo sorgente e risorsa necessaria: `relative_path`, tipo, finalità, dimensioni, SHA-256 dei byte, versione, origine attendibile, permessi/owner e path sotto nuova root. Gli hash runtime saranno riempiti soltanto dopo acquisizione e approvazione del deployment: `PENDING_RUNTIME_INVENTORY`. Nessuna wildcard «stdlib», nessun search path host, nessun modulo non elencato. In mancanza di uno solo di questi dati => `BLOCKED`.
+
+## 4. Snapshot, parser congelati e prova dei byte (F-02)
+
+**Sorgenti:** il supervisore apre handle solo da `dirfd` radicati in directory attendibili, tramite `openat2` con `RESOLVE_BENEATH | RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS` e `RESOLVE_NO_XDEV` ove imposto. Gli handle e la gerarchia trusted non derivano da percorsi assoluti del caller. Ogni file è letto dal supervisore una sola volta per acquisizione; sul buffer immutabile vengono calcolati digest e lunghezza e confrontati con il manifest pinned.
+
+**Snapshot:** copia privata dai **medesimi buffer** in una root temporanea sotto esclusivo controllo del supervisore, con nomi enumerati dal manifest. Il supervisore rilegge la copia completa **prima** di esporla e ne confronta byte/size/digest con i buffer di partenza; collisione, mismatch, link, hard link non approvato, file mancante o extra => `BLOCKED`. Il backing store resta protetto dal caller per l'intera sessione; la fattibilità di tale protezione è da validare in ambiente target, non dimostrata in questo documento.
+
+**Percorsi interni esemplificati dalla gerarchia del manifest, non paths host autorizzati:** `inputs/RC1_4_2_CONFIG_v7_1.json`, `inputs/ZL3b-n.txt`, `inputs/voynich_profiles.json`, `inputs/corpus_metadata.csv`, `inputs/folio_ivtff_crosswalk.csv`, `code/ivtff_parser_rc1_4.py`, `code/ivtff_parser_rc1_4_offset_aware.py`; ogni corrispondenza effettiva sarà definita nell'allowlist firmata. Non è autorizzato importare i file presenti ora.
+
+**Import dei parser:** esclusivamente dopo completamento dei controlli e del confinamento descritto al §5; `parse_corpus` e `parse_offset_aware` ricevono percorsi interni alla root. La struttura delle chiamate segue l'autorità lessicale e OA congelata; nessun nuovo parser alternativo è ammesso. Il figlio non può aprire nuovamente il file host originario. La verifica statica dimostra soltanto l'esistenza del tragitto di snapshot e delle barriere del processo; che i `read()` reali ricadano nello stesso perimetro sarà verificato solo in una futura sessione autorizzata.
+
+**Evidenza per ogni input:** `session_ref`, `canonical_role`, `snapshot_path_id`, `observed_size`, `observed_sha256`, `pinned_size`, `pinned_sha256`, `acquisition_check`, `snapshot_check` e `parser_consumption_basis` descritta; non una semplice mappa `hashes` del chiamante. `parser_consumption_basis` deve distinguere prova della costruzione/risoluzione statica da osservazione runtime: **mai** asserire consumo effettivo dalla sola identità pre/post hash senza valutare il modello di minaccia. Ogni evidenza manca di valore qualificante se la sessione fidata non può verificarla.
+
+## 5. Piano Linux implementativo (A-01, A-02, B-01, B-02, D-05)
+
+**Target scelto per il progetto:** Linux con supporto alle primitive nominate. Nessun fallback su altri OS, su `chroot` isolato, su un semplice mount RO o su `rename()` senza garanzia no-replace. **B-01:** supervisore di setup amministrato e privilegiato nel dominio del target, non un user namespace scelto dal chiamante; user namespace fuori perimetro e richiede revisione distinta. Questa è una scelta di progetto in attesa di approvazione: `DEPLOYMENT_APPROVAL_PENDING`.
+
+**Sequenza prevista, da trasformare in call graph leggibile nel futuro sorgente:**
+
+1. Verificatore esterno autentica envelope, issuer e policy, verifica audience/scope, vincoli V7.1, anti-replay e destinatario. Prima di tale verifica nessun parser, bundle o publishing.
+2. Acquirer apre su `dirfd` fidati, acquisisce buffer, controlla SHA/byte e Git blob ove previsto; prepara snapshot privata dai buffer e ne verifica integralmente la copia.
+3. Il supervisore verifica manifest runtime firmato a **elenco chiuso**, elimina search path/variabili ambiente del caller e predispone IPC con endpoint e descrittori nominati.
+4. Nel processo di setup controllato crea il **mount namespace privato** (`unshare(CLONE_NEWNS)` o equivalente approvato), imposta propagazione privata, costruisce nuova root con snapshot e dipendenze ammesse, espone solo mount read-only approvati. Nessun `/proc`, `/sys`, mount host né `/dev` generico; device allowlist `[]`.
+5. Esegue `pivot_root` verso la nuova root, sposta `cwd` su `/`, stacca la vecchia root con `umount2(put_old, MNT_DETACH)`, elimina il riferimento `put_old` e verifica che la root host non sia raggiungibile tramite mount, fd, `cwd`, symlink o import path.
+6. Sanifica i descrittori: predispone soltanto canali IPC/stdio espressamente nominati; chiude tutti gli altri o li rende non ereditabili; controlla che non rimangano handle verso host, snapshot mutabile o root precedente. Il controllo **non** può dipendere dall'accesso a `/proc` dopo averlo escluso; va progettato con primitive/contatori di fd attendibili.
+7. **Ordine privilegi D-05, fissato per il futuro sorgente:** terminato il setup, il processo effettua (a) inventario completo delle capability note al kernel e dei set iniziali; (b) con i privilegi ancora disponibili, `PR_CAPBSET_DROP` su **ogni** capability del bounding set e `PR_CAP_AMBIENT_CLEAR_ALL`; (c) `setgroups([])`; (d) `setresgid(gid,gid,gid)` verso GID non privilegiato; (e) `setresuid(uid,uid,uid)` verso UID non privilegiato, senza `PR_SET_KEEPCAPS` e senza meccanismi di recupero; (f) `capset` per azzerare esplicitamente permitted/effective/inheritable residui; (g) `prctl(PR_SET_NO_NEW_PRIVS,1)` e (h) `prctl(PR_SET_DUMPABLE,0)` **dopo** le transizioni che possono ripristinare il dumpable e prima dell'import/exec del parser; (i) controlli post-drop di UID/GID/gruppi, `CapEff/CapPrm/CapInh/CapAmb/CapBnd` tutti vuoti, `no_new_privs=1`, `dumpable=0`. Ogni controllo usa meccanismi kernel esplicitamente identificati sul futuro target, non un dict del caller. Se una transizione non è supportata nell'ordine prescritto, oppure non è possibile enumerare/verificare tutti i set, l'esito è `BLOCKED` e serve revisione documentata del design prima di procedere; **nessun riordino o permesso in più tacito**.
+8. Verifica post-drop prima dell'import: UID/GID reali/effettivi/salvati e gruppi supplementari contro la policy; set `CapEff`, `CapPrm`, `CapInh`, `CapAmb`, `CapBnd` **tutti vuoti**; `no_new_privs=1`; `dumpable=0`; nessuna credenziale privilegiata recuperabile. Le modalità di query dei capability set, incluso bounding, devono essere identificate e approvate su target; niente inferenze da sole variabili del caller.
+9. **Solo ora**, nel processo confinato, importa i parser immutati e avvia le funzioni ammesse su snapshot path. Nessun codice originale della pipeline è stato importato oggi; questo è il percorso futuro proposto.
+10. Il supervisore valida output IPC e assessments separatamente, ed eventualmente soltanto dopo specifica autorizzazione audit-only produce e pubblica i cinque artefatti in un percorso diverso dagli input congelati.
+
+**Chiarimento indispensabile:** una namespace root read-only e `pivot_root` non costituiscono garanzia assoluta contro un amministratore ostile del backing store. Il runtime dovrà attestare modello di minaccia, semantica kernel/filesystem, fd, privilegi e risultato effettivo. Nulla di questo è `PASS` adesso.
+
+**B-02 dispositivo:** `allowed_device_nodes=[]`; assenti per scelta normativa `/dev/null`, `/dev/urandom` e ogni nodo device, salvo futura revisione formale. Eventuali fonti `getrandom(2)` non sono device nodes e non sono una autorizzazione a usare altri canali; se il runtime ne dipende deve essere valutato separatamente. Non si usa SHA-256 dell'inode come identità di un device: eventuale deroga richiederebbe tipo, major/minor, owner, mode, metodo di provisioning e policy approvata. Se il runtime non funziona senza device => `BLOCKED`, non allentamento tacito della specifica.
+
+## 6. Schema IPC e `EvidenceBundle` (confine figlio non fidato → supervisore)
+
+**Contratto futuro di trasporto:** un canale IPC locale creato dal supervisore, endpoint non ottenibile tramite path caller, messaggi con versione schema, framing di lunghezza massima fissata da policy, serializzazione deterministica, vincoli di tipo/campo, limite di record e timeout. Il supervisore dovrà verificare l'identità del processo figlio e il suo legame alla sessione (handle del child, peer credentials/altro meccanismo kernel approvato); eventuali MAC/firme messaggio devono usare chiavi non disponibili al parser e non possono essere auto-attestati dal figlio. **Il figlio è sempre una sorgente di osservazioni, non una radice di fiducia.**
+
+Schema logico proposto, **non JSON già generato**:
+
+| Tipo / campo | Provenienza corretta | Verifica obbligatoria nel supervisore |
+|---|---|---|
+| `MessageHeader(schema_version, message_type, session_ref, sequence, child_identity, payload_length)` | Header trasporto gestito dal supervisore; il figlio può solo proporre campi compatibili | Versione esatta, session binding, unicità progressivo, dimensione massima, peer process atteso; reject mismatch/replay |
+| `InputBinding(canonical_role, source_sha256, snapshot_sha256, byte_length, snapshot_path_id)` | I valori fiduciari derivano dall'acquirer, non dal figlio | Confronto con record interni e con manifest pinned; zero trust a digest ripetuti dal parser |
+| `ParserIdentity(parser_role, pinned_sha256, invocation_id, parser_version)` | Digest pin e invocation dichiarati dal runner/supervisore | Confronto con mapping del runner; non fidarsi di nome o versione dichiarati dal child |
+| `LexicalObservation(canonical_loci, token_count, lexical_equivalence)` | Dati osservati dal parser congelato | Schema/limiti e controlli di coerenza approvati; non equivale da solo a `PASS` di audit |
+| `TokenProvenance(source_byte_segments[], source_line, ordered_offsets, token_identity, source_sha256)` | Output parser OA, incluse occorrenze multi-segmento | Range entro byte del corpus snapshot, ordine e disgiunzione, nessuna ricostruzione di intervallo continuo fittizio; controlli indipendenti previsti dal contratto |
+| `ControlObservation(control_id, observed_value, evidence_refs[], diagnostic_status)` | Figlio propone osservazioni, non verdict | ID e schema da allowlist; ogni riferimento legato a sessione e input; `diagnostic_status` non è `PASS` formale |
+| `RunnerExit(invocation_id, exit_code, stderr_digest, output_digest, completion_marker)` | Supervisore osserva exit code, log e flusso IPC | Confronto ai dati realmente raccolti dal supervisore; la mera dichiarazione del figlio non fa fede |
+
+**Invarianti IPC:** il parser non può stabilire `VerifiedEvidenceRef`, `ControlAssessmentSet`, `PASS` o `PROVENANCE_ESTABLISHED`. Il supervisore valida la ricezione integrale, lo schema, le lunghezze, le identità, gli ancoraggi ai buffer, la completezza di ogni controllo, l'ordine degli eventi e l'assenza di collisioni/duplicati non previsti. Chiave di sessione, issuer, policy o digest originali non diventano veri perché il child li ripete. La prova dell'effettivo comportamento del parser richiede verifiche autorizzate non eseguite oggi.
+
+**Transizione di stato obbligatoria:** `UntrustedParserMessage` → validazioni di forma/autenticità del canale e dei fatti controllabili dal supervisore → `VerifiedEvidenceRef` server-side per gli specifici fatti verificati → `ControlAssessment(control_id,status,evidence_refs)` con status `PASS | FAIL | NOT_RUN | BLOCKED` *solo nelle modalità che il contratto di output futuro autorizzerà*. Il report congelato V7.1 fissa i valori `PASS/FAIL/NOT_RUN`; la classificazione `BLOCKED` è **uno stato di workflow esterno**, non va inserita nel JSON congelato alterandone lo schema. Il caso `BLOCKED` impedisce la produzione del report qualificato.
+
+## 7. Mappa di conversione del sorgente DRAFT 02 e call graph obbligatorio
+
+Righe riferite **esclusivamente** a `rc1_4_2_generator_clean_DRAFT_02.py` con SHA indicato in testata; **nessuna modifica eseguita**.
+
+| Funzione DRAFT 02 (righe) | Problema / ruolo | Conversione concreta futura | Accettazione statica sul nuovo sorgente |
+|---|---|---|---|
+| `require`, `sha256` (70–76); `norm`, `parse_csv`, `canonical_json`, `canonical_csv` (89–133) | Invarianti, hash, pure transforms; attenzione alle serializzazioni | Separare in `diagnostics_core`; `canonical_*` resta generico, non qualificante | Nessuna dipendenza da stato fidato, I/O, `PASS`, bundle qualificato o publisher |
+| `checked_bytes` (79–86) | Lettura path verificata una volta, ma con path caller | Eliminare dal percorso qualificante; acquisizione su handle ancorati in `trusted_input_acquirer` | Digest proviene da **unico buffer acquisito**, non da path già verificato e riletto altrove |
+| `verify_contract` (136–159) | Verifica invarianti V7.1; non autorizza generazione | Mantenere controllo dati su snapshot solo nel supervisore, con registro di policy separato | Gate e flag congelati non sovrascritti, nessuna autorizzazione implicita dalla verifica invarianti |
+| `verify_input_integrity` (162–183) | Restituisce dict `raw/hashes/config/root` impersonabile | Suddividere in acquisizione e `SnapshotRef` server-side non costruibile dal caller | Nessun public entrypoint accetta dict come attestazione; config e file provengono da buffer pinned |
+| `validate_profiles`, `validate_yale_metadata` (186–255) | Controlli su strutture; non sono prova della sorgente | Mantenere computazione pura sotto supervisore e con raw originati da snapshot | Nessuna qualificazione di `PASS` senza `VerifiedEvidenceRef` |
+| `_load_verified_module` (258–266) | `exec_module()` dopo nuova lettura path, rischio pre-import | Rimuovere dal percorso ufficiale; import per nome/path interno runner isolato dopo drop completo | Nessun call graph importabile fuori da `isolated_parser_runner`; nessun import prima dei controlli |
+| `acquire_frozen_lexical_and_provenance` (269–289) | Parser invocati da path host | Convertire nel runner su snapshot, con IPC schema e senza accreditarne i dict | Traccia statica degli argomenti `parse_corpus` e `parse_offset_aware` da root confinata |
+| `_line_ranges`, `_as_int`, `_crosswalk_rows` (292–336) | Utility pure per osservazioni | Mantenere senza I/O e claim di audit | Nessuna emissione qualificata |
+| `validate_token_occurrences` (339–488) | Segmenti discontinui e identità per byte | Mantenere in controllo dati sul corpus snapshot, con `TokenProvenance` verificato | Nessuna fusione dei 338 token multisegmento in span continui artificiali; nessun claim se mapping non provato |
+| `reconcile_and_classify`, `assert_counts` (489–600) | Riconciliazione e soglia, f085v | Mantenere con upstream verificato; preservare partizione e eccezioni | Nessun match manuale f085v, nessuna promozione, distinzione primaria/sensibilità |
+| `build_validation_report` (602–629) | **F-02:** 15 `PASS` fissi da dict e sezioni precostituite | Sostituire con engine di assessment **per controllo** che non accetta hash o PASS caller | Ogni `PASS` ha controllo/`EvidenceRef`/sessione; assenza = `NOT_RUN` o blocco; no PASS di default |
+| `serialize_validation_artifacts` (632–660) | **F-01:** cinque output qualificati callable dopo import | Rimuovere API qualificante dal modulo importabile; servizio serializzatore solo nel dominio fidato | Non raggiungibile tramite frontend/diagnostica senza `SessionRef` e assessment verificati |
+| `compare_generation_bytes` (663–681) | **S-01:** `technical_repeatability: PASS` da byte caller | Utility pura `EQUAL`/`DIFFERENT`, senza stato audit | Non contiene più conversione automatica a `AUDIT_VALIDATED_REPEATABILITY` |
+| `prepare_audit_from_verified_inputs` (684–711) | **F-01/F-02:** hub di bypass caller | Eliminare come entrypoint ufficiale; introdurre un'unica orchestrazione server-side con capability reale | Nessuna API importabile genera report/artefatti qualificati da dict `inputs` arbitrario |
+| `build_external_execution_record` (714–726) | Dati run self-reported, non provenienza storica | Registro di osservazioni future acquisito dall'osservatore esterno, mai attestazione RP-01 | Comandi, tempi, exit code e log vengono dalla sessione osservata; RP-01 resta `OPEN` |
+| `sha256sums_external` (729–733) | Digest di bundle auto-presentato | Utilità hash generica ammessa; **sidecar audit** soltanto dal supervisore autorizzato | Nessun SHA256SUMS qualificato creato da caller per il percorso supportato |
+| `compare_two_read_only_directories` (737–753) | `READ_ONLY_IO`, attualmente propaga PASS | Diagnostica I/O in sola lettura con `EQUAL/DIFFERENT`, no claim di indipendenza | Non convertibile in `AUDIT_VALIDATED_REPEATABILITY: PASS` |
+| `stage_new_audit_bundle` (756–797) | **F-03:** bool del caller e `staging.rename` sostitutivo | Eliminare; `trusted_publisher` autonomo verifica policy/scope e usa syscalls prescritte | Nessun `bool` caller abilita publisher; `openat2` + `renameat2(RENAME_NOREPLACE)` su dirfd fidati |
+| `__main__` (800–801) | Blocco CLI insufficiente dopo import | Conservare blocco CLI come protezione aggiuntiva; confine vero è servizio distinto | Nessun percorso di generazione dopo import da simboli pubblici del nuovo nucleo diagnostico |
+
+**Call graph lecito futuro (concettuale):** frontend request → verificatore esterno → acquirer fidato → preparazione snapshot e root → runner parser confinato → IPC non fidato → evidence validator fidato → assessments individuali → *se e solo se esiste un'autorizzazione audit-only appropriata* serializzatore qualificato → publisher no-replace. Ogni nodo che emette qualifiche o artefatti è nel dominio fidato, non raggiungibile direttamente dal frontend.
+
+**Call graph proibiti:** `frontend/dict/bool/RequestId → report(PASS)`; `frontend/dict → five artifacts`; `caller path → parser import`; `comparison(EQUAL) → audit PASS`; `child EvidenceBundle dict → VerifiedEvidenceRef` senza controllo; `authorization boolean → staging`; `staging.exists() → rename()`; `RP-01 OPEN → PROVENANCE_ESTABLISHED` per semplice ripetibilità.
+
+## 8. Pubblicazione no-replace e gestione fallimenti (F-03)
+
+È **progettata soltanto** la produzione eventuale dei cinque nomi esatti fissati in `config["outputs"]`: `RC1_4_2_candidate_register.csv`, `RC1_4_2_exclusion_register.csv`, `RC1_4_2_unresolved_register.csv`, `RC1_4_2_validation_report.json`, `RC1_4_2_MANIFEST.json`. Nessuna scrittura avviene ora. La serializzazione deve rispettare encoding/sort/field schema V7.1, tenere il digest del manifest **fuori** dal manifest per evitare il circolo e non confondere hash locali con attestazioni esterne. L'eventuale sidecar SHA256SUMS non è un sesto artefatto di validazione né prova di RP-01.
+
+Destinazione futura: root output fornita da policy autenticata, non dal caller; `dirfd` della root verificata; `openat2(..., RESOLVE_BENEATH|RESOLVE_NO_SYMLINKS|RESOLVE_NO_MAGICLINKS)` e policy `RESOLVE_NO_XDEV`; staging privato su stesso filesystem; file intermedi creati senza sostituzione e identificati nel manifest; `renameat2(RENAME_NOREPLACE)` per directory finale, singolo componente validato. No `Path.exists()` per «garantire» non-sovrascrittura, no check-then-rename, no `rename()` alternativo, no symlink/cross-device fallback.
+
+In caso di collisione, primitiva mancante o non supportata, errore di fsync, policy o addendum non valido, digest diverso, IPC ambiguo, report incompleto, parser crash, race, mancanza autorizzazione o riuso nonce => `BLOCKED`; nessuna pubblicazione. Staging eventualmente preparato resta non pubblicabile e va eliminato/quarantinato **solo nel dominio fidato** secondo policy; tale fase, quando esisterà, non diventa prova di successo per il solo fatto di aver creato file temporanei. La durabilità e semantica reale delle syscall rimangono da valutare runtime.
+
+## 9. Matrice T-01–T-10: accettazione statica futura, mai PASS odierno
+
+| ID | Requisito sul codice futuro / evidenza da ispezionare | Esito oggi |
+|---|---|---|
+| T-01 / F-01 | Inventario dei moduli importabili, simboli, entrypoint e call graph: nessun PASS/bundle qualificato raggiungibile da caller senza supervisore | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-02 / F-02 | Input ancorato → buffer → SHA/size → snapshot → confinement → parser paths → session-bound `VerifiedEvidenceRef`, senza dict caller | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-03 / F-03 | Signature/issuer/revocation/nonce/scope in trusted verifier; output root da policy; `openat2`, `dirfd`, `renameat2(RENAME_NOREPLACE)`; fail-closed | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-04 / S-01 | Solo `EQUAL/DIFFERENT` nelle utility; divieto di trasformare `TECHNICAL_BYTE_EQUALITY` in `AUDIT_VALIDATED_REPEATABILITY: PASS` | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-05 / A-01 | Namespace privato, manifest chiuso, root separata, `pivot_root`, detach old root, fd sanitizzati, assenza `/proc` `/sys` `/dev` non approvati | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-06 / A-02 + D-05 | Ordine di gruppi, bounding/ambient/eff/prm/inh, setresgid/uid, `no_new_privs`, anti-tracing e checks post-drop prima import | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-07 / B-01 + D-02 | Processo setup separato e policy autenticata, issuer e trust anchor reali; niente user-namespace fallback; deployment approval richiesto | `DESIGN_CHOICE_RECORDED; PENDING_DEPLOYMENT_APPROVAL` |
+| T-08 / B-02 | `allowed_device_nodes=[]`; nessun `/dev` generico, nessuna eccezione silenziosa; eventuale device => BLOCKED e policy revision | `DESIGN_CHOICE_RECORDED; RUNTIME_FEASIBILITY_NOT_RUN` |
+| T-09 / RP-01 | Separazione reciproca provenienza storica vs validazione nuovo generatore; RP-01 invariato | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-10 / invarianza | Digest effettivi e confronto della nuova versione con DRAFT 02, parser, config, input, mapper e revisioni precedenti congelate | `NOT_EVALUATED_FUTURE_SOURCE` |
+
+**D-01…D-05:** D-01 manifest con hash concreti noti e risorse runtime pendenti; D-02 trust chain `PENDING_DEPLOYMENT_APPROVAL`; D-03 call graph vietati e revisione dei cinque output qualificati; D-04 `RequestId` informativo; D-05 ordine dei privilegi con verifica sul futuro source. **IPC aggiuntivo obbligatorio:** confermare schema, identità del child, session binding, integrità del canale, limiti e controlli di coerenza, senza trust automatico in dati child.
+
+La futura revisione `STATIC_SOURCE_ACCEPTANCE` potrà verificare presenza/assenza di percorsi e primitive nel **sorgente effettivo**, senza pretendere di aver provato che le syscall funzionino su kernel e filesystem destinazione. `FUTURE_OPERATIONAL_VALIDATION` resta un'attività separata che richiederà autorizzazione e ambiente controllato.
+
+## 10. Sequenza di produzione futura, non autorizzazione
+
+1. Revisione statica del presente documento (`IMPLEMENTATION_DESIGN_ADEQUATE` oppure `IMPLEMENTATION_DESIGN_INADEQUATE`), senza inferire esito favorevole in anticipo.
+2. Solo con **istruzione separata**: preparazione del nuovo sorgente DRAFT 03_CODE, in file distinti, mantenendo intatti sorgente e dati congelati; il codice creato non va importato/eseguito per il solo fatto di esistere.
+3. Revisione statica del sorgente effettivo sulla matrice T-01–T-10, D-01–D-05 e schema IPC, con rilievi/accettazione di codice **solo statici**.
+4. Eventuale approvazione separata del deployment B-01/D-02, risoluzione manifest runtime, autorizzazione audit-only specifica, DOC-04 e percorso RP-01 **rimangono processi indipendenti**; nessuno è auto-soddisfatto da questo design.
+5. Solo successivamente e con autorizzazione verificabile: eventuali test operativi circoscritti, senza aprire automaticamente il gate e senza builder analitici.
+
+## 11. Registro degli stati e dei limiti
+
+```text
+artifact_kind: IMPLEMENTATION_DESIGN_SPEC_ONLY_NON_EXECUTABLE
+artifact_status: IMPLEMENTATION_DESIGN_PROPOSED_PENDING_STATIC_REVIEW
+contract_rev_02_2: SPECIFICATION_ADEQUATE_AS_ACCEPTANCE_CONTRACT
+previous_design: DESIGN_SPEC_ADEQUATE_INTERNAL_STATIC_DESIGN_REVIEW_ONLY
+new_executable_source: NOT_CREATED
+STATIC_SOURCE_ACCEPTANCE: NOT_EVALUATED_FUTURE_SOURCE
+FUTURE_OPERATIONAL_VALIDATION: NOT_RUN
+B-01: DESIGN_CHOICE_RECORDED; DEPLOYMENT_APPROVAL_PENDING
+B-02: DESIGN_CHOICE_RECORDED; RUNTIME_FEASIBILITY_NOT_RUN
+D-01_runtime_inventory: PENDING
+D-02_trust_anchor_and_key_governance: PENDING_DEPLOYMENT_APPROVAL
+D-03_call_graph_future_source: NOT_EVALUATED
+D-04_RequestId: INFORMATIONAL_NOT_AUTHORIZATION
+D-05_privilege_transition_future_source: NOT_EVALUATED
+F-01: OPEN_IN_DRAFT_02
+F-02: OPEN_IN_DRAFT_02
+F-03: OPEN_IN_DRAFT_02
+DOC-01_to_DOC-03: RESOLVED_DOCUMENTALLY
+DOC-04: PENDING_EXTERNAL_ATTESTATION
+RP-01: OPEN
+f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data: false
+GATE: CLOSED_PENDING_VALIDATION
+parser_or_generator_import_or_execution: NONE
+five_validation_artifacts_generated: NONE
+new_empirical_PASS: NONE
+```
+
+**Limite fondamentale:** questo documento è un piano implementativo internamente redatto. Non attribuisce garanzie di funzionamento, sicurezza, indipendenza, identità storica o verifiche empiriche. La sua mera disponibilità non autorizza il generatore. Se il runtime Python non può rispettare root confinata, allowlist device vuota o capability vuote, la risposta progettata resta `BLOCKED` e una revisione contrattuale separata, mai una deroga implicita.
