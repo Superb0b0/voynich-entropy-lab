@@ -1,0 +1,653 @@
+{
+  "aggregation": {
+    "derived_fields": {
+      "p_locus_count": {
+        "group_by": "normalized_folio_key",
+        "operation": "SUM",
+        "source": "unit_p_locus_count"
+      },
+      "token_count": {
+        "group_by": "normalized_folio_key",
+        "operation": "COUNT_UNION_AFTER_DISJOINTNESS_PROOF",
+        "prohibited_operation": "blind_sum_of_unit_token_count",
+        "source": "validated_disjoint_token_occurrences"
+      },
+      "unit_count": {
+        "group_by": "normalized_folio_key",
+        "operation": "COUNT_DISTINCT",
+        "source": "unit_id"
+      }
+    },
+    "input_grain": "ivtff_unit",
+    "multipanel_token_disjointness": {
+      "acceptance": {
+        "all_component_units_resolved": true,
+        "all_pairwise_intersections_empty": true,
+        "all_token_occurrences_have_source_identity": true,
+        "ambiguous_or_untraceable_segment_mapping": "FAIL_CLOSED",
+        "duplicate_source_occurrence_within_folio": "FAIL_CLOSED",
+        "missing_or_empty_segment_list": "FAIL_CLOSED",
+        "missing_parser_or_hash_mismatch": "FAIL_CLOSED",
+        "overlapping_source_segments": "FAIL_CLOSED",
+        "segment_reconstruction_mismatch": "FAIL_CLOSED",
+        "uncertainty_unresolved": "FAIL_CLOSED",
+        "unverifiable_source_offsets": "FAIL_CLOSED"
+      },
+      "aggregation_rule": "token_count = cardinality_of_union_of_component_token_occurrence_sets_only_after_pairwise_disjointness_PASS",
+      "no_panel_as_statistical_unit": true,
+      "no_semantic_score_replication": true,
+      "required": true,
+      "scope": "all_component_units_with_same_normalized_folio_key",
+      "sequence": [
+        "resolve_each_component_unit_to_P_loci_in_frozen_source",
+        "extract_token_occurrences_using_pinned_parser_and_tokenization_profile",
+        "assign_each_token_occurrence_exact_ordered_source_byte_segments",
+        "compare_source_occurrence_identities_pairwise_before_aggregation",
+        "aggregate_only_if_all_pairwise_intersections_are_empty_and_all_segments_validate"
+      ],
+      "token_occurrence_identity": {
+        "contiguous_representation": "exactly_one_segment",
+        "fields": [
+          "source_sha256",
+          "physical_line_number",
+          "source_byte_segments"
+        ],
+        "identity_scope": "one lexical token occurrence in immutable source; segment list is ordered and exact",
+        "line_number_basis": "1_based_physical_line_number_in_original_source",
+        "multisegment_representation": "two_or_more_exact_segments; no synthetic enclosing interval",
+        "offset_basis": "zero_based_byte_offsets_in_original_source_file; half_open_intervals",
+        "segment_order": "source_byte_start_ascending",
+        "segment_schema": {
+          "source_byte_end": "integer exclusive",
+          "source_byte_start": "integer inclusive"
+        },
+        "segments_must_be_nonempty": true,
+        "segments_must_be_pairwise_nonoverlapping": true,
+        "segments_must_reconstruct_token_value_in_order": true,
+        "source_offsets_required": true
+      },
+      "tokenization": {
+        "authority": "frozen_RC1_4_for_lexical_tokenization; validated_RC1_4_OA_for_source_provenance_only",
+        "independent_retokenization_allowed": false,
+        "lexical_equivalence_required": true,
+        "lexical_profile": "parser_canonical_token_output",
+        "parser_filename": "ivtff_parser_rc1_4.py",
+        "parser_sha256": "075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d",
+        "provenance_mapper_filename": "ivtff_parser_rc1_4_offset_aware.py",
+        "provenance_mapper_sha256": "ccce4b8514bbd60b9be5d0122ac2cb40353827d43b12d9709782550b60646565",
+        "scope": "P_loci_only"
+      }
+    },
+    "panel_statistical_independence": false,
+    "preserve_subordinate_fields": [
+      "unit_id",
+      "page_id"
+    ],
+    "primary_key": "normalized_folio_key",
+    "repeated_folio_key_policy": "legitimate_subordinate_units",
+    "semantic_score_replication": false,
+    "statistical_unit": "folio"
+  },
+  "change_control": {
+    "analytical_gate_status": "CLOSED_PENDING_VALIDATION",
+    "builder_execution_authorized": false,
+    "change_type": "new_versioned_provenance_contract_amendment_no_source_mutation",
+    "changes": [
+      "Separate uniqueness of Yale canvas identifiers from repeated image_id values in corpus metadata.",
+      "Require unique normalized image_id values in semantic profiles; compare profile and metadata image_id sets after deduplication.",
+      "Formally specify the inclusive token threshold token_count >= 75, including the three boundary folios.",
+      "Keep multipanel eligible records in a sensitivity population, distinct from the primary analytical population.",
+      "Record expected reconciliation counts as audit assertions, not as evidence of successful gate execution.",
+      "Correct metadata integrity wording: Git blob SHA and byte size checked; raw SHA-256 not independently recomputed.",
+      "Require token-occurrence source identities and byte spans for every P-locus token in multipanel folios.",
+      "Require pairwise empty intersections of component-unit token-occurrence sets before aggregation; any overlap or uncertainty is fail-closed.",
+      "Forbid blind summation of panel token counts; aggregate only the verified disjoint union at folio level.",
+      "Encode THRESHOLD_BOUNDARY_INCLUDED deterministically for f14v, f33r, and f44r at exactly 75 tokens.",
+      "Separate validation artifact generation from analytical builder execution in the manifest contract.",
+      "Require direct verification of the 196 reconciled + 9 cover/binding + 1 unresolved = 206 profile partition.",
+      "Replace single-span-only token occurrence identity with ordered source_byte_segments; preserve single-span compatibility as a one-segment representation; support traceable multisegment occurrences without synthetic enclosing spans.",
+      "Pin RC1.4-OA as provenance mapper while retaining frozen RC1.4 as sole lexical/tokenization authority; require exact lexical equivalence and source-byte reconstruction for every segment."
+    ],
+    "frozen_inputs_mutated": false,
+    "parent_configuration": "RC1_4_2_CONFIG_v7.json",
+    "parent_configuration_immutable": true,
+    "source_revision_immutable": true
+  },
+  "classification": {
+    "multipanel_no_P": {
+      "condition": "unit_count > 1 AND p_locus_count == 0"
+    },
+    "multipanel_sensitivity": {
+      "analytical_role": "sensitivity_only",
+      "condition": "unit_count > 1 AND p_locus_count > 0",
+      "eligibility": "eligible_if_threshold_met",
+      "included_in_primary_analytical_population": false,
+      "included_in_sensitivity_population_if_threshold_met": true
+    },
+    "primary_candidate": {
+      "condition": "unit_count == 1 AND p_locus_count > 0"
+    },
+    "single_no_P": {
+      "condition": "unit_count == 1 AND p_locus_count == 0"
+    },
+    "unmatched_ivtff": {
+      "condition": "no_normalized_folio_match"
+    }
+  },
+  "conditional_coupling": {
+    "decision_source": "none",
+    "included_in_scope": false,
+    "status": "suspended"
+  },
+  "eligibility": {
+    "approval_scope": "preanalysis_selection_rule_only; does_not_authorize_builder_or_statistical_analysis",
+    "boundary_cases": {
+      "f14v": {
+        "decision": "eligible_primary_candidate",
+        "decision_reason": "THRESHOLD_BOUNDARY_INCLUDED",
+        "token_count": 75
+      },
+      "f33r": {
+        "decision": "eligible_primary_candidate",
+        "decision_reason": "THRESHOLD_BOUNDARY_INCLUDED",
+        "token_count": 75
+      },
+      "f44r": {
+        "decision": "eligible_primary_candidate",
+        "decision_reason": "THRESHOLD_BOUNDARY_INCLUDED",
+        "token_count": 75
+      }
+    },
+    "boundary_rule": "75_inclusive",
+    "decision_reason_codes": {
+      "BELOW_THRESHOLD": {
+        "condition": "token_count < threshold"
+      },
+      "THRESHOLD_BOUNDARY_INCLUDED": {
+        "candidate_register_value": "THRESHOLD_BOUNDARY_INCLUDED",
+        "condition": "token_count == threshold AND token_count >= threshold",
+        "manual_assignment_allowed": false,
+        "required_for_folios": [
+          "f14v",
+          "f33r",
+          "f44r"
+        ]
+      },
+      "THRESHOLD_MET": {
+        "condition": "token_count > threshold"
+      }
+    },
+    "eligible_classifications": [
+      "primary_candidate",
+      "multipanel_sensitivity"
+    ],
+    "field": "token_count",
+    "multipanel_policy": "threshold_eligible_records_are_sensitivity_only; not part of primary analytical population by default",
+    "operator": ">=",
+    "primary_classifications": [
+      "primary_candidate"
+    ],
+    "provenance_status": "formally_specified_in_user_requested_revision_2026-11-10; deterministic_validation_pending",
+    "reason_assignment": "computed_deterministically_from_token_count_and_threshold",
+    "rule_id": "RULE_TOKEN_THRESHOLD_75_RC1_4_2",
+    "sensitivity_classifications": [
+      "multipanel_sensitivity"
+    ],
+    "threshold": 75,
+    "threshold_unit": "tokens_per_folio"
+  },
+  "exceptions": {
+    "f085v": {
+      "folio_key": "f085v",
+      "inference_allowed": false,
+      "manual_association_allowed": false,
+      "reason": "no_ivtff_folio_match",
+      "required_documentation": true,
+      "status": "unresolved"
+    }
+  },
+  "gate": {
+    "builder_execution_allowed": false,
+    "clustering_allowed": false,
+    "conditional_coupling_allowed": false,
+    "pca_allowed": false,
+    "profile_promotion_allowed": false,
+    "required_before_gate_review": [
+      "independent revalidation of input hashes and declared provenance limitations",
+      "validate canvas identifier uniqueness across all metadata rows",
+      "validate repeated image_id values map only to distinct canvas identifiers",
+      "validate distinct image_id set equality between metadata and semantic profiles",
+      "reproduce all expected reconciliation and eligibility counts deterministically",
+      "produce candidate, exclusion, unresolved, validation, and manifest artifacts in this revision namespace",
+      "record explicit approval of the resulting validation report before any analytical execution",
+      "verify validated RC1.4-OA provenance mapper and segment-aware contract",
+      "prove pairwise token-occurrence disjointness using ordered source_byte_segments for every multipanel folio",
+      "verify explicit THRESHOLD_BOUNDARY_INCLUDED reason for f14v, f33r, and f44r",
+      "verify 196 reconciled + 9 cover/binding + 1 unresolved = 206 directly from source records",
+      "compare two independent generations byte-for-byte across all five validation artifacts"
+    ],
+    "status": "CLOSED_PENDING_VALIDATION",
+    "validation_artifact_generation_allowed": false
+  },
+  "identity_model": {
+    "canvas": {
+      "auxiliary_field": "canvas_id",
+      "auxiliary_role": "manifest_url_reference",
+      "collision_policy": "fail_closed",
+      "derivation": "extract_numeric_canvas_identifier_from_image_service_url",
+      "derived_field": "yale_canvas_identifier",
+      "duplicate_policy": "must_be_unique_after_normalization",
+      "identifier_field": "yale_canvas_identifier",
+      "source_field": "image_service_url",
+      "uniqueness_level": "metadata_row_canvas"
+    },
+    "folio": {
+      "collision_policy": "not_applicable",
+      "duplicate_policy": "allowed_in_crosswalk",
+      "normalized_field": "normalized_folio_key",
+      "source_field": "folio_key",
+      "uniqueness_level": "folio"
+    },
+    "image": {
+      "collision_policy": "fail_closed_for_profile_ids; metadata_repetition_is_not_a_collision",
+      "duplicate_policy": "repeated_in_metadata_only_when_linked_to_distinct_yale_canvas_identifiers",
+      "source_field": "image_id",
+      "uniqueness_level": "distinct_image_identity"
+    },
+    "metadata_image_association": {
+      "comparison": "set_of_distinct_normalized_image_id_values",
+      "profile_metadata_set_equality_required": true,
+      "repeated_image_id_allowed": true,
+      "repeated_image_id_condition": "each repeated metadata image_id must map to distinct unique yale_canvas_identifier values",
+      "row_level_bijective_mapping_required": false,
+      "source_field": "image_id"
+    },
+    "semantic_profile": {
+      "collision_policy": "fail_closed",
+      "duplicate_policy": "must_be_unique_after_normalization",
+      "source_field": "image_id",
+      "uniqueness_level": "semantic_profile"
+    }
+  },
+  "inputs": {
+    "corpus_metadata": {
+      "expected_bytes": 38578,
+      "expected_sha256": "19b3e0885a467df849c352c650eeee864e987da3b2eaf295322345cf4e798625",
+      "filename": "corpus_metadata.csv",
+      "git_blob_sha": "eb05cb69d4847f6acb34a9d095e05c38369010d2",
+      "git_blob_sha_verified": true,
+      "integrity_verified": false,
+      "raw_sha256_verified": false,
+      "verification_note": "Git blob SHA and declared byte size checked against the pinned repository object; raw-file SHA-256 was not independently recomputed. expected_sha256 is retained as a declared value only."
+    },
+    "ivtff_crosswalk": {
+      "expected_bytes": 13269,
+      "expected_sha256": "769fcd2c94f93c232cc4828cd98e9ff16ff42d50baf051886d0dada00b4b3041",
+      "filename": "folio_ivtff_crosswalk.csv",
+      "integrity_verified": true
+    },
+    "semantic_profiles": {
+      "expected_bytes": 4758062,
+      "expected_sha256": "7ec540723dffa59a06e6c4f4f971bdf2d3e69bf0e5760fae43300ab4e73b7546",
+      "filename": "voynich_profiles.json",
+      "git_blob_sha": "560779cf06e15a167799d210f6a0d4ecf1b8c8e1",
+      "integrity_verified": true
+    }
+  },
+  "manifest_contract": {
+    "builder_executed": false,
+    "clustering_executed": false,
+    "conditional_coupling_executed": false,
+    "gate_status": "CLOSED_PENDING_VALIDATION",
+    "pca_executed": false,
+    "profile_promotion_executed": false,
+    "revision": "RC1.4.2",
+    "semantics": {
+      "builder_executed": "false_means_analytical_builder_not_executed; validation_artifact_generation_is_separate",
+      "validation_artifacts_generated": "tracked_separately_in_output_files_and_record_counts"
+    },
+    "status": "VALIDATION_PENDING"
+  },
+  "normalization": {
+    "applies_to": {
+      "cover_identifier": {
+        "excluded_from_manuscript_population": true,
+        "normalization_applied": false,
+        "population": "cover_or_binding",
+        "prefix": "_",
+        "preserve_original": true
+      },
+      "folio_key": {
+        "collision_policy": "not_applicable",
+        "duplicate_policy": "allowed_in_crosswalk",
+        "purpose": "aggregation_key"
+      },
+      "image_id": {
+        "collision_policy": "fail_closed",
+        "duplicate_policy": "must_be_unique_after_normalization",
+        "metadata_duplicate_policy": "allow_repeated_image_id_when_canvas_identifiers_are_distinct",
+        "purpose": "profile_uniqueness_and_profile_metadata_set_association"
+      },
+      "yale_canvas_identifier": {
+        "collision_policy": "fail_closed",
+        "duplicate_policy": "must_be_unique_after_normalization",
+        "normalization_source": "image_service_url_numeric_canvas_identifier",
+        "purpose": "metadata_canvas_row_identity"
+      }
+    },
+    "audit_policy": "preserve_original_and_normalized_value",
+    "edge_cases": {
+      "empty_value": {
+        "policy": "reject"
+      },
+      "f000r": {
+        "anomaly_flag": "leading_zeros_and_zero_folio_number",
+        "normalized_value": "f0r",
+        "original_preserved": true
+      },
+      "f085V": {
+        "anomaly_flag": null,
+        "normalized_value": "f85v",
+        "original_preserved": true
+      },
+      "f0r": {
+        "anomaly_flag": "zero_folio_number",
+        "normalized_value": "f0r",
+        "original_preserved": true
+      },
+      "invalid_format": {
+        "normalization_applied": false,
+        "policy": "preserve_original_and_flag"
+      },
+      "whitespace": {
+        "original_preserved": true,
+        "policy": "trim_outer_whitespace_only"
+      }
+    },
+    "empty_value_policy": "reject",
+    "leading_zero_policy": "strip_leading_zeros_in_folio_number",
+    "manual_correction_policy": "none",
+    "non_matching_value_policy": "preserve_original_and_flag",
+    "output_format": "f{number}{side_lowercase}",
+    "regex": "^[fF]0*(\\d+)([rRvV])$",
+    "rule_id": "RULE_NORMALIZE_IDENTIFIERS",
+    "whitespace_policy": "trim_outer_whitespace_only",
+    "zero_folio_number_policy": "normalize_but_flag_as_nonstandard"
+  },
+  "outputs": {
+    "candidate_register": "RC1_4_2_candidate_register.csv",
+    "candidate_register_required_fields": [
+      "image_id",
+      "normalized_image_id",
+      "folio_key",
+      "unit_ids",
+      "unit_count",
+      "p_locus_count",
+      "token_count",
+      "candidate_class",
+      "threshold",
+      "threshold_operator",
+      "threshold_result",
+      "population_assignment",
+      "decision_reason"
+    ],
+    "csv_determinism": {
+      "encoding": "UTF-8",
+      "header_order_fixed_by_schema": true,
+      "line_ending": "LF",
+      "sort_key": "normalized_image_id",
+      "stable_secondary_sort": [
+        "folio_key",
+        "image_id"
+      ]
+    },
+    "exclusion_register": "RC1_4_2_exclusion_register.csv",
+    "exclusion_register_required_fields": [
+      "image_id",
+      "folio_key",
+      "exclusion_class",
+      "exclusion_reason",
+      "token_count",
+      "threshold",
+      "source_reference"
+    ],
+    "generation_scope": {
+      "analytical_builder_execution": false,
+      "builder_executed_manifest_value": false,
+      "validation_artifact_generation_does_not_imply_builder_execution": true,
+      "validation_artifact_generation_only": true
+    },
+    "independent_second_generation": {
+      "all_five_artifacts_must_match": true,
+      "comparison": "byte_for_byte",
+      "mismatch": "FAIL_CLOSED",
+      "required": true
+    },
+    "json_determinism": {
+      "encoding": "UTF-8",
+      "ensure_ascii": false,
+      "indent": 2,
+      "line_ending": "LF",
+      "sort_keys": true,
+      "timestamps_in_compared_artifacts": false,
+      "trailing_newline": true
+    },
+    "manifest": "RC1_4_2_MANIFEST.json",
+    "manifest_hashing": {
+      "algorithm": "SHA-256",
+      "hash_exact_final_file_bytes": true,
+      "no_hash_of_reconstructed_json_objects": true
+    },
+    "unresolved_register": "RC1_4_2_unresolved_register.csv",
+    "unresolved_register_required_fields": [
+      "image_id",
+      "normalized_image_id",
+      "issue_type",
+      "source_profile_present",
+      "crosswalk_match_present",
+      "resolution_status",
+      "manual_intervention"
+    ],
+    "unresolved_required_record": {
+      "folio_key": "f085v",
+      "manual_intervention": false,
+      "resolution_status": "UNRESOLVED_NO_IVTFF_MATCH"
+    },
+    "validation_report": "RC1_4_2_validation_report.json"
+  },
+  "population": {
+    "analytical_population": "primary_candidate_population_meeting_eligibility_rule",
+    "candidate_population": "profiles_with_ivtff_match",
+    "cover_or_binding_profiles": "profiles_with_cover_identifier_prefix_underscore",
+    "manuscript_profiles": "profiles_available_minus_cover_or_binding_profiles",
+    "primary_analytical_population": "primary_candidate profiles with token_count >= 75",
+    "profiles_associable": "manuscript_profiles_with_metadata_image_match_after_normalization",
+    "profiles_available": "all_valid_profiles_in_semantic_profiles",
+    "profiles_with_ivtff_match": "associable_profiles_with_normalized_folio_match_in_crosswalk",
+    "reconciliation_rule": "available = cover_or_binding + manuscript; manuscript = associable + unresolved; candidate = primary_candidate + multipanel_sensitivity + no_P classes; primary analytical and sensitivity populations are disjoint; threshold_eligible_union = primary analytical + sensitivity",
+    "sensitivity_population": "multipanel_sensitivity profiles with token_count >= 75; reported separately and never merged into primary estimates by default",
+    "threshold_eligible_union": "primary_analytical_population + sensitivity_population",
+    "unresolved_population": "manuscript_profiles_without_ivtff_match"
+  },
+  "provenance_contract": {
+    "contract_id": "RC1.4-OA-PROVENANCE-CONTRACT-01",
+    "current_observed_corpus_counts": {
+      "TRACEABLE_CONTIGUOUS": 35154,
+      "TRACEABLE_MULTISEGMENT": 338,
+      "UNTRACEABLE": 0,
+      "continuation_joined_physical_lines": 0,
+      "multisegment_reason": "INTRA_LINE_TRANSFORMATION"
+    },
+    "identity": {
+      "fields": [
+        "source_sha256",
+        "physical_line_number",
+        "source_byte_segments"
+      ],
+      "segment_sequence_order_significant": true
+    },
+    "lexical_authority": {
+      "filename": "ivtff_parser_rc1_4.py",
+      "sha256": "075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d"
+    },
+    "provenance_mapper": {
+      "filename": "ivtff_parser_rc1_4_offset_aware.py",
+      "role": "provenance_only"
+    },
+    "scope_warning": "Observed counts are technical parser validation results only; they do not establish multipanel disjointness or authorize analytical execution.",
+    "segment_interval": {
+      "basis": "original_source_bytes",
+      "end": "zero_based_exclusive",
+      "start": "zero_based_inclusive"
+    },
+    "source_sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    "status": "DRAFT_PENDING_INDEPENDENT_REVIEW",
+    "token_statuses": {
+      "TRACEABLE_CONTIGUOUS": "one exact source byte segment; legacy source_byte_start/end may be populated",
+      "TRACEABLE_MULTISEGMENT": "two or more exact ordered source byte segments; legacy scalar source_byte_start/end MUST be null",
+      "UNTRACEABLE": "no complete verified source mapping; fail closed and exclude from identity/disjointness proof"
+    },
+    "validation_requirements": [
+      "exact RC1.4 token-by-token equivalence",
+      "every segment within source bounds",
+      "every segment byte sequence maps to the corresponding token character subsequence in order",
+      "segments pairwise nonoverlapping within token",
+      "no synthetic enclosing span",
+      "no unresolved UNTRACEABLE token in multipanel disjointness proof"
+    ]
+  },
+  "provenance_note": "Configuration draft only. No five-artifact generation, analytical builder, PCA, clustering, conditional coupling, or profile promotion is authorized or performed by this file.",
+  "reference_builder": {
+    "embedded_expected_counts_treatment": "not_transferred_to_audit",
+    "execution_allowed": false,
+    "filename": "build_remaining_crosswalks_rc1_4_corrected.py",
+    "role": "historical_reference_only",
+    "sha256": "4681e1b7edcb24d378e3e93c60e91fb06aa6e5fa13ca8210a9419fd542cf7012",
+    "size_bytes": 14249
+  },
+  "revision": "RC1.4.2-V7.1",
+  "schema_version": "RC1.4.2-CONFIG-V7.1",
+  "source": {
+    "commit": "d4b31a245ba8133b727dc4255278b5e8349bbe39",
+    "path": "data/public/voynich_semantic_profiles",
+    "repository": "xenoglyph-ai/voynich-public"
+  },
+  "status": "DRAFT_PENDING_PROVENANCE_CONTRACT_VALIDATION",
+  "supersedes": "RC1_4_2_CONFIG_v7.json",
+  "validation": {
+    "expected_candidate_register": {
+      "multipanel_sensitivity": 11,
+      "no_P": 10,
+      "primary_candidate": 175,
+      "reconciled_profiles": 196
+    },
+    "expected_count_partition": {
+      "candidate_population_196": "175 primary_candidate + 11 multipanel_sensitivity + 10 no_P",
+      "multipanel_sensitivity_11": "9 sensitivity eligible + 2 below threshold",
+      "primary_candidate_175": "146 eligible + 29 below threshold",
+      "threshold_eligible_union_155": "146 primary + 9 sensitivity",
+      "threshold_ineligible_or_no_P_41": "29 primary below threshold + 2 multipanel below threshold + 10 no_P"
+    },
+    "expected_counts_role": "audit_assertions_only; must be independently reproduced by a future authorized deterministic validation; mismatch is fail_closed",
+    "expected_exclusion_partition": {
+      "covers_and_binding": 9,
+      "multipanel_below_threshold": 2,
+      "no_P": 10,
+      "primary_below_threshold": 29,
+      "total_exclusion_register_records": 50
+    },
+    "expected_manuscript_profiles_with_crosswalk_match": 196,
+    "expected_metadata_distinct_image_ids": 206,
+    "expected_metadata_distinct_yale_canvas_identifiers": 213,
+    "expected_metadata_rows": 213,
+    "expected_multipanel_below_threshold_count": 2,
+    "expected_multipanel_sensitivity_below_threshold": 2,
+    "expected_multipanel_sensitivity_candidate_count": 11,
+    "expected_multipanel_threshold_eligible_count": 9,
+    "expected_no_P_candidate_count": 10,
+    "expected_no_P_excluded_from_threshold_population": 10,
+    "expected_primary_analytical_population_count": 146,
+    "expected_primary_below_threshold_count": 29,
+    "expected_primary_candidate_count": 175,
+    "expected_primary_population_excluded_below_threshold": 29,
+    "expected_primary_sensitivity_partition": {
+      "disjoint": true,
+      "eligible_union": 155,
+      "multipanel_sensitivity": 9,
+      "primary": 146
+    },
+    "expected_primary_threshold_eligible_count": 146,
+    "expected_profile_count": 206,
+    "expected_profile_partition": {
+      "cover_or_binding_profiles": 9,
+      "identity": "196 + 9 + 1 = 206",
+      "reconciled_manuscript_profiles": 196,
+      "role": "audit_assertion_only; independently_recompute_from_input_records",
+      "total_profiles": 206,
+      "unresolved_profiles": 1
+    },
+    "expected_repeated_image_id_canvas_pairs": 7,
+    "expected_repeated_metadata_image_ids": 7,
+    "expected_sensitivity_population_count": 9,
+    "expected_threshold_eligible_union_count": 155,
+    "expected_threshold_ineligible_or_no_P_count": 41,
+    "expected_total_candidates": 196,
+    "expected_unmatched_profile_count": 1,
+    "required_196_9_1_profile_reconciliation": true,
+    "required_boundary_reason_code_exact_value": "THRESHOLD_BOUNDARY_INCLUDED",
+    "required_boundary_reason_code_for_f14v_f33r_f44r": true,
+    "required_candidate_decision_for_every_candidate": true,
+    "required_candidate_register_population_assignment_disjointness": true,
+    "required_crosswalk_page_id_unique": false,
+    "required_crosswalk_repeated_folio_keys_allowed": true,
+    "required_crosswalk_unit_id_unique": false,
+    "required_deterministic_reexecution": true,
+    "required_exclusion_rule_for_every_exclusion": true,
+    "required_f085v_unresolved_manual_intervention_false": true,
+    "required_fail_closed_on_unresolved_token_overlap": true,
+    "required_input_hash_match": true,
+    "required_metadata_image_id_unique_after_normalization": false,
+    "required_metadata_repeated_image_id_requires_distinct_canvas_ids": true,
+    "required_metadata_row_to_profile_bijection": false,
+    "required_metadata_yale_canvas_identifiers_unique_after_normalization": true,
+    "required_multipanel_pairwise_token_disjointness": true,
+    "required_multipanel_token_occurrence_identity": true,
+    "required_no_duplicate_token_occurrence_across_component_units": true,
+    "required_no_manual_undocumented_decisions": true,
+    "required_no_profile_normalization_collisions": true,
+    "required_primary_sensitivity_union_equality": true,
+    "required_profile_identifiers_unique_after_normalization": true,
+    "required_profile_metadata_distinct_image_id_set_equality": true,
+    "required_profile_metadata_set_equality": true,
+    "required_source_byte_offsets_for_each_token_occurrence": true,
+    "required_unit_has_P_consistency": true
+  },
+  "validation_report_contract": {
+    "not_run_is_not_pass": true,
+    "null_status_allowed": false,
+    "overall_pass_requires_all_mandatory_controls_pass": true,
+    "required_control_status_values": [
+      "PASS",
+      "FAIL",
+      "NOT_RUN"
+    ],
+    "required_sections": [
+      "input_hashes_and_sizes",
+      "configuration_version",
+      "json_csv_parse",
+      "profile_cardinalities",
+      "identifier_integrity",
+      "vector_dimensions_and_finite_values",
+      "archetype_categories_16",
+      "emotional_categories_9",
+      "yale_metadata",
+      "ivtff_reconciliation",
+      "inclusive_threshold",
+      "multipanel_token_disjointness",
+      "primary_sensitivity_partitions",
+      "profile_partition_206",
+      "anomalies",
+      "overall_result"
+    ]
+  }
+}
