@@ -1,0 +1,41 @@
+{
+  "export": "RC1.2 canonico loci P",
+  "source": {
+    "filename": "ZL3b-n.txt",
+    "sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    "bytes": 411671
+  },
+  "parser": {
+    "filename": "ivtff_parser_rc1_2.py",
+    "sha256": "8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5",
+    "unit_tests": "30 PASS"
+  },
+  "checks": {
+    "loci": 4130,
+    "tokens": 35492,
+    "unique_pages": 207,
+    "duplicate_locus_id": 0,
+    "duplicate_pagina_riga": 0,
+    "errors": 0
+  },
+  "columns_main": [
+    "pagina",
+    "riga",
+    "n_token"
+  ],
+  "semantics": {
+    "pagina": "RC1.2 folio, e.g. f1r or fRos",
+    "riga": "integer locus line_index",
+    "n_token": "number of RC1.2 tokens for the locus"
+  },
+  "files": {
+    "RC1_2_4130_loci_pagina_riga_n_token.csv": {
+      "bytes": 42852,
+      "sha256": "af9c16f63270724bd732f17db436c9702c925ee44219dc166c20bc4e11901ee9"
+    },
+    "RC1_2_4130_loci_join_dettaglio.csv": {
+      "bytes": 112271,
+      "sha256": "80273f9464abac149d687ba49453d92cea189ab9f5947f1990395a5acaddfdc8"
+    }
+  }
+}
