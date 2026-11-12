@@ -1,0 +1,23 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: ANCHOR02_TEXT_REGION_TRIAGE_V1.csv>
+index,region_id,previous_head_inside_box,visual_review,token_eligible,reason
+0,T01,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+1,T02,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+2,T03,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+3,T04,YES,MIXED_FIGURE_AND_SCRIPT,NO,Box intersects illustration and script
+4,T05,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+5,T06,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+6,T07,YES,HEAD_AND_SCRIPT,NO,Human head clearly inside box
+7,T08,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+8,T09,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+9,T10,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+10,T11,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+11,T12,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+12,T13,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+13,T14,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+14,T15,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+15,T16,YES,SCRIPT_PRESENT_BOUNDS_UNSUITABLE,NO,Script strokes visible but box does not isolate token
+16,T17,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+17,T18,YES,HEAD_AND_SCRIPT,NO,Human head clearly inside box
+18,T19,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
+19,T20,NO,NOT_VISUALLY_REVIEWED,UNDETERMINED,No individual visual review in this pass
