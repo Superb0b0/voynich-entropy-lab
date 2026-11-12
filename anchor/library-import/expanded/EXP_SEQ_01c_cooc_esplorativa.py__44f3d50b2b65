@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+"""EXP-SEQ-01c, esercizio esplorativo NON QUALIFICATO di co-occorrenza in riga.
+Legge solo il corpus originale via lettore esplorativo 01a con SHA-256 fissato.
+Non importa parser, builder, o moduli della pipeline RC1.4.2.
+Produce CSV descrittivi e un test di permutazione folio x lunghezza.
+"""
+from collections import defaultdict
+from pathlib import Path
+from random import Random
+import csv
+from EXP_SEQ_01a_gradiente_posizionale import read_loci
+
+CORPUS = Path('/mnt/data/ZL3b-n.txt')
+OUTPUT = Path('/mnt/data/EXP_SEQ_01c_output')
+LENGTHS = set(range(6, 11))
+REPS = 5000
+
+def dump_csv(path, rows):
+    with path.open('w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=list(rows[0])); writer.writeheader(); writer.writerows(rows)
+
+def getx(tokens, kind):
+    return tokens[0].startswith('qo') if kind=='qo_at_first' else tokens[1].startswith('qo')
+
+def gety(tokens, kind):
+    return tokens[-1].endswith(kind)
+
+def describe(lines, lang, n, xkind, suffix):
+    positives=[r for r in lines if getx(r[-1], xkind)]
+    negatives=[r for r in lines if not getx(r[-1], xkind)]
+    a=sum(gety(r[-1],suffix) for r in positives)
+    b=sum(gety(r[-1],suffix) for r in negatives)
+    p1=100*a/len(positives) if positives else None
+    p0=100*b/len(negatives) if negatives else None
+    return dict(currier=lang, length=n, early_marker=xkind, late_suffix=suffix,
+      n_lines=len(lines), with_early_n=len(positives), without_early_n=len(negatives),
+      late_with_early_n=a, late_without_early_n=b,
+      late_with_early_pct=round(p1,3) if p1 is not None else '',
+      late_without_early_pct=round(p0,3) if p0 is not None else '',
+      difference_pp=round(p1-p0,3) if p1 is not None and p0 is not None else '')
+
+def within_strata_perm(lines, xkind, suffix, repetitions=5000):
+    # Null: late-suffix flags are exchangeable WITHIN THE SAME FOLIO AND LINE LENGTH.
+    # Statistic is centered count of coincidences, conditional on each stratum's
+    # early and late marginal counts. Only strata varying in BOTH flags inform it.
+    group=defaultdict(list)
+    for r in lines:
+        group[(r[1],len(r[-1]))].append((int(getx(r[-1],xkind)),int(gety(r[-1],suffix))))
+    informative=[]
+    for g in group.values():
+        xs=[a for a,b in g]; ys=[b for a,b in g]
+        if len(g)>1 and 0<sum(xs)<len(g) and 0<sum(ys)<len(g):
+            informative.append((xs,ys))
+    observed=sum(sum((x-sum(xs)/len(xs))*y for x,y in zip(xs,ys)) for xs,ys in informative)
+    if not informative:
+        return dict(informative_strata=0,informative_rows=0,excess_coincidences='',perm_p_two_sided='')
+    rng=Random(20261110)
+    exceed=0
+    for _ in range(repetitions):
+        value=0.0
+        for xs, ys in informative:
+            shuffled=ys[:]
+            rng.shuffle(shuffled)
+            xmean=sum(xs)/len(xs)
+            value += sum((x-xmean)*y for x,y in zip(xs,shuffled))
+        if abs(value)+1e-10>=abs(observed): exceed+=1
+    return dict(informative_strata=len(informative),informative_rows=sum(len(x) for x,y in informative),
+        excess_coincidences=round(observed,5),perm_p_two_sided=round((exceed+1)/(repetitions+1),5))
+
+
+def internal_30_60_tests(records):
+    """Test prenotato: qo intorno al 30%, dy/aiin al 60%; arrotonda indici 0-based."""
+    results=[]
+    for lang in ['A','B']:
+        lines=[r for r in records if r[2]==lang and len(r[-1]) in LENGTHS]
+        for suffix in ['dy','aiin']:
+            group=defaultdict(list)
+            n_q=n_nq=hit_q=hit_nq=0
+            for r in lines:
+                t=r[-1]; n=len(t)
+                x=int(t[round(0.30*(n-1))].startswith('qo'))
+                y=int(t[round(0.60*(n-1))].endswith(suffix))
+                group[(r[1],n)].append((x,y))
+                if x:
+                    n_q+=1; hit_q+=y
+                else:
+                    n_nq+=1; hit_nq+=y
+            informative=[]
+            for g in group.values():
+                xs=[x for x,y in g]; ys=[y for x,y in g]
+                if len(g)>1 and 0<sum(xs)<len(g) and 0<sum(ys)<len(g):
+                    informative.append((xs,ys))
+            observed=sum(sum((x-sum(xs)/len(xs))*y for x,y in zip(xs,ys)) for xs,ys in informative)
+            rng=Random(20261110)
+            exceed=0
+            for _ in range(REPS):
+                score=0.0
+                for xs,ys in informative:
+                    shuffled=ys[:];rng.shuffle(shuffled)
+                    mean_x=sum(xs)/len(xs)
+                    score+=sum((x-mean_x)*y for x,y in zip(xs,shuffled))
+                if abs(score)+1e-10>=abs(observed):exceed+=1
+            results.append(dict(currier=lang, late_suffix=suffix, length_range='6..10',
+              early_position='round(0.30*(n-1))',late_position='round(0.60*(n-1))',
+              q30_n=n_q, non_q30_n=n_nq, suffix60_with_q30_n=hit_q,
+              suffix60_without_q30_n=hit_nq,
+              suffix60_with_q30_pct=round(100*hit_q/n_q,3),
+              suffix60_without_q30_pct=round(100*hit_nq/n_nq,3),
+              informative_strata=len(informative),
+              informative_rows=sum(len(xs) for xs,ys in informative),
+              permutation_p_two_sided=round((exceed+1)/(REPS+1),5),
+              permutation_reps=REPS, seed=20261110))
+    return results
+
+def main():
+    records=read_loci(CORPUS)
+    rows=[]; tests=[]
+    for lang in ['A','B']:
+        for n in [6,7,8,9,10]:
+            lines=[r for r in records if r[2]==lang and len(r[-1])==n]
+            for early in ['qo_at_first','qo_at_second']:
+                for late in ['dy','aiin']:
+                    rows.append(describe(lines,lang,n,early,late))
+        pooled=[r for r in records if r[2]==lang and len(r[-1]) in LENGTHS]
+        for early in ['qo_at_first','qo_at_second']:
+            for late in ['dy','aiin']:
+                stat=within_strata_perm(pooled,early,late,REPS)
+                tests.append(dict(currier=lang,early_marker=early,late_suffix=late,
+                    total_lines=len(pooled),n_folios=len({r[1] for r in pooled}),
+                    perm_reps=REPS,**stat))
+    OUTPUT.mkdir(parents=True,exist_ok=True)
+    dump_csv(OUTPUT/'EXP_SEQ_01c_cooc_6_10.csv',rows)
+    dump_csv(OUTPUT/'EXP_SEQ_01c_permutazioni_folio_lunghezza.csv',tests)
+    internal=internal_30_60_tests(records)
+    dump_csv(OUTPUT/'EXP_SEQ_01c_interne_30_60.csv',internal)
+    print('DESCRIPTIVE length 8')
+    for r in rows:
+        if r['length']==8:print(r)
+    print('\nSTRATIFIED PERMUTATION pooled n6..10')
+    for t in tests:print(t)
+    print('\nINTERNAL q30 suffix60')
+    for t in internal: print(t)
+if __name__=='__main__':main()
