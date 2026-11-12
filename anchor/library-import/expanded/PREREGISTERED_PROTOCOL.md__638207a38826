@@ -1,0 +1,63 @@
+# EXP-SEQ-03 | Protocollo di analisi delle aperture Voynich
+
+**Versione:** 1.0 — fissata localmente 2026-11-10, dopo EXP-SEQ-01/02B e dopo aver esaminato A e B.
+**Status:** FROZEN_LOCALLY / EXTERNAL_TIMESTAMP_PENDING / ANALYSIS_BLOCKED.
+**Natura:** protocollo prospettico per confronti descrittivi futuri, NON preregistrazione di una scoperta indipendente. Corpus, classi, offset e ipotesi centrali sono già stati esplorati; ogni p-value sullo stesso corpus rimane post-selezione.
+
+## Fonti e immutabilità
+
+- Input primario: `ZL3b-n.txt`, byte originali, SHA-256 `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc`.
+- Parser: usare la stessa logica `blocks` in `EXP_SEQ_01_robustness_review.py` (salvato nel pacchetto); verificare l'SHA-256 del parser nel manifest.
+- Trascrizione: marcatori IVTFF `<%>` / `<$>`; unita statistica del paragrafo = blocco del parser con Currier omogeneo, A o B. Ogni riga deve avere una lista di token non vuota. Trattare folio come cluster, non ogni token come unità indipendente.
+- Esempi Timm-Schinner utilizzabili solo come confronto esterno del modello, con denominatori esposti, non per validare indipendentemente Voynich.
+- Qualsiasi modifica a campionamento, codifica o endpoint richiede nuova versione del protocollo, con dichiarazione della deviazione; non sovrascrivere questa versione.
+
+## Campione primario e stratificazioni
+
+1. Inclusione principale: blocchi con almeno 4 righe; tutte le prime quattro righe non vuote e di **6–10 token**; Currier omogeneo; deduplicazione per `(folio, block_id)` secondo parser originale. Risultati sempre separati A e B; A+B soltanto descrittivo con intervallo cluster-folio.
+2. Strati predefiniti di lunghezza paragrafo: 4–9 righe; >=10 righe; tutti i blocchi >=4. Non interpretare una differenza fra strati come dimostrata in assenza di IC per l'interazione.
+3. Analisi di posizione su tutte le righe, non solo prime quattro: per ogni indice assoluto j, includere i paragrafi che arrivano alla riga j, dichiarando il denominatore variabile. Riportare soltanto descrittivamente posizioni con meno di 20 paragrafi. Non confrontare i profili senza mostrare il rischio di selezione per sopravvivenza del paragrafo.
+4. Per posizione relativa, definire `u=(j-1)/(L-1)` per lunghezza di paragrafo L>=4. Bin di u: `[0,0.2)`, `[0.2,0.4)`, `[0.4,0.6)`, `[0.6,0.8)`, `[0.8,1]` (l'ultimo chiuso a destra). Ogni paragrafo contribuisce con la media dei propri valori per bin e una sola unità cluster; non trattare righe duplicate dello stesso paragrafo come osservazioni indipendenti.
+5. Esito centrale congelato, già noto e NON indipendente: prima parola `qo-`, differenza media (riga 3+riga 4)/2 meno (riga 1+riga 2)/2 nel campione principale, analizzata separatamente in A e B. Non trattare il contrasto già noto come test confirmatorio.
+
+## Endpoint 1: posizione assoluta vs relativa
+
+- Grafici e tabelle separati A, B, pooled descrittivo; strati 4–9, >=10, >=4.
+- Misure per indice j=1…min(L,12): frequenza `qo-` nella **prima parola**, n paragrafi, n folii, IC bootstrap per folio. Le righe j>12 vanno in appendice senza confronti inferenziali.
+- Profilo relativo: stessi endpoint nei 5 bin u sopra, aggregati per paragrafo prima che per folio; riportare n paragrafi e folii per bin.
+- Discriminazione predefinita: confronto descrittivo fra stima `Q_abs = mean(qo at j=3,4) − mean(qo at j=1,2)` nello strato >=10, e `Q_rel = mean(qo at u in [0.4,0.8)) − mean(qo at u in [0,0.4))` negli stessi paragrafi. Non inferire causalità layout vs testo da alcun esito. Con 13 A +14 B paragrafi lunghi già noti, classificare formalmente come sottodimensionato se IC include 0 o n folii <20. Non cercare soglie alternative a posteriori.
+- Posizione sulla pagina: variabile distinta dall'indice nel paragrafo. Se il parser non fornisce un indice di riga fisico validato sulla pagina, dichiarare `NOT_AVAILABLE` e non equiparare il numero IVTFF alla posizione fisica senza verifica.
+
+## Endpoint 2: prima parola vs resto della riga
+
+- Per ogni riga, `F=1` se il primo token inizia esattamente con `qo`; `R=count(qo nell'indice token >=2)/max(1,n_tokens-1)`. Escludere da R righe di un solo token, mai classificarle R=0.
+- Per gli stessi paragrafi del campione principale, costruire il contrasto `D_F=mean(F at 3,4) − mean(F at 1,2)`, `D_R=mean(R at 3,4) − mean(R at 1,2)`, `D_specific=D_F−D_R`.
+- Aggregare prima per paragrafo, poi per folio (bootstrap cluster); riportare anche la prevalenza complessiva fra tutti i token con denominatori token-weighted come metrica secondaria, non usare i token come repliche indipendenti.
+- Interpretazione: `D_F>0` e `D_R≈0` suggerisce concentrazione nelle aperture; `D_R>0` indica arricchimento distribuito nella riga. Nessuna soglia di equivalenza per `≈0` è stabilita, quindi descrivere sempre IC e non affermare equivalenza statistica.
+
+## Endpoint 3: repertorio completo delle aperture
+
+- Classificazione della prima parola, esaustiva e disgiunta, in quest'ordine: `qo` (starts with `qo`), `d` (`d`), `ch` (`ch`), `sh` (`sh`), `o` (`o`), `y` (`y`), `gallows_initial` (starts with one of EVA `k,t,p,f`), `other` (tutti gli altri). Per gallows si intende soltanto il simbolo INIZIALE, non i gallows interni.
+- Tabella di contingenza classi × fascia (1–2 versus 3–4), A e B separati e pooled descrittivo; due posizioni per paragrafo per fascia. Riportare conteggi assoluti e percentuali, anche per `other`.
+- Endpoint primario descrittivo: vettore degli 8 cambiamenti in punti percentuali; somma delle differenze attesa 0 (verifica di partizione), non chiamare una classe 'sostitutiva' senza evidenza di coppie lessicali individuali.
+- Test omnibus opzionale: distanza totale di variazione `TV = 0.5*sum_k(abs(p_3_4,k-p_1_2,k))`; IC bootstrap a cluster-folio. Non convertire in un test di significatività nominale perché le classi e le fasce sono già state motivate dai dati.
+- Sottoclassi di `qo`: `qok`, `qot`, `qop`, `other_qo` riportate solo come analisi descrittive già esplorate, senza selezione a posteriori di sottoinsiemi.
+
+## Metodo per incertezza e confronti
+
+- Bootstrap gerarchico per folio: 10.000 resampling di folii con reinserimento, includendo **tutti** i paragrafi del folio selezionato; seme PRNG 20261110, quantili percentile 2.5/97.5%. Separare A e B; per pooled, campionare folii all'interno di A/B quando folio e gruppo non sono confondibili, e dichiarare la regola di sovrapposizione dei folii.
+- Report minimi: n folii, n paragrafi, conteggi grezzi, percentuali, differenza in pp e IC, risultati mancanti e definizioni di denominatori.
+- Test di permutazione per B: eventuale test a livello folio, con permutazione della *etichetta di fascia per intero paragrafo* e non mescolamento dei token o delle righe del paragrafo. Poiché la fascia può già variare sistematicamente, trattarlo come test di scambiabilità della fascia e non prova di effetto verticale specifico. Specificare esattamente il generatore nullo prima dell'esecuzione e mantenere inferenza descrittiva se non giustificato.
+- Nessun tuning su Currier A/B, nessun p-hacking di soglie, nessuna dichiarazione di replicazione indipendente; Currier B già visto in EXP-SEQ-01, dunque semi-holdout soltanto.
+
+## Decisioni e criteri di reporting predefiniti
+
+- Reportare tutti e tre gli endpoint anche se gli effetti sono nulli o contraddittori.
+- Distinguere `OBSERVED`, `INCONCLUSIVE` e `UNAVAILABLE` per ogni confronto; non assegnare arbitrariamente modelli causali.
+- Definire 'apertura specifica' solo come descrizione se `D_F` positivo con IC sopra zero e `D_R` con IC che comprende zero, specificando che il secondo fatto **non dimostra l'assenza** di un effetto nel resto della riga.
+- Definire 'profilo di posizione assoluta compatibile' se l'incremento a j=3,4 è positivo nei blocchi lunghi, 'profilo relativo compatibile' se il massimo relativo cade negli stessi bin in strati di lunghezza diversi; non utilizzare le parole prova/causa per questa classificazione.
+- Il confronto Timm-Schinner precedente rimane vincolato alla sua specifica configurazione; non costituisce test confermativo generale della teoria dell'autocitazione.
+
+## Deposito e attivazione
+
+Questo protocollo non ha ancora una marca temporale pubblica. Il file viene fissato localmente con SHA-256 e incluso nel pacchetto. **Non iniziare nuove analisi dei tre endpoint prima di un commit pubblico o archivio DOI che includa l'identica versione del protocollo.** Quando depositato, annotare URL, SHA commit o DOI e timestamp server nell'`EXTERNAL_DEPOSIT_RECORD.json`, senza riscrivere la versione congelata. In assenza di deposito esterno: `GATE=CLOSED_EXTERNAL_TIMESTAMP_PENDING`.
