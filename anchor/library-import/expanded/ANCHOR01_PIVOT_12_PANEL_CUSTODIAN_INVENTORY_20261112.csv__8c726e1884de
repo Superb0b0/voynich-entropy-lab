@@ -1,0 +1,15 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: ANCHOR01_PIVOT_12_PANEL_CUSTODIAN_INVENTORY_20261112.csv>
+index,panel_id,physical_folio_group,yale_canvas_id,source_image_ref,historical_inventory_total,historical_human_candidates,historical_central_stars,historical_pending,historical_excluded,original_jpeg_in_pilot_archive,independent_annotation_status,note
+0,f70v1,f70,1006201,https://collections.library.yale.edu/manifests/oid/2002046/canvas/1006201,15,15,0,15,0,YES,NOT_STARTED,TECHNICAL CUSTODIAN INVENTORY ONLY: historical labels and counts must not be given to blind reviewers
+1,f70v2,f70,1006200,https://collections.library.yale.edu/manifests/oid/2002046/canvas/1006200,30,29,1,29,1,NO,NOT_STARTED,TECHNICAL CUSTODIAN INVENTORY ONLY: historical labels and counts must not be given to blind reviewers
+2,f71r,f71,1006202,https://collections.library.yale.edu/manifests/oid/2002046/canvas/1006202,15,15,0,15,0,YES,NOT_STARTED,TECHNICAL CUSTODIAN INVENTORY ONLY: historical labels and counts must not be given to blind reviewers
+3,f71v,f71,1006203,https://collections.library.yale.edu/manifests/oid/2002046/canvas/1006203,15,15,0,15,0,NO,NOT_STARTED,TECHNICAL CUSTODIAN INVENTORY ONLY: historical labels and counts must not be given to blind reviewers
+4,f72r1,f72,1006203,https://collections.library.yale.edu/manifests/oid/2002046/canvas/1006203,15,15,0,15,0,NO,NOT_STARTED,TECHNICAL CUSTODIAN INVENTORY ONLY: historical labels and counts must not be given to blind reviewers
+5,f72r2,f72,1006203,https://collections.library.yale.edu/manifests/oid/2002046/canvas/1006203,30,30,0,29,1,NO,NOT_STARTED,TECHNICAL CUSTODIAN INVENTORY ONLY: historical labels and counts must not be given to blind reviewers
+6,f72r3,f72,1006203,https://collections.library.yale.edu/manifests/oid/2002046/canvas/1006203,30,30,0,30,0,NO,NOT_STARTED,TECHNICAL CUSTODIAN INVENTORY ONLY: historical labels and counts must not be given to blind reviewers
+7,f72v1,f72,1006205,https://collections.library.yale.edu/manifests/oid/2002046/canvas/1006205,30,30,0,30,0,NO,NOT_STARTED,TECHNICAL CUSTODIAN INVENTORY ONLY: historical labels and counts must not be given to blind reviewers
+8,f72v2,f72,1006204,https://collections.library.yale.edu/manifests/oid/2002046/canvas/1006204,30,30,0,30,0,NO,NOT_STARTED,TECHNICAL CUSTODIAN INVENTORY ONLY: historical labels and counts must not be given to blind reviewers
+9,f72v3,f72,1006204,https://collections.library.yale.edu/manifests/oid/2002046/canvas/1006204,30,30,0,30,0,NO,NOT_STARTED,TECHNICAL CUSTODIAN INVENTORY ONLY: historical labels and counts must not be given to blind reviewers
+10,f73r,f73,1006206,https://collections.library.yale.edu/manifests/oid/2002046/canvas/1006206,30,30,0,30,0,NO,NOT_STARTED,TECHNICAL CUSTODIAN INVENTORY ONLY: historical labels and counts must not be given to blind reviewers
+11,f73v,f73,1006207,https://collections.library.yale.edu/manifests/oid/2002046/canvas/1006207,30,30,0,30,0,NO,NOT_STARTED,TECHNICAL CUSTODIAN INVENTORY ONLY: historical labels and counts must not be given to blind reviewers
