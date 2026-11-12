@@ -1,0 +1,4 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: RC1_4_2_unresolved_register.csv>
+index,image_id,normalized_image_id,issue_type,source_profile_present,crosswalk_match_present,resolution_status,manual_intervention
+0,f085v,f85v,PROFILE_WITHOUT_IVTFF_CROSSWALK_MATCH,True,False,UNRESOLVED_NOT_ASSOCIATED,False
