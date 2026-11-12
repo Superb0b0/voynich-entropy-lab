@@ -1,0 +1,350 @@
+#!/usr/bin/env python3
+"""Corrected, fail-closed RC1.4 crosswalk builder.
+
+The original Library copy is retained unchanged. This separately versioned
+implementation aggregates IVTFF units by normalized folio_key, not page_id.
+It never edits frozen inputs or the upstream repository, and never runs
+conditional coupling.
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+import hashlib
+import io
+import json
+import os
+import re
+import tempfile
+from collections import Counter
+from datetime import datetime, timezone
+from pathlib import Path
+
+EXPECTED_COMMIT = "d4b31a245ba8133b727dc4255278b5e8349bbe39"
+EXPECTED_PROFILE_BLOB = "560779cf06e15a167799d210f6a0d4ecf1b8c8e1"
+EXPECTED_METADATA_BLOB = "eb05cb69d4847f6acb34a9d095e05c38369010d2"
+THRESHOLD = 75
+
+EXPECTED = {
+    "canvas_rows": 213,
+    "canvas_unique_ids": 213,
+    "duplicate_image_id_groups": 7,
+    "analytical_rows": 197,
+    "score_dimensions": 16,
+    "class_counts": {
+        "primary_candidate": 175,
+        "multipanel_sensitivity": 11,
+        "single_no_P": 8,
+        "multipanel_no_P": 2,
+        "unmatched_ivtff": 1,
+    },
+    "primary_admitted": 146,
+    "profile_records": 206,
+    "profile_unique_normalized_ids": 206,
+    "metadata_unique_normalized_ids": 206,
+    "unmatched_profile_ids": ["f085v"],
+    "threshold": THRESHOLD,
+}
+
+def sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+def git_blob_sha(data: bytes) -> str:
+    return hashlib.sha1(b"blob " + str(len(data)).encode("ascii") + b"\0" + data).hexdigest()
+
+def normalize_folio_key(value: str) -> str:
+    """Canonicalize folio identifiers while preserving non-folio identifiers."""
+    raw = (value or "").strip()
+    if not raw:
+        raise ValueError("Empty folio/image identifier")
+    # Normalize f001r, F0001R and f1r to f1r. Panel suffixes are not accepted
+    # here: they belong to page_id/unit_id, not the folio identity.
+    m = re.fullmatch(r"[fF]0*(\d+)([rRvV])", raw)
+    if m:
+        return f"f{int(m.group(1))}{m.group(2).lower()}"
+    return raw
+
+def read_csv(path: Path) -> list[dict]:
+    with path.open("r", encoding="utf-8-sig", newline="") as f:
+        return list(csv.DictReader(f))
+
+def csv_bytes(rows: list[dict], fields: list[str]) -> bytes:
+    s = io.StringIO(newline="")
+    w = csv.DictWriter(s, fieldnames=fields, extrasaction="raise", lineterminator="\n")
+    w.writeheader()
+    w.writerows(rows)
+    return s.getvalue().encode("utf-8")
+
+def canvas_number(row: dict) -> str:
+    m = re.search(r"/iiif/2/(\d+)$", row.get("image_service_url", ""))
+    if not m:
+        raise ValueError(f"Cannot parse Yale canvas id for {row.get('image_id')!r}")
+    return m.group(1)
+
+def aggregate_units(units: list[dict]) -> dict[str, dict]:
+    agg: dict[str, dict] = {}
+    for u in units:
+        # The folio is the analytical unit; page_id is only a subordinate panel.
+        key = normalize_folio_key(u["folio_key"])
+        z = agg.setdefault(key, {
+            "unit_count": 0, "p_locus_count": 0, "token_count": 0,
+            "unit_ids": [], "page_ids": [],
+        })
+        z["unit_count"] += 1
+        z["p_locus_count"] += int(u["unit_p_locus_count"] or 0)
+        z["token_count"] += int(u["unit_token_count"] or 0)
+        z["unit_ids"].append(u["unit_id"])
+        z["page_ids"].append(u["page_id"])
+    return agg
+
+def build(input_dir: Path, output_dir: Path) -> dict:
+    meta_path = input_dir / "corpus_metadata.csv"
+    profile_path = input_dir / "voynich_profiles.json"
+    units_path = input_dir / "folio_ivtff_crosswalk.csv"
+    builder_path = Path(__file__).resolve()
+
+    # Read and validate all inputs before creating or writing any output.
+    meta_bytes = meta_path.read_bytes()
+    profile_bytes = profile_path.read_bytes()
+    units_bytes = units_path.read_bytes()
+    if git_blob_sha(meta_bytes) != EXPECTED_METADATA_BLOB:
+        raise SystemExit("FAIL-CLOSED: corpus_metadata.csv Git blob SHA mismatch")
+    if git_blob_sha(profile_bytes) != EXPECTED_PROFILE_BLOB:
+        raise SystemExit("FAIL-CLOSED: voynich_profiles.json Git blob SHA mismatch")
+
+    meta = read_csv(meta_path)
+    units = read_csv(units_path)
+    profiles = json.loads(profile_bytes.decode("utf-8"))
+
+    if len(meta) != EXPECTED["canvas_rows"]:
+        raise SystemExit(f"FAIL-CLOSED: expected 213 canvas rows, got {len(meta)}")
+    if len(profiles) != EXPECTED["profile_records"]:
+        raise SystemExit(f"FAIL-CLOSED: expected 206 profiles, got {len(profiles)}")
+    if len(units) != 227:
+        raise SystemExit(f"FAIL-CLOSED: expected 227 IVTFF units, got {len(units)}")
+
+    required_meta = {"image_id", "image_service_url"}
+    required_units = {"page_id", "folio_key", "unit_id", "unit_p_locus_count", "unit_token_count"}
+    if not required_meta.issubset(meta[0]):
+        raise SystemExit(f"FAIL-CLOSED: metadata columns missing {sorted(required_meta-set(meta[0]))}")
+    if not required_units.issubset(units[0]):
+        raise SystemExit(f"FAIL-CLOSED: IVTFF columns missing {sorted(required_units-set(units[0]))}")
+
+    score_keys = list(profiles[0].get("archetype_scores", {}).keys())
+    if len(score_keys) != EXPECTED["score_dimensions"]:
+        raise SystemExit(f"FAIL-CLOSED: expected 16 ordered score dimensions, got {len(score_keys)}")
+    if any(list(p.get("archetype_scores", {}).keys()) != score_keys for p in profiles):
+        raise SystemExit("FAIL-CLOSED: archetype_scores keys/order differ across profiles")
+
+    # Normalize profile IDs once, fail on collisions rather than silently merging.
+    pmap: dict[str, dict] = {}
+    raw_profile_ids = set()
+    for p in profiles:
+        raw = p["image_id"]
+        key = normalize_folio_key(raw) if not raw.startswith("_") else raw
+        if key in pmap:
+            raise SystemExit(f"FAIL-CLOSED: normalized profile ID collision at {key}")
+        pmap[key] = p
+        raw_profile_ids.add(raw)
+    if len(pmap) != 206:
+        raise SystemExit(f"FAIL-CLOSED: expected 206 unique normalized profile IDs, got {len(pmap)}")
+
+    meta_keys = [normalize_folio_key(r["image_id"]) for r in meta]
+    if len(set(meta_keys)) != 206:
+        raise SystemExit(
+            f"FAIL-CLOSED: expected 206 unique normalized metadata IDs, got {len(set(meta_keys))}"
+        )
+    canvas_ids = [canvas_number(r) for r in meta]
+    if len(set(canvas_ids)) != 213:
+        raise SystemExit(f"FAIL-CLOSED: expected 213 distinct Yale canvas IDs, got {len(set(canvas_ids))}")
+
+    # One row per Yale canvas, including all repeated image_id groups.
+    canvas_rows = []
+    for r, key, canvas_id in zip(meta, meta_keys, canvas_ids):
+        p = pmap.get(key)
+        canvas_rows.append({
+            **r,
+            "normalized_folio_key": key,
+            "yale_canvas_id": canvas_id,
+            "profile_present": str(p is not None).lower(),
+            "profile_image_id": p["image_id"] if p else "",
+        })
+    duplicate_groups = sum(1 for n in Counter(meta_keys).values() if n > 1)
+
+    # Critical correction: aggregate on normalized folio_key, never page_id.
+    agg = aggregate_units(units)
+
+    analytical = []
+    unmatched = []
+    for key, p in pmap.items():
+        if key.startswith("_"):
+            continue  # nine cover/binding profiles are outside manuscript sample
+        g = agg.get(key)
+        if g is None:
+            unmatched.append(p["image_id"])
+            cls = "unmatched_ivtff"
+            units_n = p_count = tokens = 0
+            unit_ids = ""
+        else:
+            units_n = g["unit_count"]
+            p_count = g["p_locus_count"]
+            tokens = g["token_count"]
+            unit_ids = ";".join(g["unit_ids"])
+            if units_n > 1 and p_count > 0:
+                cls = "multipanel_sensitivity"
+            elif units_n > 1 and p_count == 0:
+                cls = "multipanel_no_P"
+            elif p_count == 0:
+                cls = "single_no_P"
+            else:
+                cls = "primary_candidate"
+
+        admitted = cls == "primary_candidate" and tokens >= THRESHOLD
+        row = {
+            "image_id": p["image_id"],
+            "folio_key": key,
+            "ivtf_unit_ids": unit_ids,
+            "ivtf_unit_count": units_n,
+            "p_locus_count": p_count,
+            "rc1_4_token_count": tokens,
+            "classification": cls,
+            "primary_threshold": THRESHOLD,
+            "primary_admitted": str(admitted).lower(),
+        }
+        row.update({k: p["archetype_scores"][k] for k in score_keys})
+        analytical.append(row)
+
+    class_counts = dict(Counter(x["classification"] for x in analytical))
+    admitted = sum(x["primary_admitted"] == "true" for x in analytical)
+    checks = {
+        "source_commit": EXPECTED_COMMIT,
+        "source_blobs": {
+            "corpus_metadata.csv": EXPECTED_METADATA_BLOB,
+            "voynich_profiles.json": EXPECTED_PROFILE_BLOB,
+        },
+        "canvas_rows": len(canvas_rows),
+        "canvas_unique_ids": len(set(canvas_ids)),
+        "duplicate_image_id_groups": duplicate_groups,
+        "profile_records": len(profiles),
+        "profile_unique_normalized_ids": len(pmap),
+        "metadata_unique_normalized_ids": len(set(meta_keys)),
+        "analytical_rows": len(analytical),
+        "score_dimensions": len(score_keys),
+        "class_counts": class_counts,
+        "unmatched_profile_ids": sorted(unmatched),
+        "primary_admitted": admitted,
+        "threshold": THRESHOLD,
+        "ivtf_unit_rows": len(units),
+        "aggregation_key": "normalized_folio_key",
+        "conditional_coupling_run": False,
+    }
+
+    # Compare every frozen expected invariant before any output is written.
+    for k in (
+        "canvas_rows", "canvas_unique_ids", "duplicate_image_id_groups",
+        "profile_records", "profile_unique_normalized_ids",
+        "metadata_unique_normalized_ids", "analytical_rows", "score_dimensions",
+        "primary_admitted", "threshold", "unmatched_profile_ids",
+    ):
+        if checks[k] != EXPECTED[k]:
+            raise SystemExit(f"FAIL-CLOSED: {k}: expected {EXPECTED[k]!r}, got {checks[k]!r}")
+    if class_counts != EXPECTED["class_counts"]:
+        raise SystemExit(
+            "FAIL-CLOSED: class_counts mismatch: " +
+            json.dumps({"expected": EXPECTED["class_counts"], "actual": class_counts})
+        )
+
+    canvas_fields = list(meta[0].keys()) + [
+        "normalized_folio_key", "yale_canvas_id", "profile_present", "profile_image_id"
+    ]
+    analytical_fields = [
+        "image_id", "folio_key", "ivtf_unit_ids", "ivtf_unit_count",
+        "p_locus_count", "rc1_4_token_count", "classification",
+        "primary_threshold", "primary_admitted",
+    ] + score_keys
+
+    canvas_data = csv_bytes(canvas_rows, canvas_fields)
+    analytical_data = csv_bytes(analytical, analytical_fields)
+    built_at = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    report = {
+        **checks,
+        "status": "VALIDATED",
+        "built_at_utc": built_at,
+        "builder": builder_path.name,
+        "builder_sha256": sha256_bytes(builder_path.read_bytes()),
+        "inputs": {
+            "corpus_metadata.csv": {
+                "git_blob_sha": git_blob_sha(meta_bytes),
+                "sha256": sha256_bytes(meta_bytes), "size_bytes": len(meta_bytes),
+            },
+            "voynich_profiles.json": {
+                "git_blob_sha": git_blob_sha(profile_bytes),
+                "sha256": sha256_bytes(profile_bytes), "size_bytes": len(profile_bytes),
+            },
+            "folio_ivtff_crosswalk.csv": {
+                "sha256": sha256_bytes(units_bytes), "size_bytes": len(units_bytes),
+            },
+        },
+        "artifacts": {
+            "folio_canvas_crosswalk.csv": {
+                "sha256": sha256_bytes(canvas_data), "size_bytes": len(canvas_data),
+                "rows": len(canvas_rows),
+            },
+            "conditional_coupling_sample.csv": {
+                "sha256": sha256_bytes(analytical_data), "size_bytes": len(analytical_data),
+                "rows": len(analytical),
+            },
+        },
+        "notes": [
+            "CSV files are written only after every invariant passes.",
+            "Canvas rows remain at Yale-canvas granularity (213 rows).",
+            "IVTFF units are aggregated by normalized folio_key.",
+            "No conditional-coupling analysis was executed.",
+        ],
+    }
+    report_data = (json.dumps(report, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    manifest = {
+        "release": "RC1.4-corrected",
+        "built_at_utc": built_at,
+        "source_commit": EXPECTED_COMMIT,
+        "artifacts": {
+            "folio_canvas_crosswalk.csv": {
+                "sha256": sha256_bytes(canvas_data), "size_bytes": len(canvas_data),
+            },
+            "conditional_coupling_sample.csv": {
+                "sha256": sha256_bytes(analytical_data), "size_bytes": len(analytical_data),
+            },
+            "RC1_4_remaining_crosswalks_validation.json": {
+                "sha256": sha256_bytes(report_data), "size_bytes": len(report_data),
+            },
+        },
+    }
+    manifest_data = (json.dumps(manifest, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+
+    # Stage to a temporary directory, then atomically replace final artifacts.
+    output_dir.mkdir(parents=True, exist_ok=True)
+    payloads = {
+        "folio_canvas_crosswalk.csv": canvas_data,
+        "conditional_coupling_sample.csv": analytical_data,
+        "RC1_4_remaining_crosswalks_validation.json": report_data,
+        "RC1_4_remaining_crosswalks_manifest.json": manifest_data,
+    }
+    with tempfile.TemporaryDirectory(prefix=".rc14-stage-", dir=output_dir) as tmp:
+        stage = Path(tmp)
+        for name, data in payloads.items():
+            (stage / name).write_bytes(data)
+        for name in payloads:
+            os.replace(stage / name, output_dir / name)
+
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    return report
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--input-dir", type=Path, default=Path("."))
+    ap.add_argument("--output-dir", type=Path, default=Path("."))
+    args = ap.parse_args()
+    build(args.input_dir, args.output_dir)
+
+if __name__ == "__main__":
+    main()
