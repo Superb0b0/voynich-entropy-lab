@@ -1,0 +1,50 @@
+{
+  "artifact": "RC1.4.2 DRAFT03_CODE REV01 SOURCE ONLY",
+  "contract_rev02_2_sha256": "c3f57f4cacd8b17c2d7a452020db3479cd7518415e02cf194adbd6634cfde58e",
+  "draft02_sha256": "00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325",
+  "files": [
+    {
+      "name": "README_REV_01_SOURCE_ONLY.md",
+      "sha256": "3c77277803ad50e55de1fa8a46cd41ba025b48bea0a4273487fc0f3c57b43dbd",
+      "size_bytes": 5661
+    },
+    {
+      "name": "rc1_4_2_draft03_rev01_computations.py",
+      "sha256": "d80a57ffcdd5255b34e7aaa752756ef372902277611b13ab431543dfaf7f504d",
+      "size_bytes": 26861
+    },
+    {
+      "name": "rc1_4_2_draft03_rev01_contracts.py",
+      "sha256": "41722715a95c9597512fd8de6d536888d12faeab04a1e935c7ae4dc1de34c0c8",
+      "size_bytes": 4032
+    },
+    {
+      "name": "rc1_4_2_draft03_rev01_isolated_parser.py",
+      "sha256": "f656086845d3d3d6dea5b0b60408715316ce826d6cf22c66d8e3b1ca7a24e94f",
+      "size_bytes": 1482
+    },
+    {
+      "name": "rc1_4_2_draft03_rev01_linux.py",
+      "sha256": "3eabfe664530d5b1ebce8c92a45d6912a6a90afde61458623f0dcc09ee2f97ff",
+      "size_bytes": 4793
+    },
+    {
+      "name": "rc1_4_2_draft03_rev01_trusted_supervisor.py",
+      "sha256": "b9e781b9545eccf0b71e9e9ca0d5df5b41e4559a7fbd5ab40a77c1d10b38cec4",
+      "size_bytes": 6536
+    },
+    {
+      "name": "rc1_4_2_generator_clean_DRAFT_03_CODE_REV_01.py",
+      "sha256": "c0f8c71b28b2e1f44e9a6ceec9e82d8357d3df0ee963ef92582fd259987fe357",
+      "size_bytes": 3965
+    }
+  ],
+  "gate": "CLOSED_PENDING_VALIDATION",
+  "implementation_design_sha256": "82cec25351e97d10fa90d5d9c0f287d87097f6262ad110df4a362293b2829dbe",
+  "original_draft03_zip_sha256": "4e03c4f52288ffe0288973acadfe0fee9d754d0b0c82b8ce25891b044b5cbab4",
+  "qualification_service_deployed": false,
+  "source_acceptance": "NOT_GRANTED_PENDING_STATIC_SOURCE_REVIEW",
+  "source_code_executed_or_imported": false,
+  "source_review01_sha256": "20885162404f3911270e042e51977367f1f6462d48c7016ec598f6fe26bc7055",
+  "status": "PENDING_NEW_STATIC_SOURCE_REVIEW"
+}
