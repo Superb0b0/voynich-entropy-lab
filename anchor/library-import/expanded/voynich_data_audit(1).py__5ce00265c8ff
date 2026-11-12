@@ -1,0 +1,260 @@
+#!/usr/bin/env python3
+"""Audit preliminare dei dati Voynich. Non è un'analisi linguistica o predittiva."""
+import csv, hashlib, re, sys
+from collections import Counter
+from datetime import datetime, timezone
+from pathlib import Path
+import requests
+
+OUTDIR = Path('voynich_audit')
+OUTDIR.mkdir(exist_ok=True)
+VOYNICH_URL = 'https://www.voynich.nu/data/ZL3b-n.txt'
+VOYNICH_FALLBACK = 'https://huggingface.co/datasets/AncientLanguages/Voynich/resolve/main/zl3b-n.txt'
+LINNAEUS_URL = 'https://www.gutenberg.org/ebooks/20771.txt.utf-8'
+
+
+def segment_raw_text(raw_text):
+    """Segmentazione orientata alla ricostruzione: conserva i separatori come elementi autonomi.
+
+    Non rappresenta token vuoti tra separatori consecutivi. Per i token vuoti usare
+    segmentation_B(). reconstruct(segment_raw_text(s)) deve restituire esattamente s.
+    """
+    elements, current, pending_sep = [], [], None
+    def flush_token():
+        nonlocal current, pending_sep
+        if current:
+            elements.append(('token', ''.join(current), pending_sep))
+            current = []
+        pending_sep = None
+    for ch in raw_text:
+        if ch in '.,':
+            flush_token()
+            elements.append(('sep', ch, 'certain' if ch == '.' else 'uncertain'))
+            pending_sep = 'certain' if ch == '.' else 'uncertain'
+        else:
+            current.append(ch)
+    if current:
+        elements.append(('token', ''.join(current), pending_sep))
+    return elements
+
+
+def reconstruct(elements):
+    return ''.join(el[1] for el in elements if el[0] in ('token', 'sep'))
+
+
+def segmentation_A(raw_text):
+    tokens, current = [], []
+    for ch in raw_text:
+        if ch == '.':
+            tokens.append(''.join(current)); current = []
+        else:
+            current.append(ch)
+    tokens.append(''.join(current))
+    return tokens
+
+
+def segmentation_B(raw_text):
+    """Tokenizza su punto e virgola, conservando esplicitamente i token vuoti.
+
+    Restituisce (token, separatore_precedente). È distinta dalla rappresentazione
+    segment_raw_text(), che conserva i separatori autonomamente.
+    """
+    tokens, current, pending_sep = [], [], None
+    for ch in raw_text:
+        if ch in '.,':
+            tokens.append((''.join(current), pending_sep)); current = []
+            pending_sep = 'certain' if ch == '.' else 'uncertain'
+        else:
+            current.append(ch)
+    tokens.append((''.join(current), pending_sep))
+    return tokens
+
+
+def reconstruct_B(tokens):
+    parts = []
+    for i, (token, sep_prev) in enumerate(tokens):
+        if i and sep_prev:
+            parts.append('.' if sep_prev == 'certain' else ',')
+        parts.append(token)
+    return ''.join(parts)
+
+
+def run_self_test():
+    failures = []
+    cases = ['abc.def', 'abc,def', 'abc.def,ghi.jkl', '', '.', ',', '.,', ',.',
+             'abc.', 'abc,', '.abc', ',abc', 'abc.def,,ghi', 'a,,b', 'a..b',
+             'a.,b', 'a,.b', '....', ',,,,', 'a b c', 'a\tb']
+    for s in cases:
+        if reconstruct(segment_raw_text(s)) != s:
+            failures.append(f'reconstruct: {s!r}')
+        if reconstruct_B(segmentation_B(s)) != s:
+            failures.append(f'reconstruct_B: {s!r}')
+    if segmentation_A('abc.def,ghi') != ['abc', 'def,ghi']: failures.append('A base')
+    if segmentation_A('abc.') != ['abc', '']: failures.append('A trailing dot')
+    if segmentation_A('.') != ['', '']: failures.append('A dot')
+    if segmentation_A('a,,b') != ['a,,b']: failures.append('A commas')
+    b_cases = [
+        ('abc.def', [('abc', None), ('def', 'certain')]),
+        ('abc,', [('abc', None), ('', 'uncertain')]),
+        (',', [('', None), ('', 'uncertain')]),
+        ('a,,b', [('a', None), ('', 'uncertain'), ('b', 'uncertain')]),
+    ]
+    for s, expected in b_cases:
+        if segmentation_B(s) != expected: failures.append(f'B: {s!r}')
+    folio_cases = [('f1r.1,@P0','f1r'), ('f1v.2','f1v'), ('f10r.5,@P0','f10r'),
+                   ('f99v.1','f99v'), ('f1r','?'), ('x1r.1','?'), ('f1x.1','?')]
+    for locator, expected in folio_cases:
+        if locate_folio(locator) != expected:
+            failures.append(f'locate_folio({locator!r}): {locate_folio(locator)!r} != {expected!r}')
+    if failures:
+        print('[TEST FALLITO]'); [print(' -', x) for x in failures]
+        return False
+    print(f'[TEST OK] {len(cases)} casi di ricostruzione doppia, segmentazioni A/B e 7 test locate_folio.')
+    return True
+
+
+def download_with_provenance(url, path, expected_min_bytes=1000):
+    record = {'url': url, 'fetched_at_utc': None, 'bytes': None, 'sha256': None,
+              'note': 'Autenticità non certificata; SHA256 identifica solo i byte presenti.'}
+    # Riusa solo file non vuoti e di dimensione minima; un file parziale viene rimosso.
+    if path.exists() and path.stat().st_size < expected_min_bytes:
+        path.unlink()
+    if not path.exists():
+        print(f'[DOWNLOAD] {url}')
+        try:
+            r = requests.get(url, timeout=60)
+            r.raise_for_status()
+            if len(r.content) < expected_min_bytes:
+                print(f'[ERRORE] Risposta troppo piccola: {len(r.content)} byte')
+                return None
+            path.write_bytes(r.content)
+            record['fetched_at_utc'] = datetime.now(timezone.utc).isoformat()
+        except Exception as e:
+            print(f'[ERRORE] Download fallito: {e}')
+            return None
+    data = path.read_bytes()
+    if len(data) < expected_min_bytes:
+        return None
+    record['bytes'] = len(data)
+    record['sha256'] = hashlib.sha256(data).hexdigest()
+    if record['fetched_at_utc'] is None:
+        record['note'] = 'File già presente; hash calcolato localmente. Autenticità non certificata.'
+    return record
+
+
+def extract_loci(raw_text):
+    loci = []
+    for i, line in enumerate(raw_text.splitlines(), start=1):
+        m = re.match(r'^<([^>]+)>\s+(.*)$', line.rstrip('\n'))
+        if m:
+            loci.append({'locator': m.group(1), 'raw_text': m.group(2), 'file_line': i})
+    return loci
+
+
+def locate_folio(locator):
+    m = re.match(r'^(f\d+[rv])\.', locator)
+    return m.group(1) if m else '?'
+
+
+def count_ngrams_with_empty(segB_records, n=5):
+    all_ngrams, loci_with_empty = [], 0
+    for _, _, pairs in segB_records:
+        tokens = [token for token, _ in pairs]
+        if any(t == '' for t in tokens): loci_with_empty += 1
+        all_ngrams.extend(tuple(tokens[i:i+n]) for i in range(len(tokens)-n+1))
+    c = Counter(all_ngrams); total = len(all_ngrams)
+    return {'total_occ': total, 'unique_types': len(c),
+            'dup_types': sum(v > 1 for v in c.values()),
+            'dup_occ': sum(v for v in c.values() if v > 1),
+            'dup_occ_pct': 100*sum(v for v in c.values() if v > 1)/total if total else 0.0,
+            'loci_with_empty': loci_with_empty}
+
+
+def count_ngrams_excluding_empty(segB_records, n=5):
+    all_ngrams, excluded = [], 0
+    for _, _, pairs in segB_records:
+        tokens = [token for token, _ in pairs]
+        if any(t == '' for t in tokens): excluded += 1; continue
+        all_ngrams.extend(tuple(tokens[i:i+n]) for i in range(len(tokens)-n+1))
+    c = Counter(all_ngrams); total = len(all_ngrams)
+    return {'total_occ': total, 'unique_types': len(c),
+            'dup_types': sum(v > 1 for v in c.values()),
+            'dup_occ': sum(v for v in c.values() if v > 1),
+            'dup_occ_pct': 100*sum(v for v in c.values() if v > 1)/total if total else 0.0,
+            'loci_excluded': excluded}
+
+
+def write_tsv_safe(path, header, rows):
+    with open(path, 'w', encoding='utf-8', newline='') as f:
+        writer = csv.writer(f, delimiter='\t', quoting=csv.QUOTE_ALL)
+        writer.writerow(header); writer.writerows(rows)
+
+
+def main():
+    print('=' * 70, '\nAUDIT PRELIMINARE DEI DATI, NON ANALISI PREDITTIVA')
+    if not run_self_test(): sys.exit(1)
+    v_path = OUTDIR / 'ZL3b-n.txt'
+    v_record = download_with_provenance(VOYNICH_URL, v_path, 100_000)
+    if v_record is None:
+        print('[FALLBACK] Provo Hugging Face...')
+        # Remove any invalid partial file before trying fallback, otherwise it could be reused.
+        if v_path.exists(): v_path.unlink()
+        v_record = download_with_provenance(VOYNICH_FALLBACK, v_path, 100_000)
+    if v_record is None:
+        print('[ERRORE FATALE] ZL3b non scaricabile.'); sys.exit(1)
+    l_path = OUTDIR / 'species_plantarum_1-3.txt'
+    l_record = download_with_provenance(LINNAEUS_URL, l_path, 100_000)
+    if l_record is None:
+        print('[AVVISO] Corpus latino non scaricabile/insufficiente; audit Voynich continua senza confronto latino.')
+    v_raw = v_path.read_text(encoding='utf-8', errors='replace')
+    lines = v_raw.splitlines()
+    n_empty = sum(not l.strip() for l in lines)
+    n_header = sum(bool(re.match(r'^<[^>]+>\s*$', l.strip())) for l in lines)
+    n_locus = sum(bool(re.match(r'^<[^>]+>\s+\S', l.strip())) for l in lines)
+    n_comment = sum(l.strip().startswith('#') for l in lines)
+    print('\n--- STRUTTURA ---')
+    print(f'Righe totali: {len(lines)}; vuote: {n_empty}; possibili header: {n_header}; loci: {n_locus}; commenti: {n_comment}; non classificate: {len(lines)-n_empty-n_header-n_locus-n_comment}')
+    loci = extract_loci(v_raw)
+    print(f'Loci estratti: {len(loci)} (conteggio osservato, non validato esternamente)')
+    segA_records, segB_records, folios = [], [], Counter()
+    n_certain = n_uncertain = reconstruction_failures = 0
+    for locus in loci:
+        loc, fl, raw = locus['locator'], locus['file_line'], locus['raw_text']
+        folios[locate_folio(loc)] += 1
+        el = segment_raw_text(raw)
+        if reconstruct(el) != raw: reconstruction_failures += 1
+        segA_records.append((loc, fl, segmentation_A(raw)))
+        # Crucial: n-gram records use segmentation_B, not segment_raw_text elements.
+        segB_records.append((loc, fl, segmentation_B(raw)))
+        for item in el:
+            if item[0] == 'sep':
+                if item[2] == 'certain': n_certain += 1
+                else: n_uncertain += 1
+    print(f'Ricostruzioni esatte: {len(loci)-reconstruction_failures}/{len(loci)}')
+    if reconstruction_failures: sys.exit(1)
+    print(f'Token A (inclusi vuoti): {sum(len(r[2]) for r in segA_records)}')
+    print(f'Token B (inclusi vuoti): {sum(len(r[2]) for r in segB_records)}; confini certi: {n_certain}; incerti: {n_uncertain}')
+    print(f'Folii distinti ricavati dal locator: {len(folios)}; esempi: {list(folios)[:10]}')
+    stats = count_ngrams_with_empty(segB_records, 5)
+    clean = count_ngrams_excluding_empty(segB_records, 5)
+    print('\n--- 5-GRAMMI B, TOKEN VUOTI INCLUSI ---')
+    print(stats)
+    print('--- SENSIBILITÀ, LOCI CON TOKEN VUOTI ESCLUSI ---')
+    print(clean)
+    rowsB = []
+    for loc, fl, pairs in segB_records:
+        for idx, (token, sep_prev) in enumerate(pairs):
+            rowsB.append([loc, fl, idx, token, sep_prev or 'none'])
+    write_tsv_safe(OUTDIR/'voynich_segB_tokens.tsv', ['locator','file_line','token_index','token','preceding_separator'], rowsB)
+    rowsA = [[loc, fl, idx, token] for loc, fl, tokens in segA_records for idx, token in enumerate(tokens)]
+    write_tsv_safe(OUTDIR/'voynich_segA_tokens.tsv', ['locator','file_line','token_index','token'], rowsA)
+    prov = []
+    prov.append(['ZL3b', v_record['url'], v_record['fetched_at_utc'] or '', v_record['bytes'], v_record['sha256'], v_record['note']])
+    if l_record:
+        prov.append(['Species_Plantarum_I-III', l_record['url'], l_record['fetched_at_utc'] or '', l_record['bytes'], l_record['sha256'], l_record['note']])
+    write_tsv_safe(OUTDIR/'provenance.tsv', ['corpus','url','fetched_at_utc','bytes','sha256','note'], prov)
+    print('\nFile scritti in:', OUTDIR.resolve())
+    print('Limiti: parser IVTFF minimale; quire non estratto; corpus latino scaricato ma non analizzato; hash non certifica autenticità; nessun test predittivo eseguito.')
+
+if __name__ == '__main__':
+    main()
