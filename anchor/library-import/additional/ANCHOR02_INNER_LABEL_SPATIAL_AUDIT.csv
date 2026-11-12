@@ -1,0 +1,13 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: ANCHOR02_INNER_LABEL_SPATIAL_AUDIT.csv>
+index,candidate_id,ring,x_normalized,y_normalized,writing_visible,spatial_association,visual_note,transcription,status
+0,I01,inner,425,258,yes,multiple,"Scrittura a sinistra, sopra e a destra; non univoca",NOT_ATTEMPTED,UNRESOLVED_NONBLIND
+1,I02,inner,530,247,yes,multiple,Scrittura sopra e accanto alla testa; orientamenti diversi,NOT_ATTEMPTED,UNRESOLVED_NONBLIND
+2,I03,inner,626,329,yes,multiple,Stringhe vicine sopra e sotto il recipiente; nessun legame certo,NOT_ATTEMPTED,UNRESOLVED_NONBLIND
+3,I04,inner,696,409,yes,multiple,Testo radiale a destra e in basso; stella interposta,NOT_ATTEMPTED,UNRESOLVED_NONBLIND
+4,I05,inner,684,550,yes,multiple,Stringhe in più direzioni attorno a figura e recipiente,NOT_ATTEMPTED,UNRESOLVED_NONBLIND
+5,I06,inner,597,636,yes,multiple,Stringhe curve ai due lati della testa capovolta,NOT_ATTEMPTED,UNRESOLVED_NONBLIND
+6,I07,inner,479,682,yes,multiple,Scrittura sopra e sotto la figura capovolta,NOT_ATTEMPTED,UNRESOLVED_NONBLIND
+7,I08,inner,333,586,yes,multiple,Figura parziale al margine del ritaglio; testo vicino ma non assegnabile,NOT_ATTEMPTED,UNRESOLVED_NONBLIND
+8,I09,inner,303,470,yes,multiple,Stringhe a sinistra e a destra della testa; vicini altri personaggi,NOT_ATTEMPTED,UNRESOLVED_NONBLIND
+9,I10,inner,335,365,yes,multiple,Scrittura radiale accanto alla testa; altre figure nel ritaglio,NOT_ATTEMPTED,UNRESOLVED_NONBLIND
