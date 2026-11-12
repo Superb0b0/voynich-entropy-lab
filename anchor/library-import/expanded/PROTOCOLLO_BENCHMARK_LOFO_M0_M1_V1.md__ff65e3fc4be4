@@ -1,0 +1,39 @@
+# Protocollo preregistrato: Benchmark predittivo LOFO, Batteria M0-M1
+
+- ID: VOYNICH_BENCHMARK_LOFO_M0_M1_V1
+- Data di preregistrazione: 2026-10-25
+- Baseline di parsing: Baseline 1.0, RC1.2 promossa
+- Corpus autorizzato: ZL3b-n.txt
+- SHA-256 corpus: bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc
+- Report di parsing usato: parser_rc1_2_report.json
+- Unità di split: folio identificato dal campo `folio` del report; tutti i loci di un folio restano nello stesso fold.
+- Strategia: Leave-One-Folio-Out (LOFO), un fold per ciascun folio presente nel report. Nessuno split casuale di righe o token.
+- Ordine: questo protocollo e lo script vengono salvati prima del calcolo dei punteggi. Nessun parametro viene scelto sulla base dei risultati LOFO.
+
+## Perimetro e tokenizzazione
+
+Si usano esclusivamente i token già prodotti e salvati nel report della Baseline 1.0. Non si riapplica una tokenizzazione alternativa. I loci sono sequenze indipendenti: contesti Markoviani non attraversano i confini tra loci. Ogni token di test è valutato una sola volta, nel fold in cui il suo folio è escluso dal training.
+
+## Modelli della prima batteria
+
+- M0, unigramma globale: conteggi di token nel training, senza condizionamento contestuale.
+- M1, Markov di ordine 1: probabilità del token condizionata al token immediatamente precedente all'interno dello stesso locus; il primo token di ogni locus è condizionato a BOS.
+- Vocabolario per fold: tipi osservati nel solo training più un simbolo UNK. Ogni token di test assente dal vocabolario del training è mappato a UNK. Per M1, anche il contesto precedente assente dal vocabolario del training è mappato a UNK.
+- Smoothing: add-alpha con alpha=0.1, fissato prima dell'esecuzione. Per M0 il denominatore è N_train + alpha*V, con V pari al numero dei tipi di training più UNK. Per ogni contesto di M1 il denominatore è il conteggio del contesto + alpha*V; V è il medesimo vocabolario di esito del fold. I contesti mai osservati hanno conteggi nulli e ricevono la distribuzione uniforme indotta dallo smoothing.
+- Nessuna selezione di parametri, esclusione post-hoc di token, rimozione di folii o modifica del parser.
+
+## Metriche e criterio decisionale
+
+- Metrica primaria: cross-entropy out-of-sample aggregata per token, in bit/token, calcolata dalla somma delle log-probabilità predittive di tutti i token nei fold.
+- Metrica derivata: perplessità = 2^(cross-entropy), riportata come trasformazione descrittiva della metrica primaria.
+- Confronto primario M1 vs M0: differenza appaiata di loss per folio, con bootstrap per folio (10.000 repliche, seed 20261025) per intervallo percentile al 95% della riduzione relativa di cross-entropy. I folii, non i token, sono le unità di ricampionamento.
+- Soglia operativa di promozione: riduzione relativa della cross-entropy di almeno il 2% rispetto a M0 e intervallo di confidenza al 95% della riduzione che escluda zero. Questa soglia è un criterio operativo preregistrato, non una costante universale.
+- Si riportano anche conteggi e percentuali OOV per fold e complessivi. Gli esiti negativi non sono scartati.
+
+## Limiti interpretativi
+
+LOFO riduce la fuga informativa tra righe dello stesso folio ma non garantisce indipendenza codicologica tra folii adiacenti. LOQ resta un controllo successivo subordinato alla disponibilità di una mappatura codicologica indipendente e affidabile. Un vantaggio predittivo non equivale a una decifrazione, né dimostra da solo che il testo sia una lingua naturale.
+
+## Immutabilità
+
+Questo protocollo non modifica la Baseline 1.0, il corpus, il parser, la specifica o il report canonico. Qualsiasi variazione futura richiederà una nuova versione del protocollo e manterrà archiviati i risultati precedenti.
