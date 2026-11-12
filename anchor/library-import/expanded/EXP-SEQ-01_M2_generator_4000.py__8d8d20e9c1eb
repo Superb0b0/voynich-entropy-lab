@@ -1,0 +1,51 @@
+import json,hashlib,re,time
+from pathlib import Path
+from collections import Counter,defaultdict
+import numpy as np
+ROOT=Path('/mnt/data/files'); EXPECTED='bf5b6d4ac1e3a51b1847a9c388318d609023d0'
+EXPECTED='bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc'
+r=json.load(open('/tmp/EXPSEQ01_parser_rc1_2_fresh.json')); m=json.load(open(ROOT/'SECTION_MAPPING_V1.json'))
+assert hashlib.sha256((ROOT/'ZL3b-n.txt').read_bytes()).hexdigest()==EXPECTED
+assert r['source']['sha256']==EXPECTED and m['corpus_sha256']==EXPECTED
+section={e['folio_id']:e['section_label'] for e in m['entries']}; records=r['records']
+assert len(records)==4130 and len(section)==207 and len({x['folio'] for x in records})==207
+scales=(2,5,10,20); out={}; t0=time.time()
+for L in scales:
+    by_m=defaultdict(list); identity=0; identity_tokens=0
+    for idx,rec in enumerate(records):
+        n=len(rec['tokens'])
+        if n<=L:
+            identity+=1; identity_tokens+=n
+        else:
+            by_m[(n+L-1)//L].append(idx)
+    changed_total=0; replicas_changed=0
+    for rep in range(1,1001):
+        key=f'EXP-SEQ-01::M2::L={L:02d}::REP={rep:04d}::SALT=bf5b6d4ac1e3a51b'
+        digest=hashlib.sha256(key.encode('utf-8')).digest()
+        rng=np.random.Generator(np.random.PCG64(np.random.SeedSequence(list(digest))))
+        changed=0
+        for M,idxs in sorted(by_m.items()):
+            nrows=len(idxs)
+            perms=np.tile(np.arange(M,dtype=np.int32),(nrows,1))
+            # Vectorized Fisher-Yates: independent unbiased j in [0,i] for each locus row.
+            for i in range(M-1,0,-1):
+                js=rng.integers(0,i+1,size=nrows,dtype=np.int64)
+                rows=np.arange(nrows)
+                tmp=perms[rows,i].copy(); perms[rows,i]=perms[rows,js]; perms[rows,js]=tmp
+            changed+=int(np.count_nonzero(np.any(perms!=np.arange(M),axis=1)))
+            if rep==1:
+                # Verify each generated row is a genuine permutation of all block indices.
+                expected=np.arange(M)
+                if not np.all(np.sort(perms,axis=1)==expected): raise AssertionError('invalid block permutation')
+                # Verify a token payload reconstruction sample per M group.
+                for rownum in sorted(set([0,nrows//2,nrows-1])):
+                    rec=records[idxs[rownum]]; toks=rec['tokens']; blocks=[toks[i:i+L] for i in range(0,len(toks),L)]
+                    reordered=[blocks[int(j)] for j in perms[rownum]]
+                    rebuilt=[tok for block in reordered for tok in block]
+                    if len(rebuilt)!=len(toks) or Counter(rebuilt)!=Counter(toks): raise AssertionError('token multiset mismatch')
+        changed_total+=changed; replicas_changed+=int(changed>0)
+    out[str(L)]={'replicas':1000,'permutable_loci':sum(len(v) for v in by_m.values()),'identity_loci':identity,'identity_tokens':identity_tokens,'changed_loci_total':changed_total,'replicas_with_any_change':replicas_changed,'fisher_yates_index_permutations_validated':True,'first_replica_payload_multisets_sampled_and_verified':True}
+    print('DONE',L,out[str(L)],flush=True)
+report={'status':'M2_BLOCK_PERMUTATION_GENERATOR_4000_REPLICAS_COMPLETED','corpus_sha256':EXPECTED,'parser_report_sha256':hashlib.sha256(Path('/tmp/EXPSEQ01_parser_rc1_2_fresh.json').read_bytes()).hexdigest(),'mapping_sha256':hashlib.sha256((ROOT/'SECTION_MAPPING_V1.json').read_bytes()).hexdigest(),'python':'3.13.5','numpy':np.__version__,'physical_groups':98,'folios':207,'loci':4130,'tokens':35492,'seed_template':'EXP-SEQ-01::M2::L={L:02d}::REP={rep:04d}::SALT=bf5b6d4ac1e3a51b','seed_conversion':'SeedSequence(list(SHA256_digest_bytes))','prng':'PCG64','fisher_yates':'vectorized descending Fisher-Yates, j sampled by Generator.integers(0,i+1)','scales':out,'elapsed_seconds':round(time.time()-t0,2),'limitations':['Python runtime is 3.13.5, not specified 3.11.x.','SeedSequence does not accept bytes directly; the 32-byte digest was passed as a 32-integer entropy sequence.','M2 block index permutations generated in memory; no corpus byte serialization.','M5/M6 formula and inner-fold specification are not fully specified in the available canonical text; predictive scoring and final A/B/C inference not executed.']}
+Path('/tmp/EXPSEQ01_M2_generator_4000_report.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')
+print('FINAL',json.dumps(report,ensure_ascii=False),flush=True)
