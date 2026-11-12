@@ -1,0 +1,25 @@
+# RC1.4-OA technical validation delivery
+
+Status: `PASS_TECHNICAL_ONLY`
+
+This package contains a provenance-only derivative of the frozen RC1.4 parser and its technical validation outputs. The original corpus and parent parser are not included as modified artifacts and were not changed.
+
+- `ivtff_parser_rc1_4_offset_aware.py`: derivative parser; requires the frozen parent parser at runtime.
+- `ivtff_parser_rc1_4_offset_aware_report.json`: full token-level provenance report.
+- `ivtff_parser_rc1_4_offset_aware_validation.json`: OA-001 through OA-014 results.
+
+## Verified
+
+- Corpus SHA-256: `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc`
+- Frozen RC1.4 SHA-256: `075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d`
+- Lexical equivalence: 4,130/4,130 loci; 35,492/35,492 tokens; zero differences.
+- Provenance: 35,154 `TRACEABLE_CONTIGUOUS`; 338 `TRACEABLE_MULTISEGMENT`; zero `UNTRACEABLE`.
+- The 338 multisegment tokens are caused by intra-line removal of curly-brace delimiters, not by physical-line continuation joins. The corpus has 8,510 physical lines and 8,510 logical lines after the parent join operation.
+- All source segments are in bounds, reconstruct the canonical token after lowercasing, and have no overlaps.
+- OA-001 through OA-014: 14 PASS, 0 FAIL. Independent second generation is byte-for-byte identical.
+
+## Hard boundary
+
+The 338 multisegment tokens have no valid single continuous source interval. Therefore they are not representable under V7's current single-span identity contract. No V7 amendment is made here. Any operation requiring that contract must remain fail-closed pending an explicit, versioned decision.
+
+Analytical gate remains `CLOSED_PENDING_VALIDATION`. No analytical builder, PCA, clustering, conditional coupling, profile promotion, or V1.4.2 artifact generation was performed.
