@@ -1,0 +1,123 @@
+# RC1.4.2 V7.1 | Revisione statica del sorgente DRAFT 03_CODE, rapporto 01
+
+**Data:** 10 novembre 2026  
+**Oggetto:** i sei file Python nel pacchetto `RC1_4_2_DRAFT_03_CODE_SOURCE_ONLY.zip`  
+**Perimetro:** revisione statica interna, sola lettura, senza importare/compilare/eseguire i moduli esaminati; nessun parser, builder o generatore invocato.  
+**Contratto:** `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_2.md`, SHA-256 `c3f57f4cacd8b17c2d7a452020db3479cd7518415e02cf194adbd6634cfde58e`.  
+**Design implementativo:** `RC1_4_2_DRAFT_03_CODE_IMPLEMENTATION_DESIGN_SPEC.md`, SHA-256 `82cec25351e97d10fa90d5d9c0f287d87097f6262ad110df4a362293b2829dbe`.  
+**Originale congelato:** `rc1_4_2_generator_clean_DRAFT_02.py`, SHA-256 `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325`.
+
+## 1. Verdetto e significato
+
+**`STATIC_SOURCE_ACCEPTANCE_DRAFT_03_CODE: NOT_GRANTED`**  
+**`SOURCE_REVIEW_RESULT: INADEQUATE_FOR_QUALIFIED_AUDIT_IMPLEMENTATION`**  
+**`SAFE_BLOCKING_OF_SUPPORTED_QUALIFIED_PUBLIC_OPERATIONS: PRESENT_IN_SOURCE`**.
+
+Il frontend diagnostico non contiene un percorso attivo che emetta i cinque artefatti ufficiali o attribuisca automaticamente `PASS`. Tuttavia, il *codice sorgente completo* non soddisfa ancora F-01/F-02/F-03 e T-01–T-10 come implementazione: il servizio esterno, il launcher confinato, la prova dei byte consumati, la catena di fiducia, l'assessment e il publisher sono assenti o bloccati intenzionalmente. Alcuni helper eseguirebbero operazioni sensibili se invocati direttamente, senza verificare il proprio confine di fiducia. Questo è un verdetto **sul testo del sorgente**, non un risultato di esecuzione né una attestazione di sicurezza ambientale.
+
+L'accettazione **della specifica** `SPECIFICATION_ADEQUATE_AS_ACCEPTANCE_CONTRACT` e quella **del design** `IMPLEMENTATION_DESIGN_ADEQUATE` rimangono valide nei rispettivi perimetri documentali. Non implicano l'accettazione del nuovo codice.
+
+## 2. Inventario staticamente identificato
+
+| File Python | Byte | SHA-256 |
+|---|---:|---|
+| `rc1_4_2_generator_clean_DRAFT_03_CODE.py` | 3.935 | `da39dcf077bbbd2f7ebed81ede028e43a067dc07fbb7e4d381c96c7a13dccd34` |
+| `rc1_4_2_draft03_contracts.py` | 3.363 | `14242f6e361087dcc08762b1dada42be0a1299748fe34c5a2863d58bf2621ce0` |
+| `rc1_4_2_draft03_computations.py` | 26.855 | `5f43a1f1c2126c01a8d7a9fdfc20b08061f4413fcb3b127c5165ba0f0ca795ff` |
+| `rc1_4_2_draft03_linux.py` | 11.962 | `cca5448fc9c3ca4f086ced2848438c13c5c5a5848e11d862cf77d8f5cdb6d215` |
+| `rc1_4_2_draft03_isolated_parser.py` | 4.173 | `60d574aaa93d545eb1d5910b7311d768875deb6b5d783ae5e1ae87702be89399` |
+| `rc1_4_2_draft03_trusted_supervisor.py` | 13.626 | `0803221329852a4d00e55512e23217537adfb47ce8cdb287c6c76471e7ad8e52` |
+
+Il pacchetto ZIP è leggibile e contiene esattamente questi sei file, README e manifest; SHA-256 ZIP `4e03c4f52288ffe0288973acadfe0fee9d754d0b0c82b8ce25891b044b5cbab4`. I digest di DRAFT 02, parser e altri originali disponibili sono stati confrontati in sola lettura e coincidono con i pin. `corpus_metadata.csv` è stato verificato via GitHub nel passaggio precedente, non è presente come file locale in questa ispezione: **nessuna nuova acquisizione session-bound è dichiarata**.
+
+## 3. Rilievi puntuali sul sorgente
+
+### SRC-01 | BLOCCANTE | Il loader del parser non impone realmente i controlli di confinamento
+
+- **Evidenza:** `rc1_4_2_draft03_isolated_parser.py:30-43` definisce `_assert_kernel_unprivileged`, ma `:46-61` implementa `_load_frozen_module_after_kernel_checks` senza chiamare quel controllo né attestare namespace, `pivot_root`, vecchia root distaccata o runtime approvato. In `:54-60`, dopo una lettura/hash del `Path`, chiama `spec.loader.exec_module(module)`.
+- **Implicazione statica:** il loader è una funzione importabile che, se invocata, può eseguire direttamente un parser congelato; l'ordine prescritto è commentato, non imposto dal call graph. Inoltre digest sul primo `read_bytes()` e lettura successiva della path da parte del loader sono due accessi distinti. Non si deduce identità dei byte consumati dalla prima verifica senza confinamento effettivo.
+- **Correzione richiesta:** eliminare questo loader dal processo importabile non fidato; concentrare l'import nel child avviato solo da launcher separato e già attestato, con verifica vincolante dello stato e dei byte/snapshot prima di qualsiasi `exec_module`. Nessuna autorizzazione tramite bool o dataclass Python.
+
+### SRC-02 | BLOCCANTE PER F-01 / CONFINE DI FIDUCIA | Helper con I/O e rinomina direttamente invocabili
+
+- **Evidenza:** `rc1_4_2_draft03_trusted_supervisor.py:120-132` legge sette file da `dirfd` accettati come argomenti, senza richiedere una sessione autenticata al suo ingresso; `:135-161` crea una directory snapshot e vi scrive i byte di un `Mapping` passato come argomento. `rc1_4_2_draft03_linux.py:157-186` implementa scritture di snapshot e `:284-297` espone `_renameat2_directory_no_replace` su `dirfd` e nomi forniti all'helper, senza vincolo interno ad autorizzazione/sessione.
+- **Delimitazione:** **non** è stato identificato un percorso attivo da questi helper alla generazione del bundle ufficiale con `PASS`; questo è bloccato. Tuttavia il prefisso `_` e la docstring «trusted» non sono controlli di accesso: le funzioni di I/O restano richiamabili direttamente con i privilegi del processo che le invoca.
+- **Correzione richiesta:** assegnare l'I/O sensibile soltanto a un servizio OS separato, non esposto nel frontend importabile; obbligare la verifica del contesto/sessione protetto nel vero entrypoint del servizio. La semplice organizzazione in file Python non dimostra il confine di fiducia.
+
+### SRC-03 | BLOCCANTE PER F-02 / IPC | Ricevute e osservazioni non autenticabili dal solo oggetto Python
+
+- **Evidenza:** `rc1_4_2_draft03_trusted_supervisor.py:66-86` descrive `ParserPeerReceipt` e `VerifiedEvidenceRef` come dataclass senza capacità autenticante. `:164-203` si affida a `server_receipt.environment_checks_verified` e confronta `SO_PEERCRED` con valori presenti in `server_receipt`; non dimostra la provenienza protetta del receipt. `:206-240` accetta `raw`, `child_message` e `receipt` come argomenti; verifica il pin della configurazione e del corpus nelle funzioni invocate, ma non verifica in quel percorso tutti i digest degli altri byte consegnati nel `raw` ricevuto. `:229-234` usa inoltre `lexical_equivalence.difference_count` fornito dal child come precondizione, senza autonoma attestazione lessicale.
+- **Delimitazione:** il controllo `SO_PEERCRED` è un controllo kernel effettivamente nominato nel sorgente, **non** una dimostrazione di autorizzazione/sessione se il receipt è costruibile nel processo chiamante. Gli ulteriori controlli sui segmenti e sulle cardinalità sono validazioni dei dati, non certificano la provenienza di ogni input.
+- **Correzione richiesta:** receipt creato e recuperato da stato server-side non manipolabile, session/nonce binding e anti-replay; confronto di tutti e sette i digest ai buffer acquisiti; schema IPC completo e verifica separata dei fatti attestabili dal supervisore. Solo poi eventuali `ControlAssessment` individuali.
+
+### SRC-04 | BLOCCANTE COME IMPLEMENTAZIONE COMPLETA, MA FAIL-CLOSED INTENZIONALE | Componenti qualificanti assenti
+
+- **Evidenza:** `trusted_supervisor.py:97-105` verificatore esterno sempre `Blocked`; `:108-117` guardia deployment sempre `Blocked`; `:244-261` assessment con sole sezioni `NOT_RUN` e nessun observation store; `:264-277` serializer sempre `Blocked`; `:286-298` publisher e request handler sempre `Blocked`. `isolated_parser.py:64-75` worker effettivo sempre `Blocked`. `linux.py:299-308` staging ufficiale sempre `Blocked`.
+- **Valutazione:** questa **è una scelta prudente per un rilascio source-only**, non una falla attiva di pubblicazione. Non può tuttavia essere considerata implementazione accettata per T-02/T-03/T-07 finché non esisteranno i componenti richiesti e una revisione separata del loro sorgente e deployment.
+
+### SRC-05 | MAGGIORE | Chiusura dei descrittori non dimostrata esaustiva
+
+- **Evidenza:** `rc1_4_2_draft03_linux.py:223-236` `_sanitize_descriptors(allowed, max_fd)` opera soltanto nell'intervallo `[3, max_fd)`; `max_fd` è un argomento e deve essere `<=65536`. Nessuna prova nel codice garantisce che non esistano descrittori aperti con numero `>= max_fd`.
+- **Correzione richiesta:** inventario o primitiva kernel che copra l'intero insieme di FD ereditabili, con ordine esplicito e controlli del launcher; in caso di incertezza `BLOCKED`. Non usare un limite passato dal chiamante come prova di assenza di FD residui.
+
+### SRC-06 | MAGGIORE | Contratto IPC presente solo in versione ridotta
+
+- **Evidenza:** `trusted_supervisor.py:189-203` accetta un solo messaggio `{schema, session_id, snapshot_id, oa}`; mancano nel messaggio e nell'attuale servizio la sequenza/invocation ID, il binding per singolo input, l'identità attestata del parser e la ricevuta di uscita osservata dal supervisore descritti nel design implementativo alle righe 107-120. Il worker che dovrebbe produrre le osservazioni è bloccato in `isolated_parser.py:64-75`.
+- **Correzione richiesta:** implementare gli elementi IPC richiesti dalla specifica, la verifica su canale/sessione/sequence e l'osservazione server-side di exit code e consumo dei byte, senza considerare le dichiarazioni del child prove sufficienti.
+
+## 4. Matrice T-01–T-10 sul sorgente realmente presente
+
+| Test | Valutazione statica | Evidenza / limite |
+|---|---|---|
+| **T-01 / F-01** | **PARTIAL, NOT_ACCEPTED** | Le API qualificate del frontend lanciano `Blocked` (`generator:79-105`), ma gli helper di I/O nei moduli supervisor/linux sono direttamente invocabili; non esiste isolamento di processo applicato |
+| **T-02 / F-02** | **BLOCKING_INCOMPLETE** | Pin/lettura/snapshot presenti (`linux:104-186`), ma launcher e worker attivo assenti, loader non guardato e receipt/raw non legati a stato server protetto (SRC-01/03/04) |
+| **T-03 / F-03** | **SAFE_BLOCKED_NOT_IMPLEMENTED** | `openat2`, `RENAME_NOREPLACE` dichiarati (`linux:104-125,284-297`); verifier e publisher non implementati (`supervisor:97-117,264-298`) |
+| **T-04 / S-01** | **SATISFIED_AS_STATIC_DIAGNOSTIC_BOUNDARY** | `digest_bytes`, `compare_raw_bytes`, `compare_generation_bytes` solo risultati tecnici (`generator:50-69,103-105`), nessuna promozione automatica a PASS |
+| **T-05 / A-01** | **PARTIAL_NOT_ENFORCED** | Primitive namespace/pivot/FD presenti (`linux:189-236`), ma non orchestrate prima del loader; FD sanitization incompleta (SRC-01/05) |
+| **T-06 / A-02/D-05** | **PARTIAL_NOT_ENFORCED** | Sequenza di drop e controllo dei cinque set prevista (`linux:257-281`), non obbligatoria nel call graph che porta al loader (`isolated_parser:46-61`) |
+| **T-07 / B-01/D-02** | **PENDING_DEPLOYMENT_APPROVAL** | Trust anchor/issuer/policy e launcher non approvati (`contracts:65-72`; `supervisor:97-117`); non valutabile a runtime |
+| **T-08 / B-02** | **DEFINED_NOT_ENFORCED** | `ALLOWED_DEVICE_NODES=()` (`contracts:68`); manca ancora launcher che realizzi/attesti root e mount effettivi |
+| **T-09 / RP-01** | **SATISFIED_AS_STATIC_STATUS_SEPARATION** | `RP_01="OPEN"` e `GATE="CLOSED_PENDING_VALIDATION"` (`contracts:11-12`; `generator:22-24`); nessuna promozione da EQUAL a provenienza |
+| **T-10 / integrità** | **DOCUMENTARY_MATCH_FOR_AVAILABLE_ORIGINALS** | SHA dei file sorgente e degli originali locali confrontati e coincidenti; la verifica session-bound e il CSV locale non sono attestati in questa revisione |
+
+**F-01:** mitigata sul frontend pubblico ufficiale, non chiusa per il codice completo e i confini di processo.  
+**F-02:** `OPEN`; non esiste ancora legame verificabile e obbligatorio fra acquisizione, loader, IPC e assessment.  
+**F-03:** percorso qualificato intenzionalmente bloccato; la successiva implementazione del vero verifier/publisher resta necessaria.  
+**D-01:** pin di sette file presenti; manifest runtime `PENDING_RUNTIME_INVENTORY`.  
+**D-02:** `PENDING_DEPLOYMENT_APPROVAL`; **DOC-04:** `PENDING_EXTERNAL_ATTESTATION`.
+
+## 5. Disposizione correttiva e criteri della prossima revisione
+
+1. **SRC-01:** rendere non richiamabile il parser loader da un processo chiamante non fidato; documentare un call graph effettivamente vincolato all'isolamento e verificare che la verifica dei byte non sia seguita da una seconda lettura non protetta.
+2. **SRC-02:** disaccoppiare le primitive OS dal dominio importabile dell'utente e imporre autorizzazione verificata *nel dominio separato* prima di acquisizione/snapshot/staging/pubblicazione. Un prefisso `_` non soddisfa il requisito.
+3. **SRC-03/SRC-06:** completare IPC e binding server-side senza booleani o ricevute costruibili dal caller; assestamenti per controllo basati su fatti verificati, mai su status del child.
+4. **SRC-04:** mantenere `BLOCKED` in assenza di trust anchor, addendum audit-only firmato, manifest runtime e deployment approvati; l'eventuale completamento richiede nuova implementazione e nuova revisione, mai una modifica implicita dei file congelati.
+5. **SRC-05:** rendere dimostrabile la chiusura/allowlist di *tutti* i FD verso host e vecchia root prima di import/exec del parser.
+6. Riesaminare T-01–T-10 su **una nuova revisione sorgente distinta**, con confronti SHA-256 di tutto il perimetro congelato. Nessuna accettazione del codice DRAFT 03 attuale, nessuna inferenza di correttezza runtime.
+
+## 6. Stato formale invariato
+
+```text
+SPECIFICATION_REV_02_2: SPECIFICATION_ADEQUATE_AS_ACCEPTANCE_CONTRACT
+DESIGN_SPEC: DESIGN_SPEC_ADEQUATE (INTERNAL_STATIC_DESIGN_REVIEW_ONLY)
+IMPLEMENTATION_DESIGN: IMPLEMENTATION_DESIGN_ADEQUATE (INTERNAL_REVIEW_ONLY)
+DRAFT_03_CODE: SOURCE_CREATED_STATICALLY_REVIEWED_NOT_ACCEPTED
+STATIC_SOURCE_ACCEPTANCE_DRAFT_03_CODE: NOT_GRANTED
+F-01: PARTIAL_IN_DRAFT_03; OPEN_IN_DRAFT_02
+F-02: OPEN
+F-03: SAFE_BLOCKED_NOT_IMPLEMENTED; OPEN_IN_DRAFT_02
+CODE_REMEDIATION_REQUIRED: true
+RUNTIME_MANIFEST: PENDING_RUNTIME_INVENTORY
+D-02: PENDING_DEPLOYMENT_APPROVAL
+DOC-01..DOC-03: RESOLVED_DOCUMENTALLY
+DOC-04: PENDING_EXTERNAL_ATTESTATION
+RP-01: OPEN
+f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data: false
+GATE: CLOSED_PENDING_VALIDATION
+FUTURE_OPERATIONAL_VALIDATION: NOT_RUN
+NEW_EMPIRICAL_PASS: NONE
+PARSER_OR_BUILDER_EXECUTION: NONE
+```
+
+**Dichiarazione di metodo:** sono stati utilizzati lettura statica del sorgente con numerazione delle righe, controllo delle dimensioni e degli SHA-256 sui file esistenti e controllo integrità ZIP. Nessuna funzione dei sei moduli, nessun parser e nessun builder è stata importata, compilata in bytecode o eseguita. Il presente rapporto è una **revisione statica interna**, non un'attestazione di terza parte.
