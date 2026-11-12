@@ -1,0 +1,109 @@
+# Dossier EXP-SEQ-04 (cieco)
+
+**Stato:** `CLOSED_OSF_PENDING / BLIND_PREPARATION_ONLY`  
+**Data locale di compilazione:** 2026-11-10T20:45:49.801806+00:00 (non timestamp indipendente).
+
+## Principi e perimetro
+
+[DAI FILE] Le Fasi 0–2 erano già nella conversazione; non sono state ripetute.  
+[NUOVO] Nessun endpoint EXP-SEQ-03 è stato eseguito su ZL3b-n.txt. Nessuna associazione fra `qo-` e covariate è stata calcolata. Nessun testo di Takahashi è stato acquisito in questo container.  
+[DAI FILE] Corpus SHA-256: `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc`.
+
+## Fase A: capacità testate
+
+| Strumento | Stato concreto | Limite |
+|---|---|---|
+| Python 3.13.5, pandas, NumPy, SciPy, statsmodels, scikit-learn, cv2, pytest | Disponibili, test di import | Runtime locale e dimensioni finite |
+| Shell Python -> Internet | Fallito (DNS) | Non acquisire dati esterni tramite requests |
+| Ricerca Web | Funziona | Contenuto non automaticamente disponibile come file locale verificabile |
+| File/Library | Funziona | File montati e Library non garantiscono tutte le vecchie chat |
+| GitHub connettore | Lettura disponibile | Permessi di scrittura assenti per repository storico; usare fonti pubbliche con cautela |
+| Canvas / Deep Research dedicata / browser cloud | Non invocabili in questa chat | Dossier Markdown e ricerca web ordinaria |
+| OpenCV su immagini | Funziona su immagini artificiali | Non calibrato su Voynich |
+
+Ulteriori capacità possibili ma rischiose: audit metamorfici (può far emergere nuove ambiguità del parser), acquisizione IIIF (diritti e overlay), segmentazione cieca da immagini (rischio di errore di registrazione), simulazioni su sintetici (rischio di potenza illusoria).
+
+## B1: verifica parser IVTFF
+
+**[DAI FILE / NUOVO]** Hash controllato. I marcatori `<%>` e `<$>` compaiono ciascuno **740** volte nell'insieme dei loci P letti. Il lettore precedente identifica **4130 loci P / 35492 token**. Sono **1557** loci con `$L=A`, **2478** con `$L=B`, **95** non classificati: totale 1557+2478+95=4130.
+
+La ricostruzione dei marker produce **740 blocchi**, dei quali **713** omogenei A/B. **13 loci P** non sono all'interno di blocchi delimitati, pur essendo inclusi nel censimento P.
+
+**La richiesta 3.957 righe / 33.613 token NON è riprodotta** con questo parser e questo corpus: differenze 173 loci e 1879 token. Senza la specifica originale dell'analisi di ottobre sarebbe scorretto attribuirla a un determinato filtro. `RECONCILIATION_UNRESOLVED`.
+
+Test sintetici di tokenizzazione: **7/7 PASS**. Attenzione: il parser congelato `SQUARE.sub(' ',...)` elimina **l'intera alternativa** `[a:b]`, invece di preservare la prima variante. Una virgola produce invece token distinti usando `WORDS.findall`; è una scelta implementativa del protocollo, **non** un'interpretazione paleografica universale. Correggerla richiederebbe una nuova versione registrata o una deviazione, non una modifica silenziosa. Il test riguarda la tokenizzazione e non sostituisce un audit IVTFF formale completo.
+
+## B2: confini Takahashi vs ZL3b
+
+**[DAI WEB]** Fonte upstream identificata: `https://www.voynich.nu/data/IT2a-n.txt`, versione IT2a del 25/06/2025, traslitterazione Takahashi in IVTFF. La pagina ufficiale è consultabile via ricerca web, ma **non è stato possibile acquisire integralmente un file locale** da sottoporre a hash/parse: il download nel container e la richiesta HTTP Python hanno fallito. **Licenza di redistribuzione del testo IT non attestata in modo univoco**: un catalogo distingue la disponibilità della trascrizione originale TT dalle forme interlineari derivate; non redistribuire il file senza verifica delle condizioni.
+
+**Esito B2: `UNAVAILABLE`**, non 0% né 100% di accordo. Sono predisposti inventario dei blocchi ZL e campi di confronto futuri. Un confronto valido richiede: SHA-256 Takahashi locale, stesso insieme di loci fisici, allineamento per folio/locus, conteggi marcatori, blocchi concordanti, conteggio righe, e lista completa dei discordanti. L'accordo sui marker di una trascrizione derivata dall'interlineare non dimostrerebbe automaticamente indipendenza dei confini grafici.
+
+## B3: covariate (senza esiti)
+
+**[NUOVO]** Prodotto `blind_line_covariates.csv`, **4117 righe** di loci P appartenenti a blocchi delimitati, con folio, codice fascicolo `$Q`, mano **IVTFF** `$H`, illustrazione `$I`, Currier `$L`, `j_par`, `j_locus_candidate`, `L`, lunghezza token e caratteri. `j_page` resta **NA**, non validato rispetto alla pagina fisica. Nessuna colonna di esito. Vedi `DATA_DICTIONARY.md`.
+
+## B4: simulazione di fattibilità statistica, totalmente sintetica
+
+**[NUOVO]** `simulate_synthetic_power.py`: 120 dataset sintetici (12 scenari x 10 repliche), ciascuno con **105 paragrafi artificiali** distribuiti fra 75 A / 30 B e 61 / 16 folii nominali. Effetti generativi logit 0, 0.8, 1.6; deviazione standard degli intercetti casuali per folio 0 oppure 0.8; alternative assoluta e relativa. Per pilotare la pipeline sono usate **60 repliche bootstrap per simulazione** per endpoint 1/2 e 30 per endpoint 3, non 10.000.
+
+**Risultato:** il criterio può restituire `INCONCLUSIVE` con effetti piccoli o correlazione alta; in questo pilota le preferenze per modelli sbagliati sono state 0/120, ma ciò **non stima** un errore piccolo con precisione utilizzabile. Gli esiti completi di ciascuno scenario sono nel CSV. L'endpoint 3 è *descrittivo per definizione*: risulta `DESCRIPTIVE_ONLY` in 120/120 simulazioni, e non ha una probabilità definita di falso positivo inferenziale. Questo non è un calcolo di potenza confermativo.
+
+## B5: geometria
+
+**[NUOVO]** Tre immagini **interamente sintetiche** di pagina, con 9 righe ciascuna: 27/27 rettangoli rilevati e MAE dei margini sinistro/destro 0 pixel **solo nel test artificiale**. Il codice `geometry_synthetic.py` mostra segmentazione tramite proiezione e distanza da una maschera artificiale di illustrazione; non misura accuratezza reale.
+
+La pipeline reale dovrà: (1) acquisire immagini IIIF con SHA, dimensioni e coordinate; (2) correggere rotazione e deformazioni; (3) segmentare testo e illustrazioni con annotazione cieca indipendente; (4) allineare righe ad IVTFF; (5) misurare margini/rientri, larghezza utile e distanza euclidea dall'illustrazione; (6) confrontare con una verità annotata, IoU e errore in pixel/millimetri. **Nessun risultato geometrico del Voynich.**
+
+Campione per immagini fissato prima dell'osservazione dei contenuti: seme 20261110, **207 folii** nella cornice di campionamento, estratti **f55v, f84r, f79r** (3/207 senza reinserimento). Le fotografie non sono state allegate.
+
+## B6: codice degli endpoint già congelato, non modificato
+
+**[DAI FILE]** Esiste il codice `expseq03_core.py` / `run_locked.py` nel pacchetto del turno precedente. Hash sui byte verificati:  
+`expseq03_core.py`: `05992ef8c012ccbebc5f7a2d1ff34664db61dc8c310113e17ef9f99b5366dd28`  
+`run_locked.py`: `3dae7851d378b17a8a256d9fe868c6e8fc3ba930718928ce2af95541165c8b9a`.
+
+**[NUOVO]** Rieseguiti **4/4 test sintetici** con esito positivo: nessun accesso al corpus Voynich da parte dei test. Non sono stati riscritti gli script. `run_locked.py` rifiuta il lancio privo di ricevuta, ma **un documento di ricevuta falsificato può soddisfare controlli locali**; il controllo umano contro OSF è obbligatorio. Sintassi e test sintetici non dimostrano equivalenza metodologica completa.
+
+## B7: letteratura verificata via ricerca web ordinaria (NON Deep Research dedicata)
+
+- Prescott Currier (1976), *Some Important New Statistical Findings*: differenze statistiche A/B e mani, con la precisazione che *language* è un'etichetta convenzionale. <https://voynich.nu/extra/curr_main.html>.
+- Patrick Feaster (2021), *Rightward and Downward in the Voynich Manuscript*: effetti di posizione di glifi e parole rispetto a riga e paragrafo; metodologia su altra versione della trascrizione. <https://griffonagedotcom.wordpress.com/2021/08/18/rightward-and-downward-in-the-voynich-manuscript/>. **Precedente concettuale importante**, non replica dei nostri numeri.
+- Andrew e Noah Steckley (2024), *Subtle Signs of Scribal Intent in the Voynich Manuscript*, HistoCrypt, DOI <https://doi.org/10.58009/aere-perennius0112>: distribuzioni legate sia a confini testuali sia alle illustrazioni. È prior art diretta per l'ipotesi layout.
+- Lisa Fagin Davis (2020), *How Many Glyphs and How Many Scribes?*, DOI <https://doi.org/10.1353/mns.2020.0011>: cinque mani proposte su criteri paleografici. Le etichette `$H` di IVTFF non equivalgono automaticamente alle sue attribuzioni.
+- Torsten Timm, Andreas Schinner (2020), *A possible generating algorithm of the Voynich manuscript*, DOI <https://doi.org/10.1080/01611194.2019.1596999>: propone autocitazione e mostra alcune proprietà statistiche riprodotte; non è dimostrazione che ogni effetto verticale sia generato.
+- Claire Bowern, Luke Lindemann (2021), *The Linguistics of the Voynich Manuscript*, DOI <https://doi.org/10.1146/annurev-linguistics-011619-030613>: rassegna che interpreta alcune regolarità statistiche come compatibili con linguaggio naturale; **interpretazione discussa**, non decifrazione.
+- Sravana Reddy, Kevin Knight (2011), *What We Know About The Voynich Manuscript*, ACL <https://aclanthology.org/W11-1511/>: quadro NLP, non confronto diretto alla fascia 3–4.
+- Marcelo Montemurro, Damián Zanette (2013), *Keywords and Co-Occurrence Patterns*, DOI <https://doi.org/10.1371/journal.pone.0066344>: struttura di co-occorrenza su lunga distanza; altra scala rispetto ai paragrafi.
+- Gordon Rugg (2004), *The Mystery of the Voynich Manuscript*, <https://www.scientificamerican.com/article/the-mystery-of-the-voynic-2004-07/>: discussione di griglie e ipotesi di testo generato, non test diretto della fascia 3–4.
+- René Zandbergen, *Transliteration of the Text*, <https://www.voynich.nu/transcr.html>: storia delle traslitterazioni e origine di Takahashi/interlineare. Materiale IT2a accessibile via web: <https://www.voynich.nu/data/IT2a-n.txt>; non c'è file locale con SHA verificato.
+
+Non sono state valutate a fondo tutte le tabelle, formule e appendici dei lavori; la bibliografia qui è una **verifica di fonti, abstract e tesi centrali**, non una nuova revisione sistematica completa.
+
+## B8: precedenti e rischi di riuso
+
+| Precedente | Eseguibile ora? | Condizione |
+|---|---|---|
+| EXP-SEQ-01a–01f, reader IVTFF | Sì, SOLO come parsing/struttura | Non eseguire i vecchi comandi che producono esiti `qo`/`d` |
+| EXP-SEQ-01j e B precedente | No, bloccato | Risultati già conosciuti: evitare ri-esposizione come novità |
+| Timm–Schinner, 30 output | Sì, controlli di integrità su file esistenti | Non usarlo per selezionare soglie EXP-SEQ-03 |
+| Modelli Markov e 2D storici | Non convalidate | Mancano provenienze e log allineati |
+| RC1.4.2 folio / image profile | No, pipeline separata | `CLOSED_PENDING_VALIDATION`; non incorporare artefatti negli endpoint |
+| Takahashi IT2a | Non ancora | Recupero originale, licenza, hash, parse e allineamento |
+| Analisi geometriche su IIIF | Solo progetto e simulazione | Sono necessarie fotografie, segmentazione validata e controlli |
+
+## Registro, deviazioni e limiti
+
+`EXPOSURE_REGISTER.csv` descrive tutte le letture della sorgente durante questa fase, distinguendo gli usi strutturali da quelli sintetici. `DEVIATIONS_EXP_SEQ_04.csv` è vuoto (sola intestazione): nessun protocollo congelato è stato modificato. Le divergenze sui conteggi e la mancanza di Takahashi sono **questioni aperte**, non scostamenti taciti.
+
+### Tre fattori che invaliderebbero questo dossier
+
+1. Il reader traduce `[a:b]` e virgole in un modo non fedele alle unità codicologiche; allora denominatori e blocchi devono essere verificati prima di qualsiasi endpoint.
+2. Le divisioni `<%>`/`<$>` non coincidono con i confini della pagina reale; il campione per paragrafo diventa fragile.
+3. Le etichette manoscritto/lingua/mano/fascicolo non distinguono realmente processi indipendenti, o l'errore di misura delle immagini non è valutabile.
+
+## Checkpoint e sblocco
+
+Stato: **`GATE_CLOSED_OSF_PENDING`**. Mancano: ricevuta OSF con URL e timestamp esterno; file depositati riscaricati, hash di protocollo v1.0/A1/A2 e codice verificati; acquisizione e audit Takahashi; immagini per l'esperimento geometrico.
+
+**Solo dopo** il messaggio esatto dell'utente `SBLOCCO EXP-SEQ-03 + URL ricevuta OSF`: validare la registrazione, scaricare i file, riconciliare gli hash e usare il codice congelato senza alterazioni. Riportare esiti nulli e `INCONCLUSIVE`, poi eventuali analisi esplorative chiaramente separate.
