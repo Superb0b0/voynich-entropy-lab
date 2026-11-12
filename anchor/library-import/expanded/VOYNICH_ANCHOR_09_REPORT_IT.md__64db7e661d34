@@ -1,0 +1,57 @@
+# VOYNICH ANCHOR-09 — Verifica di un possibile contrasto iconografico su f57v
+
+**Data:** 12 novembre 2026. **Stato:** esplorativo, NON decifrazione. Nessun artefatto RC1.4.2 alterato.
+
+## Provenienza
+
+Analisi in sola lettura delle copie storiche ZL3b-n.txt e IT2a-n.txt precedentemente acquisite per il progetto; SHA-256 rispettivamente `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc` e `7f27a8b0feed8f6de0a99900df6bf912dd1d295c38e5f830bac8b41c3f536fb5`. Controllo delle letture con le trascrizioni pubblicate nel Voynich Information Browser e le descrizioni di Jorge Stolfi. Codice di estrazione: `voynich_anchor09.py`. Dati letti: `f68r3.11`, `f68r3.12`, `f49v.1–52`, `f57v.3`.
+
+## Evidenza 1: f68r3 non produce ancora una traduzione
+
+`doaro` (`f68r3.11,@Ls`) e `oalcheol` (`f68r3.12,@La`) compaiono una sola volta ciascuno in entrambe le trascrizioni. Il primo è associato al gruppo di sette stelle, il secondo alla linea che collega il gruppo al volto centrale. John Grove propone anche la lettura *doary* per la prima etichetta. Iconografia possibile: Pleiadi, ma l'alternativa "sette pianeti" è documentata. Senza una seconda rappresentazione indipendente o un altro elemento linguistico controllabile, assegnare "Pleiadi" a `doaro` sarebbe circolare.
+
+Fonti: https://www.voynich.nu/q09/ ; https://ic.unicamp.br/~stolfi/voynich/Notes/060/work/Notes/040/html/f68r3.htm ; https://vib.tamagothi.de/index.php?id=f68r3&show=page .
+
+## Evidenza 2: f57v contiene 4 × 17 posizioni, non una decifrazione già pronta
+
+La sequenza `f57v.3,+Cc` si divide in 4 gruppi di 17 token nella trascrizione ZL3b, 68 posizioni in totale. Quattordici posizioni hanno la stessa resa in tutti e quattro i gruppi. Tre variano:
+
+| Slot nel gruppo | Nord | Est | Sud | Ovest |
+| --- | --- | --- | --- | --- |
+| 3 | `[d:j]` | `d` | `d` | `d` |
+| 9 | **`f`** | **`f`** | **`p`** | **`p`** |
+| 16 | `I` | `c` | `c` | `c` |
+
+N.B.: Nord/Est/Sud/Ovest è l'allineamento proposto per **intervalli di quadrante**, adottando l'inizio della lettura dal NW e procedendo in senso orario come nella documentazione storica. Non costituisce un legame spaziale verificato al pixel. L'eventuale segmentazione fisica dei quarti va controllata sul facsimile e con una seconda annotazione indipendente.
+
+La descrizione di Stolfi assegna al centro una figura maschile sul lato nord, una maschile a est, una femminile a sud e una femminile a ovest. Ne segue una corrispondenza **esplorativa** tra il vettore `f, f, p, p` allo slot 9 e i due gruppi iconografici. Non sappiamo se il contrasto sia intenzionale: le variazioni `f/p` vengono già discusse in letteratura come possibili allografi, e l'asse nord-est vs sud-ovest confonde categoria iconografica e posizione.
+
+Sotto un nullo molto semplificato, che assegni casualmente due figure maschili e due femminili a quattro settori fissati, la concordanza senza direzione preassegnata fra i due gruppi di due lettere e le due categorie ha probabilità `2 / C(4,2) = 1/3`. Questo **non è un p-value valido dopo selezione**: lo slot 9 e la proprietà iconografica sono stati individuati esplorando il foglio. Non usare come prova di significato.
+
+Fonti: https://ic.unicamp.br/~stolfi/voynich/Notes/061/work/Notes/040/html/f57v.htm ; https://vib.tamagothi.de/index.php?id=f57v&show=page ; https://voynich.ninja/thread-1008-post-8051.html .
+
+## Evidenza 3: f49v offre una serie ordinata ma non una tabella di equivalenze numeriche
+
+La colonna marginale conta 26 voci. Le sottosequenze alle posizioni 2–6, 10–14 e 17–21 sono:
+
+```
+o r     y e @140;
+o @192; y e @140;
+o @192; y e @140;
+```
+
+Dunque il tratto ripetuto non è letteralmente identico nel primo giro: uno slot alterna `r` e il segno speciale `@192;`. I numeri esterni 1–5 a fianco del primo tratto sono un'annotazione separata, forse successiva alla scrittura del testo, e **non** provano `o=1`, `r=2`, ecc. In ZL3b solo **1 su 26** dei segni marginali coincide con l'iniziale trascritta della riga a fianco (posizione 26). Pertanto un acrostico banale "segno marginale = prima lettera della riga" non trova riscontro.
+
+Fonte: https://www.voynich.nu/writing.html ; https://www.voynich.nu/q07/ .
+
+## Decisione scientifica
+
+1. `doaro` resta candidato iconografico, **non** traduzione.
+2. La relazione `f/p` con le due coppie di figure in f57v è un candidato **a bassa confidenza**, non confermato e soggetto a confondimento spaziale.
+3. Per rendere informativo il prossimo test bisogna trovare un **secondo diagramma** con le stesse due categorie visive, distribuite in un ordine diverso, e una sequenza grafica compatibile con una discriminazione `f/p`. Senza questo confronto, continuare a correlare sullo stesso f57v sarebbe sovradattamento.
+4. La convergenza tra f57v e f49v dimostra l'esistenza di sequenze speciali, ma **non** che costituiscano una chiave del manoscritto.
+5. I dati congelati RC1.4.2 restano invariati (`CLOSED_PENDING_VALIDATION`); il rilievo RP-01 e f085v restano irrisolti.
+
+## Riproducibilità
+
+Il JSON `VOYNICH_ANCHOR_09_EVIDENCE.json` contiene tutte le sottosequenze e gli hash delle due trascrizioni. Il programma `voynich_anchor09.py` rigenera i dati assumendo i corpus in una sottocartella `files/`; script descrittivo in sola lettura, nessun modello allenato o significato assegnato.
