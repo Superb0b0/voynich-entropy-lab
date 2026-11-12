@@ -1,0 +1,124 @@
+# Benchmark di dieci processi generativi sul manoscritto Voynich
+
+**Data:** 3 novembre 2026  
+**Riferimento:** `voynich_paper_v1.md`, `voynich_nota_cinque_processi.md`  
+**Stato dichiarato nella nota:** risultati verificati su due ambienti indipendenti (Colab, Replit)
+
+## Premessa metodologica
+
+La pipeline `valuta_corpus_v2.py` calcola quattro metriche su un corpus tokenizzato (marcatori P di ZL3b-n.txt):
+
+- **Densità:** frazione di token con almeno un vicino a distanza di Levenshtein 1 nel lessico del corpus.
+- **Adiacenza:** Jaccard media tra insiemi di token di righe consecutive.
+- **Ripetizione locale:** frazione di token in una riga che compaiono anche nella riga precedente.
+- **Hapax:** tipi con frequenza 1 diviso tipi totali.
+
+**Bande pre-registrate:** densità 0,91–0,96; adiacenza 0,02–0,04; ripetizione 0,045–0,070; hapax 0,65–0,75. Un modello passa solo se tutte e quattro le metriche sono in banda simultaneamente.
+
+**Corpus reale (riferimento):** ZL3b-n.txt, SHA-256 `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc`, 34.323 token, 4.130 righe. Valori: densità 0,9557; adiacenza 0,0284; ripetizione 0,0581; hapax 0,7113.
+
+**Nota sulla definizione di adiacenza:** la formula esatta del testbed originale (che riportava 0,04–0,05) è NON REPERIBILE. I confronti sono interni alla pipeline: reale e sintetici sono valutati allo stesso modo.
+
+## Test 1 — Colab (8 modelli, 2 seed)
+
+Ambiente: Google Colab, Python 3.13. Ogni corpus sintetico ha esattamente 34.323 token, con lunghezze di riga campionate dalla distribuzione empirica del corpus reale. Due seed (1, 2) per modello. Il modello con memoria locale copia dalla riga precedente con la regola: stessa posizione (50%), posizione precedente (30%), token casuale dalla riga precedente (20%).
+
+| Modello | Densità | Adiacenza | Ripetizione | Hapax | Metriche in banda |
+|---|---:|---:|---:|---:|---|
+| **Reale** | 0,9557 | 0,0284 | 0,0581 | 0,7113 | — |
+| Markov-1 | 0,9498 ✓ | 0,0134 ✗ | 0,0262 ✗ | 0,4203 ✗ | 1/4 |
+| Markov-2 | 0,9517 ✓ | 0,0143 ✗ | 0,0280 ✗ | 0,4275 ✗ | 1/4 |
+| Uniforme | 0,9500 ✓ | 0,0131 ✗ | 0,0256 ✗ | 0,4123 ✗ | 1/4 |
+| Shuffle | 0,9557 ✓ | 0,0139 ✗ | 0,0271 ✗ | 0,7113 ✓ | 2/4 |
+| Memoria p=0,02 | 0,9503 ✓ | 0,0243 ✓ | 0,0467 ✓ | 0,4146 ✗ | **3/4** |
+| Memoria p=0,03 | 0,9491 ✓ | 0,0297 ✓ | 0,0564 ✓ | 0,4049 ✗ | **3/4** |
+| Memoria p=0,04 | 0,9508 ✓ | 0,0349 ✓ | 0,0657 ✓ | 0,4141 ✗ | **3/4** |
+| Memoria p=0,05 | 0,9502 ✓ | 0,0403 ✗ | 0,0755 ✗ | 0,4096 ✗ | 1/4 |
+
+**Esito Colab:** nessun modello passa tutte e quattro le metriche. Il migliore è il modello con memoria locale (p=0,02–0,04): 3/4, con densità, adiacenza e ripetizione in banda. Fallisce solo sugli hapax (0,41 vs 0,71).
+
+## Test 2 — Replit (10 modelli, 2 seed, con generatori pubblici)
+
+Ambiente: Replit Agent, Python. Stessa pipeline (`valuta_corpus_v2.py`, invariata), stesso corpus reale, stesse bande. Differenza: il modello con memoria locale usa una **finestra di copia di 20 token** (il brief non specificava la finestra; questa scelta è dichiarata nel report). Aggiunge due generatori pubblici: Workshop Cipher (Zenodo 23552487, pacchetto di replica v1.2) e Zattera slot grammar (`Frank-Masciopinto/voynich-manuscript-decipher`). Voynich-MS è dichiarato NOT REPRODUCIBLE: nessuna implementazione eseguibile corrispondente alla specifica root-conditioned.
+
+| Modello | Densità | Adiacenza | Ripetizione | Hapax | Metriche in banda |
+|---|---|---|---|---|---|
+| **Reale** | 0,9557 | 0,0284 | 0,0581 | 0,7113 | — |
+| Markov-1 | ✓ | ✗ | ✗ | ✗ | 1/4 |
+| Markov-2 | ✓ | ✗ | ✗ | ✗ | 1/4 |
+| Uniforme | ✗ | ✗ | ✗ | ✗ | 0/4 |
+| Shuffle | ✓ 0,9557 | ✗ | ✗ | ✓ 0,7113 | 2/4 |
+| Memoria p=0,05 | ✓ | ✓ | ✓ | ✗ | **3/4** |
+| **Workshop Cipher** | ✗ | ✓ 0,0248 | ✓ 0,0507 | ✗ | 2/4 |
+| Zattera slot grammar | ✗ | ✗ | ✗ | ✓ | 1/4 |
+| Voynich-MS | — | — | — | — | NOT REPRODUCIBLE |
+
+**Esito Replit:** nessun modello passa tutte e quattro le metriche. Il migliore è il modello con memoria locale (p=0,05): 3/4. Il Workshop Cipher è secondo: 2/4, con adiacenza (0,0248) e ripetizione (0,0507) in banda.
+
+## Confronto tra i due test
+
+I due test sono **coerenti sulle conclusioni** e **diversi sui dettagli**:
+
+- **Coerenti:** nessun modello passa 4/4; Markov e uniforme passano solo densità; shuffle passa densità e hapax; la memoria locale è il modello migliore.
+- **Diversi:** in Colab il migliore è p=0,02 (3/4); in Replit è p=0,05 (3/4). La differenza è dovuta alla finestra di copia: in Colab la copia è posizionale (stessa posizione / adiacente / casuale), in Replit è una finestra di 20 token. Sono due implementazioni diverse dello stesso modello, non due risultati contraddittori. Entrambe confermano che la memoria locale risolve adiacenza e ripetizione, ma non gli hapax.
+
+## Interpretazione
+
+**Il vincolo congiunto non è soddisfatto da nessun modello singolo.** I tre modelli migliori sono complementari:
+
+| Modello | Cosa risolve | Cosa non risolve |
+|---|---|---|
+| Memoria locale | Densità, adiacenza, ripetizione | Hapax (0,41 vs 0,71) |
+| Shuffle | Densità, hapax | Adiacenza, ripetizione |
+| Workshop Cipher | Adiacenza, ripetizione | Densità, hapax |
+
+**Il gap è strutturale:** il manoscritto ha **sia** struttura dinamica (adiacenza 0,028, ripetizione 0,058) **sia** vocabolario aperto (hapax 0,71). I modelli testati ne hanno una sola:
+
+- I processi di ricombinazione (Markov, uniforme, shuffle) hanno vocabolario chiuso: non producono hapax.
+- Il modello con memoria locale ha struttura dinamica ma vocabolario chiuso.
+- Il Workshop Cipher (Naibbe-class) ha struttura dinamica ma vocabolario chiuso.
+
+Questo è coerente con la letteratura indipendente (Rozanova & Temerev, 2026): i cifrari che imitano il Voynich riproducono la bassa entropia ma non il vocabolario aperto e ricco di hapax (70% di tipi singleton contro 41–60%).
+
+## Limiti
+
+- **Definizione di adiacenza:** la formula del testbed originale è NON REPERIBILE. I confronti sono interni alla pipeline.
+- **Dimensione del campione:** 2 seed per modello. Non è sufficiente per una stima stabile della variabilità; i risultati sono esplorativi, non confermativi.
+- **Finestra di copia:** in Colab è posizionale, in Replit è di 20 token. La differenza è dichiarata, ma non è stata testata una griglia completa di finestre.
+- **Voynich-MS:** non testato perché non esiste un'implementazione eseguibile corrispondente alla specifica root-conditioned.
+- **Workshop Cipher:** usato il pacchetto di replica v1.2. L'autore del record Zenodo è Vitaly Averyanov (non Golub, come riportato in alcune fonti).
+- **Zattera slot grammar:** implementazione pubblica, ma con dipendenze (NumPy) installate solo per il test. Non è stata verificata l'equivalenza con la versione dell'autore.
+
+## Conclusione
+
+Nessuno dei dieci processi generativi testati — inclusi due generatori pubblicati e peer-reviewed (Workshop Cipher, Zattera slot grammar) — riproduce simultaneamente densità, adiacenza, ripetizione locale e hapax del corpus Voynich. I modelli migliori sono complementari: il modello con memoria locale risolve la struttura dinamica ma non gli hapax; il Workshop Cipher risolve adiacenza e ripetizione ma non densità e hapax; lo shuffle risolve densità e hapax ma non la struttura dinamica.
+
+Il risultato identifica un vincolo quantitativo verificabile: qualunque modello del processo generativo deve spiegare **sia** la struttura di ripetizione locale (≈0,058) **sia** la coda di hapax (≈0,71), e nessun modello pubblicato le ha entrambe. Il risultato non implica una decifrazione e non esclude tutte le possibili famiglie di modelli generativi.
+
+## Materiali
+
+- Pipeline: `valuta_corpus_v2.py` (hash registrato nel report).
+- Corpus reale: `ZL3b-n.txt`, SHA-256 `bf5b6d4a…`.
+- Report Colab: `report_finale.json`, `risultati_completi.zip`.
+- Report Replit: `final_report.json`, con assunzioni, seed e hash.
+- Generatori: `genera_tutti.py` (Colab), script Replit (allegati al report).
+
+---
+
+# Revisione numerica della nota
+
+## Controllo 1 — Coerenza interna delle tabelle
+
+**Esito: FAIL.** La tabella Colab è coerente: tutti i ✓/✗ corrispondono ai valori e alle bande. La tabella Replit riporta diversi ✓/✗ senza i valori numerici corrispondenti. Non è quindi possibile verificarne la correttezza per Markov-1, Markov-2, Uniforme, Shuffle, Memoria e Zattera. Per Workshop Cipher sono verificabili soltanto adiacenza 0,0248 e ripetizione 0,0507. Inoltre, i 34.323 token dichiarati per i sintetici non sono documentati nelle tabelle.
+
+## Controllo 2 — Coerenza tra testo e tabelle
+
+**Esito: FAIL.** La frase «in Colab il migliore è p=0,02» non è dimostrata: p=0,02, p=0,03 e p=0,04 ottengono tutti 3/4. Non è indicato un criterio che renda p=0,02 superiore agli altri due. I valori 0,0248 e 0,0507 corrispondono alla tabella Workshop Cipher; «0,41 vs 0,71» è coerente con i valori degli hapax della memoria locale e del reale, arrotondati. Anche i risultati 3/4 sono coerenti. La differenza tra le implementazioni della memoria è dichiarata, ma l'attribuzione della differenza dei risultati alla finestra di copia non è dimostrata: le due configurazioni differiscono anche nella regola di selezione dei token copiati.
+
+## Controllo 3 — Indipendenza dei risultati
+
+**Esito: FAIL.** La frase «I processi di ricombinazione (Markov, uniforme, shuffle) hanno vocabolario chiuso: non producono hapax» è numericamente e concettualmente errata: Markov-1, Markov-2 e Uniforme presentano quote di hapax rispettivamente 0,4203, 0,4275 e 0,4123. Non producono nuove forme rispetto all'inventario di partenza, ma possono produrre hapax. Anche «il manoscritto ha [...] vocabolario aperto (hapax 0,71)» attribuisce alla quota di hapax una proprietà più ampia di quella direttamente misurata. La frase «il gap è strutturale» è un'interpretazione plausibile, ma non una conclusione dimostrata: i risultati mostrano una mancata corrispondenza delle metriche nei modelli testati, non un'impossibilità strutturale. Rozanova & Temerev è citata come riscontro esterno, ma i valori 70% e 41–60% non sono verificabili nelle tabelle né accompagnati da un riferimento bibliografico completo. Infine, «nessun modello pubblicato le ha entrambe» è coerente soltanto se riferito alla combinazione di struttura locale e quota di hapax: Workshop Cipher ha entrambe le metriche locali in banda, ma non gli hapax. La conclusione deve inoltre mantenere il carattere esplorativo dei risultati basati su due seed.
+
+## Esito complessivo della revisione
+
+Tutti e tre i controlli numerici sono FAIL. La nota e la revisione sono conservate insieme; i problemi rilevati restano aperti e non sono stati corretti in questo documento.
