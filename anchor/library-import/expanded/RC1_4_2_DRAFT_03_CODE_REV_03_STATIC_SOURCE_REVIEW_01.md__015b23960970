@@ -1,0 +1,90 @@
+# RC1.4.2 V7.1 | Revisione statica della rev. 03 diagnostica | Rapporto 01
+
+**Data:** 10 novembre 2026  
+**Sorgente esaminato:** `RC1_4_2_DRAFT_03_CODE_REV_03.py`  
+**SHA-256 del sorgente materializzato:** `62ea38f7fb353cad76d4a54be5be36f48af6f31ddaef5a29abe5061d71f199c3`  
+**Dimensione:** 19.073 byte, 562 righe.  
+**Metodo:** analisi manuale e AST da testo, senza import, bytecode, `compile()`, esecuzione CLI, parser o builder. Il file è stato materializzato dal codice incollato nella conversazione; l'hash identifica **questa materializzazione**, non certifica i byte originari di un allegato indipendente.  
+**Verdetto:** `DIAGNOSTIC_SOURCE_ACCEPTANCE_NOT_GRANTED`  
+**Qualifica:** `INTERNAL_STATIC_SOURCE_REVIEW_ONLY; NOT_HARDENED; NOT_RUN; NO_NEW_EMPIRICAL_PASS`.
+
+## 1. Perimetro
+
+La rev. 03 è il ramo **diagnostico non qualificato**, separato da DRAFT 02, dal DRAFT 03 rev. 01 e dal servizio hardened. Si valuta soltanto la capacità di produrre un report informativo dai sette file pinned e di evitare sovrascritture accidentali, senza convalidare il contratto OS rev. 02.2. `RP-01=OPEN`, `DOC-04=PENDING_EXTERNAL_ATTESTATION`, `f085v=UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER`, `GATE=CLOSED_PENDING_VALIDATION` rimangono inalterati.
+
+**Limite della valutazione:** il linguaggio Python non costituisce un confine di sicurezza contro un chiamante che controlla il processo o modifica attributi del modulo. I giudizi distinguono (a) il percorso CLI dichiarato, (b) le altre funzioni direttamente invocabili dopo import, e (c) il contratto hardened, mai attribuito al ramo B.
+
+## 2. DBG-01 | NON RISOLTO NELLA SUPERFICIE IMPORTABILE
+
+**Riscontri positivi:** `produce_diagnostic_report()` (righe 473–500) invoca `verify_all_pinned_files()` e `read_and_verify()` (215–281), che computa effettivamente lunghezza e SHA-256 su `data = path.read_bytes()` prima di assegnare `MATCH`. `_validate_report_dict()` (355–421) impone uno schema top-level chiuso, i sette ruoli e conteggi coerenti. Questo migliora significativamente il percorso CLI della rev. 02.
+
+**Bypass statico residuo:** `RoleResult` (172–195) è `dataclass(frozen=True)`, ma il suo **costruttore è liberamente invocabile** con valori inventati. `_make_report(verification: dict[str, RoleResult], ...)` (287–331) continua ad accettare un dizionario esterno; `_write_report_no_clobber(report: dict, out_dir)` (427–459) resta invocabile per nome dopo import. Il prefisso `_` non fa da controllo di accesso; la docstring «only entry point» non è un vincolo Python.
+
+**Prova logica, senza esecuzione:** uno schema contenente sette entries con `role` canonico e `status=MATCH`, conteggi `MATCH=7`, campi fissi ammessi e claim `None` supera i controlli **di forma** documentati dal sorgente anche se non contiene digest osservati; `observed_size`, `observed_sha256`, `pinned_size` e `pinned_sha256` non sono nemmeno obbligatori per `MATCH`. Il validatore non confronta digest e dimensioni delle entries con i pin, né riacquisisce i byte. `produced_by`, `note`, `contract_reference`, `session_info` non sono controllati come claim tipizzati o valori fissi. `_write_report_no_clobber` può quindi serializzare un rapporto formalmente valido ma diagnostically inventato.
+
+**Disposizione:** `DBG-01 = PARTIALLY_CORRECTED_CLI_PATH; NOT_CLOSED_IMPORTABLE_SURFACE`. Per chiuderlo nel perimetro pratico B, togliere l'API di scrittura da dati passati dal chiamante o definirla esplicitamente non supportata, con origine del report verificabile nel *flusso CLI*. Non attribuire a una classe Python, a un underscore o a uno schema JSON una capability di autenticazione. È ammesso dichiarare che un interprete controllato dall'attaccante resta fuori dal modello di minaccia diagnostico.
+
+## 3. DBG-02 | NO-CLOBBER CORRETTO; PROTEZIONE DEI PERCORSI PARZIALE
+
+**Correzione positiva:** `_write_report_no_clobber()` (427–459) usa `os.open(target, O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW_se_disponibile, 0o644)`. L'esistenza di una destinazione con lo stesso nome provoca rifiuto; nel flusso `produce_diagnostic_report()` (481–488) è inoltre negato `out_dir` che, al momento del controllo `resolve()`, coincide con o è discendente di `root`. Questa modifica elimina il difetto specifico di troncamento accidentale mediante `Path.write_bytes()` della rev. 02.
+
+**Limitazioni residue:** `_write_report_no_clobber(report, out_dir)` non applica **essa stessa** il controllo di separazione da `root` e può essere chiamata direttamente. La sequenza `root.resolve()` / `out_dir.resolve()` seguita da `mkdir()` e `os.open()` è basata su percorsi, non su `dirfd` stabili: uno scambio concorrente di un symlink nella gerarchia può alterare il percorso effettivo. `O_EXCL` protegge il nome finale dalla sostituzione di un file preesistente, ma non fissa la directory genitrice e non equivale a una garanzia hardened di isolamento.
+
+**Disposizione:** `DBG-02 = NO_CLOBBER_CORRECTED_FOR_EXISTING_TARGETS; PATH_BOUNDARY_LIMITED`. La garanzia è ragionevole **contro errori di configurazione senza un avversario concorrente**, non contro sostituzioni intenzionali della gerarchia. Mantenere separate e non scrivibili le directory degli originali nella pratica; non dichiarare che il path check è immune a race.
+
+## 4. DBG-03 | RISOLTO SUL PERCORSO CLI NON MODIFICATO
+
+`verify_all_pinned_files()` (273–281) itera la tupla canonica di sette ruoli e assegna a ciascuno `MATCH`, `MISMATCH` o `ERROR`. `_validate_report_dict()` (355–421) respinge insiemi di ruoli diversi dall'insieme canonico e conteggi dichiarati non coerenti. `main()` (531–558) torna `0` soltanto quando `MATCH == len(ROLES) == 7` e `MISMATCH == ERROR == NOT_RUN == 0`.
+
+Questo risolve l'omissione della rev. 02 **sul percorso CLI ordinario**, considerato il codice come scritto, senza monkey-patch e senza un chiamante che fabbrica direttamente il report. Le chiamate importabili a `_make_report()` con valori arbitrari restano coperte dal rilievo DBG-01.
+
+**Disposizione:** `DBG-03 = CORRECTED_AS_STATIC_CLI_EXIT_RULE` (non testato a runtime).
+
+## 5. DBG-04, DBG-05 e nuovo rilievo di completezza della scrittura
+
+**DBG-04, DOCUMENTATO:** `MATCH/MISMATCH` indica il confronto osservato contro il pin registrato; `EQUAL/DIFFERENT` nel contratto S-01 confronta due buffer. La differenza è espressa nel docstring e non implica `PASS` qualificato.
+
+**DBG-05, LIMITE DICHIARATO CON PRECISAZIONE:** la lettura tramite `Path.is_file()` + `Path.read_bytes()` non protegge da modifiche **durante la lettura del file** o da usi successivi della stessa sorgente; manca uno snapshot di filesystem protetto. Tuttavia una volta che `read_bytes()` ha restituito un oggetto Python `bytes`, lo scrittore concorrente non può cambiare quei byte *tra la fine della lettura e l'hash di quello stesso oggetto*. La frase nel docstring «change them between read and hash» è quindi imprecisa. I digest rappresentano i byte effettivamente restituiti dalla chiamata, non l'integrità permanente del file o il futuro consumo parser.
+
+**DBG-06, MAGGIORE NUOVO (SCRITTURA PARZIALE):** `_write_report_no_clobber()` (451–459) esegue un singolo `os.write(fd, payload)` **senza controllare il valore di ritorno**. Le scritture POSIX possono essere parziali. Se `os.write` restituisce un numero di byte minore di `len(payload)` senza eccezione, la funzione restituisce normalmente `target`; `main()` può dunque tornare `0` dopo sette `MATCH` **con un report troncato**. Se una scrittura fallisce dopo aver creato il target, resta inoltre possibile un file incompleto. Correzione minima: ciclo su `memoryview` fino al completamento, rifiuto di progressione zero, gestione di errori e di output incompleti; documentare la semantica di cleanup senza promettere una durabilità hardened. `fsync()` non è automaticamente richiesto per questa funzione diagnostica, ma non si deve dichiarare durevolezza non osservata.
+
+**Disposizione:** `DBG-06 = OPEN_AS_DIAGNOSTIC_OUTPUT_COMPLETENESS`. È un problema funzionale verificabile staticamente, indipendente dal servizio OS hardened.
+
+## 6. Pin e conservazione degli originali
+
+Lettura **in sola lettura**, separata dal programma candidato, degli originali disponibili nella sessione:
+
+| Ruolo | Byte originali disponibili | Riscontro SHA-256 rispetto al PINNED |
+|---|---:|---|
+| `configuration` | 28.255 | `MATCH` |
+| `semantic_profiles` | 4.758.062 | `MATCH` |
+| `corpus_metadata` | Non materializzato nella cartella locale esaminata | Pin di 38.578 byte già verificato in precedente acquisizione GitHub; **non nuovamente verificato localmente qui** |
+| `ivtff_crosswalk` | 13.269 | `MATCH` |
+| `corpus` | 411.671 | `MATCH` |
+| `lexical_parser` | 14.100 | `MATCH` |
+| `offset_aware_mapper` | 12.095 | `MATCH` |
+
+`RC1_4_2_DRAFT_03_CODE_REV_02.py` conserva SHA-256 `adc8d06ab62688efc4647991e0b95e449b27a0f02b9e8bde40bb34ad2397be90`; DRAFT 02 originale SHA-256 `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325`. Nessuno di questi sorgenti è stato modificato.
+
+## 7. Matrice sintetica
+
+| Requisito diagnostico | Esito statico rev. 03 |
+|---|---|
+| Nessun generatore qualificato/PASS precostituito nel percorso CLI | `SATISFIED_AS_STATIC_NON_QUALIFIED_CLI_BOUNDARY` |
+| DBG-01: origine del report non falsificabile da API importabili | `NOT_CLOSED` |
+| DBG-02: non sovrascrivere target esistente | `CORRECTED_NO_CLOBBER` |
+| DBG-02: destinazione stabilmente confinata fuori da input | `PARTIAL_PATH_BASED` |
+| DBG-03: uscita 0 solo con sette MATCH | `CORRECTED_STATIC_CLI` |
+| DBG-04: etichette distinte | `DOCUMENTED` |
+| DBG-05: assenza protezione contro scrittori concorrenti | `LIMIT_DECLARED; WORDING_FIX_REQUIRED` |
+| DBG-06: scrittura integrale del file diagnostico | `OPEN` |
+| F-01–F-03 secondo il contratto hardened rev. 02.2 | `OPEN_UNCHANGED` |
+| Attestazione esterna / validazione operativa | `NOT_OBTAINED / NOT_RUN` |
+
+## 8. Verdetto e percorso minimo
+
+**Verdetto:** `DIAGNOSTIC_SOURCE_ACCEPTANCE_NOT_GRANTED`, per DBG-01 (API importabili con risultati non autenticati) e DBG-06 (scrittura parziale non rilevata); DBG-02 è migliorato sostanzialmente ma resta solo path-based. Non occorre un nuovo documento di specifica né il servizio OS hardened per correggere i rilievi diagnostici rimasti.
+
+**Intervento successivo minimo nel codice:** limitare la produzione e scrittura a un flusso che rilegge i sette file in modo verificabile e non accetti `RoleResult`/dict forgiati; assicurare l'intera scrittura senza ritorni di successo dopo short write; mantenere una gestione documentata dei limiti di race sul filesystem. Successivamente, **una sola revisione statica del nuovo sorgente**.
+
+**Invarianti:** `RP-01=OPEN`; `DOC-04=PENDING_EXTERNAL_ATTESTATION`; `GATE=CLOSED_PENDING_VALIDATION`; `f085v=UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER`; `manual_intervention_on_historical_data=false`. `STATIC_SOURCE_ACCEPTANCE` del ramo hardened **non concesso**. Nessun componente Voynich importato o eseguito, nessun nuovo PASS empirico e nessuno dei cinque artefatti qualificati generato.
