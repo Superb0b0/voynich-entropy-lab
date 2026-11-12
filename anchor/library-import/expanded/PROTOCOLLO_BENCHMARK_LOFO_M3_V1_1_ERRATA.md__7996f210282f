@@ -1,0 +1,24 @@
+# Errata tecnica al protocollo M3: unità fisica dello split
+
+- ID: `VOYNICH_BENCHMARK_LOFO_M3_V1_1_ERRATA`
+- Data: 2026-10-25
+- Protocollo originario: `PROTOCOLLO_BENCHMARK_LOFO_M3_V1.md`
+- Baseline di parsing: Baseline 1.0 / RC1.2, immutata
+
+## Motivo dell'errata
+
+Il report parser usa il campo `folio` per identificativi di lato/pannello, per esempio `f1r`, `f1v`, `f67r1`. Il primo script M3 ha quindi escluso un identificativo di lato alla volta, non un foglio fisico intero. Questo non soddisfa l'intento già dichiarato nel protocollo LOFO: impedire che recto e verso dello stesso foglio compaiano rispettivamente nel training e nel test.
+
+La prima esecuzione `VOYNICH_BENCHMARK_LOFO_M3_V1` viene conservata integralmente ma riclassificata come **diagnostica esplorativa page-side-level**, non come risultato confermativo LOFO.
+
+## Correzione vincolata
+
+- L'unità di test è il foglio fisico: tutti i lati/pannelli che iniziano con lo stesso numero di folio sono raggruppati nello stesso fold.
+- Le facce/pannelli `f85*`, `f86*` e il pannello `fRos` sono raggruppati in un unico gruppo `f85-86_foldout`, per non separare le componenti della grande pieghevole delle rosette.
+- La mappatura delle etichette resta quella di `SECTION_MAPPING_V1.json`; nessuna etichetta viene modificata dopo aver visto i punteggi.
+- M0 e M3 vengono ricalcolati sullo stesso split corretto e sugli stessi token.
+- Restano invariati alpha=0.1, seed=20261025, 10.000 bootstrap, metrica, soglia e regola di promozione.
+
+## Trasparenza inferenziale
+
+Questa errata corregge una discrepanza tra l'unità di split prevista e quella implementata. Poiché è stata individuata dopo l'esecuzione diagnostica page-side-level, il risultato corretto verrà etichettato come **analisi corretta post-errata**, non presentato come se il primo run non fosse mai avvenuto. Entrambi gli esiti e i rispettivi hash restano conservati.
