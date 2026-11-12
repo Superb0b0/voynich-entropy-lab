@@ -1,0 +1,23 @@
+# Protocollo diagnostico feature posizionali V1
+
+## Scopo
+Diagnosi descrittiva del contenuto informativo di ciascuna feature posizionale (prefissi/suffissi di 1, 2, 3 caratteri) rispetto alle etichette di sezione. Non è un benchmark di decifrazione e non modifica la Baseline 1.0.
+
+## Perimetro e split
+- Corpus autorizzato `ZL3b-n.txt`, SHA-256 `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc`.
+- Record canonici del report parser RC1.2 e mappatura esterna congelata `SECTION_MAPPING_V1.json`.
+- 98 gruppi LOFO di fogli fisici, con recto/verso uniti e f85/f86/Rosettes nello stesso gruppo.
+- In ogni fold si usano esclusivamente token dei 97 gruppi di training per tutte le statistiche diagnostiche. Il gruppo held-out non contribuisce a conteggi, selezione o graduatoria delle feature.
+
+## Statistiche fissate prima dell'esecuzione
+Per ogni feature p1, p2, p3, s1, s2, s3:
+1. entropia marginale delle etichette di sezione H(S) nel training;
+2. entropia condizionata pesata H(S|F), stimata dai conteggi training;
+3. informazione mutua I(S;F)=H(S)-H(S|F), in bit/token, e quota I/H(S);
+4. entropia normalizzata H(S|F=v)/log2(K) per ciascun valore osservato, pesata per frequenza;
+5. valori con maggiore informazione mutua puntuale, solo se presenti almeno 20 occorrenze nel training; per evitare sovrainterpretazione, la classifica è descrittiva e non è una prova inferenziale.
+
+Le statistiche dei fold sono aggregate pesando per token di training. Le liste dei valori sono riportate come diagnostica aggregata dei fold, non come test indipendente. Non si ottimizzano feature, lunghezze o pesi sulla base dei risultati.
+
+## Limiti
+Le feature sono stringhe posizionali letterali della trascrizione; non sono segmentazioni linguistiche verificate. Dipendenze tra prefissi/suffissi e lunghezza del token possono influenzare i risultati. Il test non stabilisce causalità, morfemi, grammatica o semantica.
