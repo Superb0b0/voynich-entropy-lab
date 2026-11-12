@@ -1,0 +1,19 @@
+# RC1.4 remaining crosswalks: reproducible build
+
+The builder `build_remaining_crosswalks_rc1_4.py` creates:
+- `folio_canvas_crosswalk.csv` (one row per Yale canvas, 213 rows)
+- `conditional_coupling_sample.csv` (one row per manuscript profile, 197 rows)
+- `RC1_4_remaining_crosswalks_validation.json`
+
+Required frozen inputs in one directory:
+- `corpus_metadata.csv` from `xenoglyph-ai/voynich-public`, commit `d4b31a245ba8133b727dc4255278b5e8349bbe39` (blob `eb05cb69d4847f6acb34a9d095e05c38369010d2`)
+- `voynich_profiles.json` from the same commit (blob `560779cf06e15a167799d210f6a0d4ecf1b8c8e1`)
+- `folio_ivtff_crosswalk.csv` from RC1.4
+
+Run:
+
+```bash
+python build_remaining_crosswalks_rc1_4.py --input-dir INPUTS --output-dir OUTPUTS
+```
+
+The script is fail-closed: it stops unless the expected 213/197/16/175/11/8/2/1/146 checks pass. It does not modify source files and does not run conditional coupling. The Yale canvas ID is extracted from the canonical IIIF `image_service_url`; the 7 repeated `image_id` groups remain separate canvas rows. IVTFF panels are aggregated at `folio_key` before profile attachment.
