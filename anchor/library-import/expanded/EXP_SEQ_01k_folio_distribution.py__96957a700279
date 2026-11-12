@@ -1,0 +1,31 @@
+import pandas as pd, numpy as np, re
+from pathlib import Path
+p=Path('/mnt/data/EXP_SEQ_01j_output/coppie_uniche.csv'); df=pd.read_csv(p)
+out=Path('/mnt/data/EXP_SEQ_01k_output'); out.mkdir(exist_ok=True)
+for c in ['qo-','d-']:
+ df[f'delta_{c}']=df[f'first_3_{c}']-df[f'first_2_{c}']
+fol=(df.groupby(['currier','folio'],as_index=False).agg(n=('block','size'),qo_r2=('first_2_qo-','sum'),qo_r3=('first_3_qo-','sum'),d_r2=('first_2_d-','sum'),d_r3=('first_3_d-','sum'),dq=('delta_qo-','sum'),dd=('delta_d-','sum')))
+fol['has_qo_gain']=fol.dq>0
+fol['has_d_drop']=fol.dd<0
+fol.to_csv(out/'per_folio.csv',index=False)
+for L in ['A','B']:
+ z=df[df.currier==L]; f=fol[fol.currier==L]; print('\n',L,'pairs',len(z),'folios',len(f),'nonzero-gain',sum(f.dq>0),'nonzero-loss',sum(f.dq<0),'zero',sum(f.dq==0),'d decrease',sum(f.dd<0),'d increase',sum(f.dd>0),'both',sum((f.dq>0)&(f.dd<0)))
+ print('overall counts qo 2,3',z['first_2_qo-'].sum(),z['first_3_qo-'].sum(),'d',z['first_2_d-'].sum(),z['first_3_d-'].sum())
+ print('positive folio contribution top',f.sort_values('dq',ascending=False)[['folio','n','dq','dd']].head(12).to_string(index=False))
+ print('folio pairs breakdown', f.n.value_counts().sort_index().to_dict())
+ print('block classes',z.block_class.value_counts().to_dict())
+ print('q gain contribution top5',f.nlargest(5,'dq').dq.sum(),'net',f.dq.sum())
+ # parity by canonical folio number
+ folno=z.folio.str.extract(r'f(\d+)')[0].astype(int); z=z.assign(parity=np.where(folno%2,'odd','even'))
+ for group,g in z.groupby('parity'):
+  print(group,'n',len(g),'folios',g.folio.nunique(),'qo delta',round((g['first_3_qo-']-g['first_2_qo-']).mean()*100,2),'d delta',round((g['first_3_d-']-g['first_2_d-']).mean()*100,2))
+# cluster bootstrap for effects
+rng=np.random.default_rng(3703)
+rows=[]
+for L,g in df.groupby('currier'):
+ group=[grp for _,grp in g.groupby('folio')]
+ for term in ['qo-','d-']:
+  a=np.array([x[f'delta_{term}'].sum() for x in group]); n=np.array([len(x) for x in group]); ix=rng.integers(0,len(group),size=(10000,len(group)))
+  v=100*a[ix].sum(axis=1)/n[ix].sum(axis=1)
+  rows.append(dict(currier=L,term=term,n_pairs=len(g),folios=len(group),delta_pp=100*g[f'delta_{term}'].mean(),ci_low=np.quantile(v,.025),ci_high=np.quantile(v,.975)))
+res=pd.DataFrame(rows);print('\n',res.to_string(index=False));res.to_csv(out/'bootstrap_folio.csv',index=False)
