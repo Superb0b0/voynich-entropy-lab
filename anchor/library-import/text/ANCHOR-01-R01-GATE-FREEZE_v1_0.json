@@ -1,0 +1,143 @@
+{
+  "identifier": "ANCHOR-01-R01-GATE-FREEZE",
+  "version": "1.0",
+  "frozen_at_utc": "2026-11-12T15:04:39.969890+00:00",
+  "freeze_scope": "LOCAL_PROTOCOL_FREEZE_NOT_EXTERNAL_PREREGISTRATION",
+  "design": "EXPLORATORY_REVIEWER_REPRODUCIBILITY_PREPARATION",
+  "threshold_grid": {
+    "depicted_region_native_px": [
+      50,
+      100,
+      150,
+      200,
+      250
+    ],
+    "glyph_region_native_px": [
+      25,
+      50,
+      75,
+      100,
+      125
+    ],
+    "combination_rule": "ALL_25_CARTESIAN_COMBINATIONS",
+    "source": "User-proposed sensitivity grid, fixed before new annotations; NOT calibrated on original corrections or nearest-neighbor separation",
+    "inclusive": true,
+    "primary_threshold": null
+  },
+  "stability_rule": "Same per-cell decision across all 25; otherwise INCONCLUSIVE / THRESHOLD_SENSITIVE; PROTOCOL_INVALID has global precedence",
+  "matching": {
+    "scope": "same image and annotation_domain, present only",
+    "algorithm": "Integer Hungarian with dummy columns",
+    "priorities": [
+      "maximum admissible cardinality",
+      "minimum total quantized normalized centroid cost",
+      "lexicographically minimum assigned-right-ID vector in sorted-left-ID order, unmatched last"
+    ],
+    "centroid": "polygon area centroid, rational shoelace",
+    "native_coordinate_quantum_px": "0.001",
+    "cost_normalization": "native image diagonal",
+    "normalized_cost_quantum": "0.000000001",
+    "rounding": "HALF_UP",
+    "decimal_precision": 60,
+    "admissibility": "exact squared rational distance <= threshold squared; no epsilon",
+    "iou_used_for_matching": false,
+    "fine_class_used_for_matching": false
+  },
+  "descriptive_criteria": {
+    "f1_min": 0.9,
+    "coverage_each_min": 0.9,
+    "unmatched_fraction_max": 0.1,
+    "raw_class_agreement_min": 0.9,
+    "kappa_min": 0.8,
+    "median_iou_min": 0.7,
+    "scope": "each image x domain separately; all four must satisfy applicable criteria",
+    "origin": "Fixed operational conventions, not empirical error calibration"
+  },
+  "denominators": {
+    "active_candidates": [
+      "present",
+      "ambiguous",
+      "not_localizable"
+    ],
+    "absent": "reported separately, not a true-negative universe",
+    "excluded_from_matching": [
+      "ambiguous",
+      "not_localizable",
+      "absent"
+    ]
+  },
+  "taxonomy": [
+    "human_candidate",
+    "central_star",
+    "other_depicted_object",
+    "text_region"
+  ],
+  "annotation_status": [
+    "present",
+    "absent",
+    "ambiguous",
+    "not_localizable"
+  ],
+  "confidence": {
+    "high": "entire region boundary visible, no reconstruction",
+    "medium": "partial occlusion/fading, visible envelope localizable; note uncertain boundary",
+    "low": "would require reconstruction or alternative-region choice; not allowed with present"
+  },
+  "kappa_not_estimable": "Classification INCONCLUSIVE, not PASS or FAIL; report raw agreement and coverage",
+  "decision_precedence": [
+    "PROTOCOL_INVALID",
+    "NOT_IDENTIFIABLE",
+    "INCONCLUSIVE",
+    "LOCALIZATION_BOTTLENECK",
+    "READY_FOR_V2_DESIGN"
+  ],
+  "uncertainty": "DESCRIPTIVE_ONLY; between-folio uncertainty NOT_ESTIMABLE; no Wilson/F1 substitution or object-bootstrap inference",
+  "inferential_support_reachable": false,
+  "permitted_readiness": "READY_FOR_V2_DESIGN / DESCRIPTIVE_ONLY only; does not validate links or select an attribute",
+  "source_corrections_audit_sha256": "39e6ab6d846c526d29a0a3a5a98db04ab13ae0722ceaafa32d589476e0323ed1",
+  "correction_register_role": "VERIFIED_EXPLORATORY_HISTORY_NOT_USED_FOR_CALIBRATION",
+  "reviewer_packet_sha256": "b2438beb2aabbc5ef0057c7894c20dbf9ad8042e41da512246a923c58d2c833f",
+  "images": {
+    "A": {
+      "preview_width": 1449,
+      "preview_height": 1800,
+      "native_width": 2979,
+      "native_height": 3700,
+      "physical_folio": "f70",
+      "panel": "f70v1",
+      "source_oid": 1006201,
+      "image_sha256": "7607647c85b29ebd9021a4fc14180dbb49f8b315f94a31f597f6b91a029424e8"
+    },
+    "B": {
+      "preview_width": 1336,
+      "preview_height": 1800,
+      "native_width": 2793,
+      "native_height": 3762,
+      "physical_folio": "f71",
+      "panel": "f71r",
+      "source_oid": 1006202,
+      "image_sha256": "f04c40d30f1cd022c7c78362069fb63b34233f277db9185ae39a5a01c686123f"
+    }
+  },
+  "presentation_order": [
+    [
+      "A",
+      "depicted_region"
+    ],
+    [
+      "A",
+      "glyph_region"
+    ],
+    [
+      "B",
+      "depicted_region"
+    ],
+    [
+      "B",
+      "glyph_region"
+    ]
+  ],
+  "reviewer_blinding": "Original glyphs/layout visible; no EVA, source warnings, former polygons, diagnostics, threshold grid or H-A3R hypothesis supplied",
+  "adjudication": "Only after both closures and original metrics; separate consensus dataset; never overwrite raw reviews or agreement",
+  "amendment_policy": "No amendment after distribution; new version and new prospective collection when criteria change"
+}
