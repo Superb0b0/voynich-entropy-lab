@@ -1,0 +1,7 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: EXP_SEQ_01c_interne_30_60.csv>
+index,currier,late_suffix,length_range,early_position,late_position,q30_n,non_q30_n,suffix60_with_q30_n,suffix60_without_q30_n,suffix60_with_q30_pct,suffix60_without_q30_pct,informative_strata,informative_rows,permutation_p_two_sided,permutation_reps,seed
+0,A,dy,6..10,round(0.30*(n-1)),round(0.60*(n-1)),113,838,12,66,10.619,7.876,27,125,0.33493,5000,20261110
+1,A,aiin,6..10,round(0.30*(n-1)),round(0.60*(n-1)),113,838,12,104,10.619,12.411,22,94,1.0,5000,20261110
+2,B,dy,6..10,round(0.30*(n-1)),round(0.60*(n-1)),363,874,115,255,31.68,29.176,118,776,0.68566,5000,20261110
+3,B,aiin,6..10,round(0.30*(n-1)),round(0.60*(n-1)),363,874,34,99,9.366,11.327,64,456,1.0,5000,20261110
