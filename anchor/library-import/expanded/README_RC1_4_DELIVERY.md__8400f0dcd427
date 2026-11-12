@@ -1,0 +1,29 @@
+# Voynich crosswalk and parser release RC1.4
+
+## Completed in this delivery
+- `ivtff_parser_rc1_4.py`: separately versioned parser; does not modify `ZL3b-n.txt`.
+- `PARSER_SPEC_V1_RC1_4.md`: explicit normalization and validation rules.
+- `ivtff_parser_rc1_4_report.json`: full parser audit output.
+- `ivtff_parser_rc1_4_validation_summary.json`: compact source/parser hashes and validation counts.
+- `folio_ivtff_crosswalk.csv`: 227 IVTFF units with per-unit P-locus and token counts and a folio aggregation key.
+- `build_ivtff_crosswalk_rc1_4.py`: reproducible builder for the IVTFF crosswalk from the local page metadata and parser report.
+
+## Not included yet
+- `folio_canvas_crosswalk.csv`
+- `conditional_coupling_sample.csv`
+
+The source `corpus_metadata.csv` and `voynich_profiles.json` were retrieved and reconciled through the connected GitHub source. The GitHub integration denied branch creation (HTTP 403, resource not accessible by integration), and its container write path was unavailable. I therefore did not modify the original repository or fabricate local copies of source data. The row classifications and 16 score keys were verified, but the two remaining CSV files are not represented as completed deliverables in this package.
+
+## Frozen checks
+- Source commit: `d4b31a245ba8133b727dc4255278b5e8349bbe39`
+- `ZL3b-n.txt` SHA-256: `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc`
+- Parser SHA-256: `075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d`
+- P-coded loci: 4,130, including 11 `fRos` loci
+- Parser token count: 35,492 under RC1.4 normalization; not interchangeable with the prior 34,275 count
+- Distinct token types: 6,980
+- Physical lines: 8,510
+- `folio_ivtff_crosswalk.csv`: 227 unique IVTFF units; 4,130 P loci and 35,492 tokens summed from unit rows
+- Candidate classes: 175 primary, 11 multipanel sensitivity, 10 without P (8 single, 2 multipanel), 1 unmatched (`f085v`)
+- Proposed pre-analysis threshold: 75 tokens per folio; 146/175 primary candidates pass, 29 fail
+
+No conditional-coupling analysis was run.
