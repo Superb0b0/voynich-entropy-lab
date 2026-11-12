@@ -1,0 +1,30 @@
+# Protocollo preregistrato — Confronto a tre vie LOFO V1
+
+**Stato:** fissato prima dell'esecuzione. **Baseline/corpus:** Baseline 1.0 e corpus ZL3b-n congelati; sola lettura.
+
+## Domanda
+Le feature posizionali (prefissi e suffissi di 1, 2 e 3 caratteri) aggiungono capacità predittiva sulla sezione oltre all'identità lessicale del token?
+
+## Split e dati
+- Esattamente lo split LOFO per foglio fisico: recto/verso insieme; f85/f86 e Rosettes nello stesso gruppo; attesi 98 gruppi.
+- Etichette esclusivamente da `SECTION_MAPPING_V1.json` congelato.
+- Input e vocabolari definiti separatamente in ogni fold usando solo il training.
+- Tutte le occorrenze test, incluse quelle con token non visti nel training, sono valutate.
+
+## Modelli
+- **A, identità lessicale:** modello generativo categoriale add-alpha 0.1 per token completo dato la sezione, prior di sezione stimato sul training. Vocabolario = tipi distinti nel training più un bucket UNK; token non visti mappati a UNK.
+- **B, feature posizionali:** Naive Bayes con sei feature categoriali: prefisso/suffisso di lunghezza 1, 2 e 3. Ogni feature usa add-alpha 0.1; prior di sezione stimato sul training. Nessuna feature è selezionata usando il test.
+- **C, combinato:** media geometrica a pesi fissi 0.5/0.5 dei posteriori di sezione A e B, poi rinormalizzazione. Nessuna scelta del peso sui dati di test e nessuna ottimizzazione post-hoc.
+- **Riferimento nullo:** prior di sezione soltanto, per contesto e confronto con V1.
+
+## Metriche primarie
+- Cross-entropy della vera sezione per occorrenza, in bit/token, per A, B, C e prior-only.
+- Riduzione relativa di CE rispetto a prior-only.
+- Differenza appaiata C vs A in CE assoluta e relativa; differenza B vs A come confronto secondario.
+- Bootstrap per cluster di foglio fisico, 10.000 repliche, seed 20261025, IC percentile 95%. Il bootstrap ricampiona gruppi con reinserimento e mantiene appaiate le predizioni dei modelli per ogni gruppo.
+
+## Regole interpretative
+- C migliore di A fuori campione è evidenza che le feature posizionali aggiungono informazione predittiva rispetto al modello lessicale specificato, non prova di morfemi o grammatica.
+- Un IC della differenza C-A che esclude zero è evidenza statistica per il confronto preregistrato.
+- Il risultato dipende dalle famiglie di modelli e dallo smoothing specificati; non prova indipendenza assoluta né semantica.
+- Non modificare corpus, parser, mapping o Baseline 1.0.
