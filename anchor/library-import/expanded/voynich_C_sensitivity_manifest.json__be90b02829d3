@@ -1,0 +1,100 @@
+{
+  "status": "executed_exploratory_C_parameter_sensitivity",
+  "configurations": 66,
+  "corpus_tokens_each": 27755,
+  "seeds": [
+    41004,
+    41010,
+    41002,
+    41008,
+    41001,
+    41009,
+    41011,
+    41005,
+    41012,
+    41014,
+    41003,
+    41007,
+    41015,
+    41013,
+    41006,
+    41018,
+    41017,
+    41016,
+    41002,
+    41001,
+    41003,
+    41015,
+    41014,
+    41004,
+    41005,
+    41007,
+    41013,
+    41017,
+    41016,
+    41026,
+    41006,
+    41027,
+    41018,
+    41008,
+    41025,
+    41010,
+    41019,
+    41009,
+    41020,
+    41021,
+    41028,
+    41029,
+    41011,
+    41030,
+    41038,
+    41012,
+    41022,
+    41037,
+    41023,
+    41032,
+    41024,
+    41031,
+    41033,
+    41039,
+    41034,
+    41040,
+    41035,
+    41036,
+    41041,
+    41042,
+    41045,
+    41044,
+    41043,
+    41046,
+    41048,
+    41047
+  ],
+  "input_hashes": {},
+  "outputs": {
+    "voynich_synth_bench.py": {
+      "sha256": "695c78a7ceb1cab8fc5d6821389d1f0acd1db39043673889ee1c8fcf0a639d39",
+      "bytes": 14143
+    },
+    "voynich_C_sensitivity.py": {
+      "sha256": "a1965a5b6a8be04bbef09406d0d477879d531f11f1fa8c9d5d83fe8df124d540",
+      "bytes": 3107
+    },
+    "voynich_C_sensitivity_highcopy.py": {
+      "sha256": "5a7af42fa362d61dd61e932f14cd4f040efd2269d4f2e2732684cfe5d9b41027",
+      "bytes": 3131
+    },
+    "voynich_C_sensitivity_results.json": {
+      "sha256": "217bf9107a6e253ee7a32a4ebeae73ecf0f4d8219c761705eaa8e8645a157188",
+      "bytes": 16405
+    },
+    "voynich_C_sensitivity_highcopy_results.json": {
+      "sha256": "46feb6aca4dfd94d3d4e1826c00ad727a1096572028663e8f8ae6be8bc224fbc",
+      "bytes": 32866
+    },
+    "voynich_C_sensitivity_all.csv": {
+      "sha256": "ad4e6021fdf8a139a07d40db0e2d4b9ff9328f94211322e0369104c227a896cb",
+      "bytes": 10351
+    }
+  }
+}
