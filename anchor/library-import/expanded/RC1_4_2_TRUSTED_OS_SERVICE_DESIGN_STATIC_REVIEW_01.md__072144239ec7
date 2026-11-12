@@ -1,0 +1,112 @@
+# RC1.4.2 V7.1 | TRUSTED OS SERVICE DESIGN, STATIC REVIEW 01
+
+**Data:** 10 novembre 2026  
+**Oggetto:** revisione statica, interna e solo documentale di `RC1_4_2_TRUSTED_OS_SERVICE_DESIGN_SPEC_DRAFT_01.md`.  
+**Verdetto:** `TRUSTED_SERVICE_DESIGN_ADEQUATE` **nel solo perimetro di progettazione**.  
+**Qualifica:** `INTERNAL_STATIC_TRUSTED_SERVICE_DESIGN_REVIEW_ONLY`.  
+**Conseguenza:** nessuna accettazione del sorgente rev. 01, nessuna attestazione indipendente, nessuna approvazione del deployment, nessuna creazione o esecuzione del servizio, nessun nuovo `PASS` empirico.
+
+## 0. Identificazione materiale e metodo
+
+| Elemento letto in sola lettura | Dimensione in byte | SHA-256 |
+|---|---:|---|
+| `RC1_4_2_TRUSTED_OS_SERVICE_DESIGN_SPEC_DRAFT_01.md` | 31042 | `a6b70785ce558b4a6c1c0227ed11da2dd116a1c7b6b1958bf71be5c23ce3d22d` |
+| `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_2.md` | 43792 | `c3f57f4cacd8b17c2d7a452020db3479cd7518415e02cf194adbd6634cfde58e` |
+| `RC1_4_2_DRAFT_03_CODE_IMPLEMENTATION_DESIGN_SPEC.md` | 36312 | `82cec25351e97d10fa90d5d9c0f287d87097f6262ad110df4a362293b2829dbe` |
+| `RC1_4_2_DRAFT_03_CODE_REV_01_STATIC_SOURCE_REVIEW_01.md` | 14983 | `171e6387407638025cec07aa649f4c9bd2d7f86bb62c87a05479e74bf8dbaa12` |
+| `RC1_4_2_DRAFT_03_CODE_REV_01_SOURCE_ONLY.zip` | non ricalcolato qui | `29239803c4677c0445fbf26e79fbc201bd0bc0a50fddab66a8ce1c2ed859c4db` (riferimento documentale) |
+
+Lettura e comparazione testuale; nessun import, compilazione, parser, generatore, mapper o builder Voynich. Sono stati ricontrollati sui byte i primi quattro documenti sopra; non si attribuisce qui una nuova verifica byte-per-byte dei sette input pinned, del runtime o del pacchetto ZIP. I riferimenti a syscall e proprietà Linux sono **requisiti progettuali**, non prove di compatibilità, efficacia, disponibilità o corretto comportamento sul target.
+
+## 1. Decisione e portata
+
+Il documento di design è **sufficientemente definito per fungere da base a una specifica implementativa dettagliata del servizio fidato**, distinta e non eseguibile. Le responsabilità e le dipendenze sono mappate sui sei rilievi e sul contratto prescrittivo. L'esito positivo **non** significa che tali rilievi siano chiusi nel sorgente: la revisione della rev. 01 rimane `NOT_GRANTED` e l'implementazione reale del servizio rimane `NOT_CREATED`.
+
+I punti **TSD-01–TSD-05** sono accettati come chiarimenti **non bloccanti per l'architettura**, ma **obbligatori prima di approvare il codice e il deployment**. In particolare TSD-04 va specificato prima di scrivere il publisher: la visibilità di un commit atomico e la sua durabilità sono proprietà diverse, e il fallimento di `fsync` **dopo** un rename riuscito non consente di affermare retroattivamente «nessuna pubblicazione».
+
+**Nessun punteggio T-01–T-10 del futuro servizio viene attribuito da questo rapporto.** Il verdetto riguarda esclusivamente l'adeguatezza della progettazione come documento.
+
+## 2. SRC-01–SRC-06: riscontro puntuale sulla progettazione
+
+| Rilievo | Riscontro testuale | Valutazione di design | Ancora assente nel codice |
+|---|---|---|---|
+| **SRC-01** | §§2, 5, 7, 11: `linux_isolation_launcher` e `confined_parser_worker`; caricamento solo dopo namespace, root, fd, capability e snapshot verificati (righe 34–50, 84–119, 158–160) | `DESIGN_COVERED_NOT_IMPLEMENTED` | Launcher attivo, worker ed effettive guardie prima di import/parser |
+| **SRC-02** | §§2, 6, 10: I/O nel solo dominio del supervisore, `dirfd` da policy e `openat2`; no write/staging dal frontend (righe 35–50, 99–106, 148–154) | `DESIGN_COVERED_NOT_IMPLEMENTED` | Servizio OS e autorizzazione interna verificabile |
+| **SRC-03** | §§2, 8: `VerifiedEvidenceRef` mintato soltanto dal ledger interno, osservazioni child non fidate e process handle osservato (righe 37–49, 123–133) | `DESIGN_COVERED_NOT_IMPLEMENTED` | Verifica server-side di peer/sessione/fatti ed evidenze per-controllo |
+| **SRC-04** | §§3, 5, 9, 10, 12: verifier, policy/addendum, assessment e publisher esplicitamente subordinati al deployment (righe 54–60, 84–97, 135–154, 173–185) | `SAFE_BLOCKED_IN_DESIGN` | Tutti i servizi qualificanti e governance reale |
+| **SRC-05** | §7: fd 0–2 ammessi con policy, fd 3 IPC verificato, `close_range(4, UINT_MAX, CLOSE_RANGE_UNSHARE)` e niente `max_fd` del caller (righe 110–121) | `DESIGN_COVERED_NOT_IMPLEMENTED` | Sequenza effettiva, fallimento syscall/assenza fd ostili dimostrati |
+| **SRC-06** | §8: framing 32-bit, limiti, schema OA, peer kernel, sequence/nonce, exit OS e ledger anti-replay (righe 123–133) | `DESIGN_COVERED_NOT_IMPLEMENTED` | Trasporto effettivo, verifica OA e binding session-bound |
+
+**Distinzione probatoria:** l'osservazione kernel di apertura/lettura e la protezione dei bytes della snapshot non sono già dimostrate dalla presenza delle parole `pidfd`, `SO_PEERCRED` o `INPUT_READ_OBSERVED`. Se non verificabili nel futuro ambiente, i relativi controlli di integrità non possono diventare `PASS`.
+
+## 3. Confine di fiducia, sorgenti congelate, gate
+
+- **F-01:** §§1–3 escludono `dict`, `bool`, `RequestId`, nomi API e ricevute Python come dispositivi di autorità. Il processo frontend è non fidato. Il confine effettivo dovrà essere imposto dal sistema operativo e controllato sul futuro codice, non dai nomi dei moduli.
+- **F-02:** §6 prescrive una sequenza tracciabile `dirfd fidato → buffer originale → size/SHA → snapshot da quegli stessi buffer → verifica snapshot → parser confinato → osservazioni non fidate → verifica supervisor`. I sette hash sono dichiarati in §4; per `corpus_metadata.csv` e `ZL3b-n.txt` si indica il recupero documentale, non una sessione autorizzata.
+- **F-03:** §§3 e 10 subordinano autorizzazione, serializzazione e pubblicazione a policy/addendum esterni e a `renameat2(RENAME_NOREPLACE)` con `dirfd` ancorati. Un bool del caller e un `exists()` seguito da `rename()` restano proibiti.
+- **R-01/A-01/A-02:** §7 prescrive namespace, root privata, `pivot_root`, distacco della vecchia root, cinque set capability vuoti, identità non privilegiata, `no_new_privs`, `dumpable=0`, device allowlist vuota. I requisiti sono **prescritti**, non implementati né validati.
+- **Governance V7.1:** §3 riconosce esplicitamente `validation_artifact_generation_allowed=false` e `CLOSED_PENDING_VALIDATION`. In assenza di atto separato che risolva l'eccezione audit-only, non può esistere emissione qualificata. Nessun testo del design modifica la configurazione congelata.
+- **Claims separati:** §9 distingue `TECHNICAL_BYTE_EQUALITY`, `AUDIT_VALIDATED_REPEATABILITY`, `PROVENANCE_ESTABLISHED`, `OPERATIONAL_VALIDATION_PASSED`; il nuovo servizio non può chiudere da sé RP-01 o DOC-04.
+
+## 4. TSD-01–TSD-05: decisioni della revisione
+
+| ID | Esito | Chiarimento vincolante per la specifica implementativa e la futura source review |
+|---|---|---|
+| **TSD-01** stabilità input | `NON_BLOCKING_DESIGN; PRE_SOURCE_REQUIRED` | Esplicitare modello di minaccia e confine degli scrittori fidati/non fidati. Il solo `stat/hash` prima e dopo non basta contro un writer concorrente; definire backing store immutabile/protezione o `BLOCKED`. Nessuna pretesa di protezione assoluta contro host root. |
+| **TSD-02** `close_range` | `NON_BLOCKING_DESIGN; PRE_SOURCE_REQUIRED` | Chiamata reale, ritorni, errori e ordine obbligatori; mancato supporto o semantica non verificabile => `BLOCKED`. Qualsiasi alternativa con pari semantica richiede **nuova revisione/approvazione esplicita**, non fallback automatico. Fd 3 e stdio devono essere attestati. |
+| **TSD-03** ledger | `NON_BLOCKING_DESIGN; PRE_SOURCE_REQUIRED` | Definire owner/permessi, isolamento dal caller, atomicità e serializzazione concorrente, anti-replay, protezione da modifica e corruzione; politiche crash/restart, persistenza e revoca. Non basta un dizionario del processo chiamante. |
+| **TSD-04** commit/durabilità | `NON_BLOCKING_DESIGN; MANDATORY_PRE_SOURCE_CLARIFICATION` | Definire ordine `fsync` di file/staging, rename no-replace, `fsync` della directory genitrice e gestione dei fallimenti. Se **rename è riuscito** ma il successivo `fsync` fallisce, il target può essere già visibile: stato `COMMITTED_DURABILITY_UNCERTAIN`, nessun `PASS` e nessuna falsa affermazione `NOT_PUBLISHED`. Cleanup/quarantena solo per lo staging non ancora committato; recupero del target secondo policy esplicita. |
+| **TSD-05** nonce | `NON_BLOCKING_DESIGN; PRE_SOURCE_REQUIRED` | Generazione CSPRNG nel dominio fidato, lunghezza e codifica approvate, entropia e unicità verificate, deduplicazione/consumo atomici e politica di persistenza; fonte non disponibile, collisione o replay => `BLOCKED`. Identificatori del caller non sostituiscono il nonce. |
+
+**Nota di severità TSD-04:** il design tratta già atomicità e durabilità come aspetti distinti (§10); manca soltanto lo stato esplicito per un fallimento successivo al punto di commit. Questo difetto è **non bloccante per l'architettura** ma **bloccante prima del codice del publisher**, perché un futuro implementatore non deve interpretare `BLOCKED` come cancellazione retroattiva di un commit eseguito.
+
+## 5. Matrice T-01–T-10: sola copertura progettuale
+
+| Controllo | Copertura nel design | Stato del *futuro sorgente* |
+|---|---|---|
+| T-01 / F-01 | §§1–3, 11: separazione OS e call graph autorizzato | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-02 / F-02 | §§4–6, 8: sette pin, buffer→snapshot→worker→evidenza | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-03 / F-03 | §§3, 10: firma/nonce e publisher no-replace | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-04 / S-01 | §9: uguaglianza tecnica non equivalente a PASS | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-05 / A-01 | §§6–7: mount namespace, pivot, detach, fd | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-06 / A-02 | §7: cinque capability set vuoti, UID/GID, anti-tracing | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-07 / D-02/B-01 | §§3–4, 12: authority, manifest runtime, governance | `PENDING_DEPLOYMENT_APPROVAL` |
+| T-08 / B-02 | §§4, 7: `allowed_device_nodes=[]`, no `/proc`/`/sys` | `RUNTIME_FEASIBILITY_NOT_RUN` |
+| T-09 / RP-01 | §§3, 9, 13: claim separati, gate chiuso | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-10 / invarianza | §4: sette identità pinned, recupero documentale separato da sessione | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+
+## 6. Stato conservato e prossimi passi consentiti
+
+```text
+TRUSTED_SERVICE_DESIGN: TRUSTED_SERVICE_DESIGN_ADEQUATE
+REVIEW_SCOPE: INTERNAL_STATIC_TRUSTED_SERVICE_DESIGN_REVIEW_ONLY
+TRUSTED_SERVICE_DESIGN_DEPENDENCIES: TSD_01_TO_TSD_05_REQUIRED_BEFORE_SOURCE_ACCEPTANCE
+TRUSTED_SERVICE_SOURCE: NOT_CREATED
+TRUSTED_SERVICE_DEPLOYMENT: NOT_APPROVED_NOT_DEPLOYED
+DRAFT03_REV01_SOURCE: CREATED_STATICALLY_REVIEWED_NOT_ACCEPTED
+STATIC_SOURCE_ACCEPTANCE_REV01: NOT_GRANTED
+SRC01: BYPASS_REMOVED_WORKER_ABSENT
+SRC02: BYPASS_REMOVED_TRUSTED_OS_SERVICE_ABSENT
+SRC03: PYTHON_AUTHORITY_BYPASS_REMOVED_SERVER_VERIFIER_ABSENT
+SRC04: BLOCKING_INCOMPLETE_SAFE_BLOCKED
+SRC05: UNSAFE_MAX_FD_REMOVED_KERNEL_CLOSURE_NOT_IMPLEMENTED
+SRC06: IPC_SCHEMA_EXPANDED_SESSION_BOUND_VALIDATION_ABSENT
+F01: IMPORTABLE_BYPASSES_REMOVED_QUALIFIED_PATH_NOT_IMPLEMENTED
+F02: OPEN_AS_FULL_IMPLEMENTATION
+F03: SAFE_BLOCKED_NOT_IMPLEMENTED
+code_remediation_required: true
+RUNTIME_MANIFEST: PENDING_RUNTIME_INVENTORY
+D02_B01: PENDING_DEPLOYMENT_APPROVAL
+B02: ALLOWLIST_EMPTY_RUNTIME_FEASIBILITY_NOT_RUN
+DOC01_DOC02_DOC03: RESOLVED_DOCUMENTALLY
+DOC04: PENDING_EXTERNAL_ATTESTATION
+RP01: OPEN
+f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data: false
+GATE: CLOSED_PENDING_VALIDATION
+FUTURE_OPERATIONAL_VALIDATION: NOT_RUN
+QUALIFIED_ARTIFACTS_GENERATED: NONE
+NEW_EMPIRICAL_PASS: NONE
+```
+
+**Fase successiva consentita:** specifica **implementativa dettagliata del servizio fidato, spec-only**, con prescrizioni TSD-01–TSD-05 e piano di validazione/call graph, da produrre soltanto su istruzione distinta. La sua eventuale valutazione positiva non autorizza automaticamente creazione, import, esecuzione, test, deployment, staging o pubblicazione. Nessuna verifica di compatibilità kernel è stata svolta e nessun PASS empirico è attribuito.
