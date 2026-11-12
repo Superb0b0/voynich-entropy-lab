@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""Analisi esplorativa: lunghezza blocchi, posizioni iniziali, vocabolario.
+Legge solo il corpus, non importa il parser congelato.
+"""
+import csv, re, sys
+from pathlib import Path
+from collections import defaultdict, Counter
+ROOT=Path(__file__).resolve().parent
+sys.path.insert(0,str(ROOT))
+from EXP_SEQ_01a_gradiente_posizionale import read_loci, HEADER, P_TAGS
+CORPUS=ROOT/'ZL3b-n.txt'
+OUT=ROOT/'EXP_SEQ_01h_output'; OUT.mkdir(exist_ok=True)
+flags={}
+for raw in CORPUS.read_text(encoding='utf8').splitlines():
+    m=HEADER.match(raw)
+    if m and ',' in m.group(1):
+        key,tag=m.group(1).split(',',1)
+        if tag in P_TAGS:
+            flags[key]=('<%>' in m.group(2),'<$>' in m.group(2))
+records=read_loci(CORPUS)
+blocks=[]; active=None; previous=None
+for loc,folio,lang,section,hand,tokens in records:
+    if folio!=previous:
+        if active:blocks.append(active)
+        active=None;previous=folio
+    start,end=flags[loc]
+    if start:
+        if active:blocks.append(active)
+        active=[]
+    if active is not None:
+        active.append(dict(locus=loc,folio=folio,lang=lang,section=section,hand=hand,tokens=tokens))
+    if end and active:
+        blocks.append(active);active=None
+if active:blocks.append(active)
+
+def cl(n):return '4-6' if 4<=n<=6 else '7-9' if 7<=n<=9 else 'other'
+rows=[]
+for bid,block in enumerate(blocks):
+    size=len(block)
+    for offset,r in enumerate(block):
+        if r['lang'] not in ('A','B') or not 6<=len(r['tokens'])<=10: continue
+        words=r['tokens']
+        rows.append(dict(block_id=bid,block_size=size,block_class=cl(size),lang=r['lang'],folio=r['folio'],offset=offset,locus=r['locus'],first=words[0],second=words[1],n_tokens=len(words),qo1=int(words[0].startswith('qo')),qo2=int(words[1].startswith('qo'))))
+
+def save(name,data):
+    if not data:return
+    with (OUT/name).open('w',newline='',encoding='utf8') as f:
+        writer=csv.DictWriter(f,fieldnames=list(data[0])); writer.writeheader();writer.writerows(data)
+
+# Every block has ≥3 lines for offset 2 and class 4-6 or 7-9.
+summary=[]
+for lang in ('A','B'):
+    for klass in ('4-6','7-9'):
+        for offset in (0,1,2):
+            sub=[r for r in rows if r['lang']==lang and r['block_class']==klass and r['offset']==offset]
+            n=len(sub); p1=sum(r['qo1'] for r in sub);p2=sum(r['qo2'] for r in sub)
+            summary.append(dict(currier=lang,block_class=klass,offset=offset,n=n,n_blocks=len(set(r['block_id'] for r in sub)),n_folios=len(set(r['folio'] for r in sub)),qo1_n=p1,qo2_n=p2,qo1_pct=round(p1/n*100,2) if n else '',qo2_pct=round(p2/n*100,2) if n else '',delta_pp=round((p1-p2)/n*100,2) if n else ''))
+save('offset_stratificati_4_6_vs_7_9.csv',summary)
+
+# paired same block and both lines eligible, stratified by size
+pairs=[]
+for bid in sorted(set(r['block_id'] for r in rows)):
+    obj={r['offset']:r for r in rows if r['block_id']==bid}
+    if 1 in obj and 2 in obj and obj[1]['lang']==obj[2]['lang'] and obj[1]['block_class'] in ('4-6','7-9'):
+        a,b=obj[1],obj[2]
+        pairs.append(dict(block_id=bid,currier=a['lang'],block_class=a['block_class'],folio=a['folio'],delta_offset1=a['qo1']-a['qo2'],delta_offset2=b['qo1']-b['qo2'],change=(b['qo1']-b['qo2'])-(a['qo1']-a['qo2'])))
+save('coppie_seconda_terza.csv',pairs)
+paired_summary=[]
+for lang in ('A','B'):
+    for klass in ('4-6','7-9'):
+        subset=[p for p in pairs if p['currier']==lang and p['block_class']==klass]
+        if subset:
+            paired_summary.append(dict(currier=lang,block_class=klass,n_pairs=len(subset),n_folios=len(set(r['folio'] for r in subset)),offset1_delta=round(100*sum(p['delta_offset1'] for p in subset)/len(subset),2),offset2_delta=round(100*sum(p['delta_offset2'] for p in subset)/len(subset),2),change_pp=round(100*sum(p['change'] for p in subset)/len(subset),2)))
+save('coppie_sintesi.csv',paired_summary)
+
+# Are selected opening words found on following rows, and are shared terms truly selective?
+words=['c','pchor','tshol','tchedy','pol','polchedy','tshedy','daiin','qokeey']
+lex=[]
+for lang in ('A','B'):
+    for token in words:
+        for offset in (0,1,2):
+            subset=[r for r in rows if r['lang']==lang and r['offset']==offset]
+            n=len(subset);cnt=sum(r['first']==token for r in subset)
+            lex.append(dict(currier=lang,word=token,offset=offset,n_rows=n,first_word_n=cnt,first_word_pct=round(100*cnt/n,3) if n else ''))
+save('parole_apertura_offset.csv',lex)
+print('STRATIFIED')
+for x in summary:print(x)
+print('PAIRED')
+for x in paired_summary:print(x)
+print('LEX')
+for x in lex:
+    if x['first_word_n'] and x['word'] in ('daiin','qokeey','pchor','tshol','tchedy','pol','polchedy','tshedy'):print(x)
