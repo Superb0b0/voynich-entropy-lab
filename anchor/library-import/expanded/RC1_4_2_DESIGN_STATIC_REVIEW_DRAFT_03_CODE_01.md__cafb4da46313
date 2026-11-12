@@ -1,0 +1,101 @@
+# RC1.4.2 V7.1 | Revisione statica della progettazione DRAFT 03_CODE | Rapporto 01
+
+**Data:** 10 novembre 2026.  
+**Perimetro:** ispezione testuale in sola lettura di specifica di design, contratto rev. 02.2 e sorgente DRAFT 02. Nessun import/esecuzione dei componenti della pipeline, nessun artefatto empirico, nessuna modifica alle fonti.  
+**Verdetto, limitato alla qualità del design:** `DESIGN_SPEC_ADEQUATE`.  
+**Qualifica essenziale:** `INTERNAL_STATIC_DESIGN_REVIEW_ONLY`; l'autore della presente revisione è lo stesso assistente che ha prodotto la specifica. **Non** è un'attestazione indipendente di terza parte, non è `STATIC_SOURCE_ACCEPTANCE`, non è un PASS empirico o una validazione di sicurezza runtime.
+
+## 1. Documenti esaminati e identità dei byte
+
+| Documento | Dimensione | SHA-256 dei byte locali |
+|---|---:|---|
+| `RC1_4_2_DRAFT_03_CODE_DESIGN_SPEC.md` | 31.692 byte, 218 righe | `7d7bd37fa1adf926ae698b3ba288469e6dc3d790c6d13fc719a99dbdbf78b777` |
+| `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_2.md` | 43.792 byte | `c3f57f4cacd8b17c2d7a452020db3479cd7518415e02cf194adbd6634cfde58e` |
+| `RC1_4_2_STATIC_ACCEPTANCE_REVIEW_REV_02_2_01.md` | 8.149 byte | `f47a99999f5b20a25c5b50a4a42934cc23d0388e27814e4334d116308e82efe0` |
+| `rc1_4_2_generator_clean_DRAFT_02.py` | 41.856 byte | `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325` |
+
+Metodo: lettura locale e `sha256sum`; l'identità crittografica non certifica la correttezza. Sono stati ispezionati testualmente i nomi delle definizioni `def` e i blocchi delle funzioni rilevanti del sorgente, senza importarlo o invocarlo.
+
+## 2. Mappa del design contro F-01/F-02/F-03
+
+| Rilievo | Evidenza nel design | Riscontro nel DRAFT 02 | Giudizio sul design |
+|---|---|---|---|
+| F-01, invocabilità dopo import | §1–§4, in particolare righe 24–53 e 59–99: orchestratore fidato distinto dal nucleo diagnostico, restrizione delle API qualificanti | `prepare_audit_from_verified_inputs` righe 684–711, `serialize_validation_artifacts` 632–660, CLI `__main__` 800–801 | `ADEQUATE_AS_DESIGN`; la futura irraggiungibilità dal percorso **ufficiale** non è stata verificata su nuovo codice |
+| F-02, hash e PASS su dizionari forniti dal chiamante | §2–§5, righe 45–53, 62–75, 101–115: acquisizione fidata, snapshot derivato dagli stessi buffer, evidenza per controllo/sessione | `verify_input_integrity` 162–183; `build_validation_report` 602–629 imposta 15 sezioni `PASS`; `prepare_audit_from_verified_inputs` 684–711 riceve dict | `ADEQUATE_AS_DESIGN`; origine e consumo dei byte devono essere verificati sul futuro sorgente e poi in ambiente autorizzato |
+| F-03, autorizzazione autodichiarata / race | §1–§2, §7–§8, righe 27–53, 135–159: verificatore esterno, scope autenticato, destinazione ancorata, `renameat2(RENAME_NOREPLACE)` e `BLOCKED` | `stage_new_audit_bundle` 756–797 usa booleani e `staging.rename(target)` | `ADEQUATE_AS_DESIGN`; la semantica effettiva delle syscall resta `NOT_RUN` |
+
+La mappa al §3 copre tutte le funzioni `def` presenti nel sorgente DRAFT 02, individualmente o per gruppi, con relative righe e classi d'intervento. Comprende i percorsi diagnostici `compare_generation_bytes` (663–681), `compare_two_read_only_directories` (737–753), il record di esecuzione (714–726), `sha256sums_external` (729–733), l'import del parser (258–289) e la pubblicazione (756–797). La classe eccezione `Blocked` non è una funzione `def` e non modifica questa conclusione.
+
+La restrizione riguarda le API **supportate e qualificate**. Nessun design in Python può impedire in senso assoluto a un caller che controlla un interprete di serializzare autonomamente dati generici; il criterio corretto è impedire che tale risultato sia presentato/pubblicato come bundle di audit dal percorso supportato.
+
+## 3. Riscontro per i requisiti già accettati
+
+| Requisito | Riscontro nel documento | Esito progettuale |
+|---|---|---|
+| A-01, root confinata e dipendenze | §5–§7, righe 101–148: snapshot da buffer verificati, mount namespace, `pivot_root`, vecchia root distaccata, fd non autorizzati chiusi, manifest delle dipendenze | `RECEIVED_IN_DESIGN_NOT_IMPLEMENTED` |
+| A-02, privilegi | §7, righe 139–148: UID/GID non privilegiati, cinque set capability vuoti, `no_new_privs`, `PR_SET_DUMPABLE(0)`, controllo pre-import | `RECEIVED_IN_DESIGN_NOT_IMPLEMENTED` |
+| R-02, percorsi e no-replace | §8, righe 150–159: `openat2`, `dirfd`, `RESOLVE_*`, `renameat2(RENAME_NOREPLACE)`, divieto di fallback | `RECEIVED_IN_DESIGN_NOT_IMPLEMENTED` |
+| S-01, diagnostica e claim audit | §2–§4, §9: `EQUAL/DIFFERENT` non convertibili automaticamente in PASS | `RECEIVED_IN_DESIGN_NOT_IMPLEMENTED` |
+| S-04, purezza vs I/O | §3, righe 61–80: funzioni pure separate da I/O read-only e servizi fidati | `RECEIVED_IN_DESIGN_NOT_IMPLEMENTED` |
+| S-05, statico vs operativo | §0, §9–§11, righe 163–218: stati, prove necessarie, T-01–T-10 tutti non eseguiti | `RECEIVED_IN_DESIGN_NOT_IMPLEMENTED` |
+
+## 4. D-01–D-05: decisione su ciascuna osservazione
+
+| ID | Evidenza effettiva | Stato per accettazione di design | Condizione necessaria prima di implementare/accettare il sorgente |
+|---|---|---|---|
+| D-01 | §6, righe 117–133, specifica il manifest chiuso ma non inventa hash del runtime; per gli input fissi usa il ruolo «SHA-256 originale atteso» | `NON_BLOCKING_DESIGN`; non equiparare il manifest modello a un inventario già autenticato | Pubblicare un manifest completo con digest concreti dei cinque input, dei due parser, dell'interprete, delle librerie e degli altri file realmente necessari |
+| D-02 | §1, righe 27–34, descrive l'emittente/verificatore ma rinvia identità, key provisioning e revoca al deployment; §5 riga 113 e §10 T-07 rendono esplicito il pendente | `NON_BLOCKING_DESIGN` | `PENDING_DEPLOYMENT_APPROVAL`: stabilire issuer, root of trust, ID chiavi, rotazione/revoca, policy firmata e credenziali del supervisore prima dell'attivazione |
+| D-03 | §3, righe 63, 72–79; §4, righe 84–99, distingue serializzazioni generiche da emissione del bundle audit qualificato | `NON_BLOCKING_DESIGN` | Esaminare il call graph del futuro codice: nessun percorso supportato da input caller emette cinque artefatti **qualificati** o un rapporto `PASS`; non pretendere l'impossibilità di ricostruire byte generici fuori dal dominio fidato |
+| D-04 | §2 riga 44, `request_validation(...) -> RequestId` è frontend non fidato, e non avvia da sola parser/generazione/pubblicazione | `CLARIFICATION_REQUIRED_BEFORE_SOURCE` | Definire `RequestId` come mero identificatore di richiesta: non è session token, capability, firma o autorizzazione; la verifica esterna rimane sempre obbligatoria |
+| D-05 | §7 righe 139–148 detta ordine architetturale; riga 144 riserva esplicitamente i dettagli delle transizioni UID/capability al codice | `CLARIFICATION_REQUIRED_BEFORE_SOURCE` | Specificare e verificare staticamente l'ordine di gruppi, UID/GID, bounding set, altri set capability, `no_new_privs`, anti-tracing e controlli post-drop, **prima** di import/parser; `BLOCKED` se non attuabile |
+
+### Nota di confine sulla prova prodotta dal parser
+
+`parse_frozen_snapshot() -> EvidenceBundle` (§2 riga 48) attraversa il confine fra processo parser confinato e orchestratore fidato. La futura implementazione dovrà imporre uno schema di IPC, identità/sessione, verifiche di integrità dei messaggi e assessment **per controllo**, senza fidarsi di un semplice dict restituito dal processo figlio. Questa è una **specificazione da verificare nel futuro codice**, non una attestazione che l'attuale design sia operativamente sicuro.
+
+### B-01 e B-02
+
+- **B-01** (§5 riga 113, T-07): supervisore privilegiato amministrato scelto progettualmente, parser deprivilegiato; target, autorità e identità `DEPLOYMENT_APPROVAL_PENDING`. Non è un'autorizzazione.
+- **B-02** (§5 riga 115, §6 righe 129–130, T-08): `allowed_device_nodes=[]`, nessun `/dev` generico, `RUNTIME_FEASIBILITY_NOT_RUN`; necessità di device implica `BLOCKED` e revisione formale, non deroga tacita.
+
+## 5. Che cosa significa il verdetto
+
+`DESIGN_SPEC_ADEQUATE` significa **soltanto** che il documento fornisce un progetto abbastanza definito da avviare, con istruzione separata, la pianificazione/produzione di un nuovo sorgente sotto vincoli già accettati. Non significa:
+
+- `STATIC_SOURCE_ACCEPTANCE: PASS`: il sorgente futuro non esiste ancora.
+- `FUTURE_OPERATIONAL_VALIDATION: PASS`: nessun processo confinato, parser o builder è stato eseguito.
+- chiusura di F-01–F-03 nel codice DRAFT 02;
+- autorizzazione o approvazione del deployment;
+- validazione della provenienza storica RP-01;
+- risoluzione di DOC-04 mediante attestazione esterna;
+- indipendenza esterna di questa revisione interna.
+
+**Controlli necessari sul sorgente futuro:** T-01–T-10 della specifica, più chiarimenti D-01–D-05 e prova dell'associazione `EvidenceBundle`-sessione nel confine fidato. L'esito finale di quei controlli dovrà essere fondato sul **codice realmente implementato**, non sulla mera presenza di requisiti in un documento.
+
+## 6. Stato invariato
+
+```text
+artifact_kind: INTERNAL_STATIC_DESIGN_REVIEW_ONLY
+review_result: DESIGN_SPEC_ADEQUATE
+external_independent_attestation_of_design: NOT_OBTAINED
+reference_design: RC1_4_2_DRAFT_03_CODE_DESIGN_SPEC.md
+reference_contract_status: SPECIFICATION_ADEQUATE_AS_ACCEPTANCE_CONTRACT
+F-01: OPEN_IN_DRAFT_02
+F-02: OPEN_IN_DRAFT_02
+F-03: OPEN_IN_DRAFT_02
+code_remediation_required: true
+DOC-01_to_DOC-03: RESOLVED_DOCUMENTALLY
+DOC-04: PENDING_EXTERNAL_ATTESTATION
+RP-01: OPEN
+f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data: false
+STATIC_SOURCE_ACCEPTANCE: NOT_EVALUATED_FUTURE_SOURCE
+FUTURE_OPERATIONAL_VALIDATION: NOT_RUN
+GATE: CLOSED_PENDING_VALIDATION
+five_validation_artifacts: NOT_GENERATED
+parser_imported_or_executed: false
+builder_executed: false
+new_empirical_PASS: NONE
+```
+
+**Decisione:** approvazione del design come *documento progettuale interno*, non del software. Le note D-01–D-05 e il confine dell'EvidenceBundle restano criteri per il futuro sorgente. Gli artefatti precedenti restano immutati.
