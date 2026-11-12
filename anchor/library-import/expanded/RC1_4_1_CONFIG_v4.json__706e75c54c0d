@@ -1,0 +1,218 @@
+{
+  "schema_version": "rc1_4_1_config_v4",
+  "revision": "RC1.4.1",
+  "status": "DRAFT_PENDING_REVIEW",
+  "source": {
+    "repository": "xenoglyph-ai/voynich-public",
+    "commit": "d4b31a245ba8133b727dc4255278b5e8349bbe39",
+    "path": "data/public/voynich_semantic_profiles"
+  },
+  "inputs": {
+    "corpus_metadata": {
+      "filename": "corpus_metadata.csv",
+      "expected_bytes": 38578,
+      "expected_sha256": "19b3e0885a467df849c352c650eeee864e987da3b2eaf295322345cf4e798625",
+      "git_blob_sha": "eb05cb69d4847f6acb34a9d095e05c38369010d2",
+      "integrity_verified": true
+    },
+    "semantic_profiles": {
+      "filename": "voynich_profiles.json",
+      "expected_bytes": 4758062,
+      "expected_sha256": "7ec540723dffa59a06e6c4f4f971bdf2d3e69bf0e5760fae43300ab4e73b7546",
+      "git_blob_sha": "560779cf06e15a167799d210f6a0d4ecf1b8c8e1",
+      "integrity_verified": true
+    },
+    "ivtff_crosswalk": {
+      "filename": "folio_ivtff_crosswalk.csv",
+      "expected_bytes": 13269,
+      "expected_sha256": "769fcd2c94f93c232cc4828cd98e9ff16ff42d50baf051886d0dada00b4b3041",
+      "integrity_verified": true
+    }
+  },
+  "reference_builder": {
+    "filename": "build_remaining_crosswalks_rc1_4_corrected.py",
+    "size_bytes": 14249,
+    "sha256": "4681e1b7edcb24d378e3e93c60e91fb06aa6e5fa13ca8210a9419fd542cf7012",
+    "role": "historical_reference_only",
+    "execution_allowed": false,
+    "embedded_expected_counts_treatment": "not_transferred_to_audit"
+  },
+  "identity_model": {
+    "canvas": {
+      "source_field": "canvas_id",
+      "derived_field": "yale_canvas_identifier",
+      "derivation": "extract_numeric_canvas_identifier_from_image_service_url",
+      "uniqueness_level": "canvas",
+      "duplicate_policy": "allowed_only_if_documented"
+    },
+    "image": {
+      "source_field": "image_id",
+      "uniqueness_level": "image",
+      "duplicate_policy": "must_be_unique_after_normalization",
+      "collision_policy": "fail_closed"
+    },
+    "folio": {
+      "source_field": "folio_key",
+      "normalized_field": "normalized_folio_key",
+      "uniqueness_level": "folio",
+      "duplicate_policy": "allowed_in_crosswalk",
+      "collision_policy": "not_applicable"
+    },
+    "semantic_profile": {
+      "source_field": "image_id",
+      "uniqueness_level": "semantic_profile",
+      "duplicate_policy": "must_be_unique_after_normalization",
+      "collision_policy": "fail_closed"
+    }
+  },
+  "normalization": {
+    "rule_id": "RULE_NORMALIZE_IDENTIFIERS",
+    "regex": "^[fF]0*(\\d+)([rRvV])$",
+    "output_format": "f{number}{side_lowercase}",
+    "whitespace_policy": "trim_outer_whitespace_only",
+    "leading_zero_policy": "preserve_original_number_segment",
+    "non_matching_value_policy": "preserve_original_and_flag",
+    "empty_value_policy": "reject",
+    "audit_policy": "preserve_original_and_normalized_value",
+    "manual_correction_policy": "none",
+    "applies_to": {
+      "folio_key": {
+        "purpose": "aggregation_key",
+        "duplicate_policy": "allowed_in_crosswalk",
+        "collision_policy": "not_applicable"
+      },
+      "image_id": {
+        "purpose": "profile_and_metadata_association",
+        "duplicate_policy": "must_be_unique_after_normalization",
+        "collision_policy": "fail_closed"
+      },
+      "cover_identifier": {
+        "prefix": "_",
+        "normalization_applied": false,
+        "preserve_original": true,
+        "population": "cover_or_binding",
+        "excluded_from_manuscript_population": true
+      }
+    },
+    "edge_cases": {
+      "f0r": "preserve_original_and_flag",
+      "f000r": "preserve_original_and_flag",
+      "f085V": "normalize_to_f85v",
+      "whitespace": "trim_outer_whitespace_only",
+      "invalid_format": "preserve_original_and_flag",
+      "empty_value": "reject"
+    }
+  },
+  "aggregation": {
+    "primary_key": "normalized_folio_key",
+    "statistical_unit": "folio",
+    "input_grain": "ivtff_unit",
+    "derived_fields": {
+      "unit_count": {
+        "source": "unit_id",
+        "operation": "COUNT_DISTINCT",
+        "group_by": "normalized_folio_key"
+      },
+      "p_locus_count": {
+        "source": "unit_p_locus_count",
+        "operation": "SUM",
+        "group_by": "normalized_folio_key"
+      },
+      "token_count": {
+        "source": "unit_token_count",
+        "operation": "SUM",
+        "group_by": "normalized_folio_key"
+      }
+    },
+    "preserve_subordinate_fields": [
+      "unit_id",
+      "page_id"
+    ],
+    "panel_statistical_independence": false,
+    "semantic_score_replication": false,
+    "repeated_folio_key_policy": "legitimate_subordinate_units"
+  },
+  "population": {
+    "profiles_available": "all_valid_profiles_in_semantic_profiles",
+    "cover_or_binding_profiles": "profiles_with_cover_identifier_prefix_underscore",
+    "manuscript_profiles": "profiles_available_minus_cover_or_binding_profiles",
+    "profiles_associable": "manuscript_profiles_with_metadata_image_match_after_normalization",
+    "profiles_with_ivtff_match": "associable_profiles_with_normalized_folio_match_in_crosswalk",
+    "candidate_population": "profiles_with_ivtff_match",
+    "analytical_population": "candidate_population_meeting_eligibility_rule",
+    "unresolved_population": "manuscript_profiles_without_ivtff_match",
+    "reconciliation_rule": "available = cover_or_binding + manuscript; manuscript = associable + unresolved; candidate = profiles_with_ivtff_match; analytical = admitted + excluded"
+  },
+  "classification": {
+    "primary_candidate": {
+      "condition": "unit_count == 1 AND p_locus_count > 0"
+    },
+    "multipanel_sensitivity": {
+      "condition": "unit_count > 1 AND p_locus_count > 0",
+      "eligibility": "eligible_if_threshold_met"
+    },
+    "single_no_P": {
+      "condition": "unit_count == 1 AND p_locus_count == 0"
+    },
+    "multipanel_no_P": {
+      "condition": "unit_count > 1 AND p_locus_count == 0"
+    },
+    "unmatched_ivtff": {
+      "condition": "no_normalized_folio_match"
+    }
+  },
+  "eligibility": {
+    "rule_id": "RULE_TOKEN_THRESHOLD_75",
+    "field": "token_count",
+    "operator": ">=",
+    "threshold": 75,
+    "threshold_unit": "tokens_per_folio",
+    "eligible_classifications": [
+      "primary_candidate",
+      "multipanel_sensitivity"
+    ],
+    "boundary_rule": "75_inclusive",
+    "multipanel_policy": "not_automatically_excluded",
+    "provenance_status": "proposed_preanalysis_threshold_not_yet_formally_certified"
+  },
+  "exceptions": {
+    "f085v": {
+      "folio_key": "f085v",
+      "status": "unresolved",
+      "reason": "no_ivtff_folio_match",
+      "manual_association_allowed": false,
+      "inference_allowed": false,
+      "required_documentation": true
+    }
+  },
+  "validation": {
+    "required_input_hash_match": true,
+    "required_crosswalk_repeated_folio_keys_allowed": true,
+    "required_crosswalk_unit_id_unique": false,
+    "required_crosswalk_page_id_unique": false,
+    "required_profile_identifiers_unique_after_normalization": true,
+    "required_metadata_identifiers_unique_after_normalization": true,
+    "required_profile_metadata_set_equality": true,
+    "required_no_profile_normalization_collisions": true,
+    "required_unit_has_P_consistency": true,
+    "required_candidate_decision_for_every_candidate": true,
+    "required_exclusion_rule_for_every_exclusion": true,
+    "required_no_manual_undocumented_decisions": true,
+    "required_deterministic_reexecution": true,
+    "expected_total_candidates": null,
+    "expected_admitted_count": null,
+    "expected_excluded_count": null
+  },
+  "outputs": {
+    "candidate_register": "RC1_4_1_candidate_register.csv",
+    "exclusion_register": "RC1_4_1_exclusion_register.csv",
+    "unresolved_register": "RC1_4_1_unresolved_register.csv",
+    "validation_report": "RC1_4_1_validation_report.json",
+    "manifest": "RC1_4_1_MANIFEST.json"
+  },
+  "conditional_coupling": {
+    "status": "suspended",
+    "included_in_scope": false,
+    "decision_source": "none"
+  }
+}
