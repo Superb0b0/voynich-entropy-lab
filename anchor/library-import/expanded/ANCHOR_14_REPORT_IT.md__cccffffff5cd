@@ -1,0 +1,33 @@
+# ANCHOR-14 — Verifica critica della presunta ancora bilingue `oror`
+
+**Data:** 12 novembre 2026. **Stato:** controllo testuale completato; nessuna traduzione identificata.
+
+## Domanda
+
+La presenza di `oror` nell'etichetta farmaceutica f102v2 e nella nota finale f116v prova che `oror` identifica una radice rossa (alkanna/robbia) e che la nota tedesca ne sia una conferma bilingue?
+
+## Fonti e identità
+
+- ZL3b-n.txt: 411.671 byte, SHA-256 `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc`.
+- IT2a-n.txt: 342.104 byte, SHA-256 `7f27a8b0feed8f6de0a99900df6bf912dd1d295c38e5f830bac8b41c3f536fb5`.
+- Voynich Information Browser, f116v: https://vib.tamagothi.de/index.php?id=f116v&show=page
+- Transliterations, René Zandbergen: https://mail.voynich.nu/extra/sp_transcr.html
+- Confronto alternativo da controllare criticamente: https://www.dmh.dev/voynich/identifications
+- Marginalia, Philip Neal: https://philipneal.net/voynichsources/marginalia/
+
+## Risultati decisivi
+
+1. **f102v2.3 `oror`**: la lettura di un'etichetta è identica in ZL3b e IT2a. È un fatto testuale, non il nome di una specie botanica dimostrato.
+2. **f116v**: ZL3b conserva `<f116v.1,@Lx> oror.sheey<!valsch vbren so nim gaf mich o>`. Qui `oror.sheey` è trascritto **prima** del commento editoriale fra `<!...>` che riporta un testo in scrittura latina. Non è vero, per questa trascrizione, che la frase tedesca finisca con `oror`; si tratta di zone/sistemi grafici diversi. Il Voynich Information Browser descrive esplicitamente i due vocaboli Voynich come iniziali della terza riga della nota.
+3. **Copertura trascrizioni**: IT2a non contiene alcun locus f116v. L'assenza in IT2a non è una lettura divergente o una confutazione della presenza visiva, ma una **mancanza di copertura**. Non si può reclamare «concordanza delle due trascrizioni» su f116v.
+4. **`oror` non è specifico della farmacia**. La ricerca di token esatti in ZL3b segnala, oltre a f102v2.3 e f116v.1, f81r.18, f84r.46, f84v.23, f113v.12, e un locus fRos.133 che va escluso dal conteggio dei loci ordinari fino a chiarimento della sua natura compilativa. IT2a attesta anche f84v.23, f106r.8, f112v.10 e f113v.12, oltre a f102v2.3. La distribuzione non prova che si tratti di uno stesso significato lessicale.
+5. **f100r.6 non è un duplicato esatto confermato**. ZL3b legge `o[r:s]aro` (incertezza di lettura), mentre IT2a legge `osaro`. Nessuna delle due fornisce `oror` come parola intera esatta.
+6. **Fonti esterne**: le attribuzioni di f116v sono discusse e non esiste un'interlineare riconosciuta che traduca `oror` come alcanna, robbia, o pigmento. L'asserzione «radice rossa» dipende da un'identificazione iconografica non certificata e da un'associazione a distanza.
+
+## Decisione
+
+**L'ipotesi della chiave bilingue `oror = radice rossa` NON supera il test di indipendenza semantica**. Resta possibile che la parola designi una pianta o sostanza, ma dai dati ora disponibili non possiamo attribuirle quel significato.
+
+Condizioni per riaprire la pista: (a) localizzazione grafica annotata e verificata su f116v; (b) prova indipendente dell'identità della pianta f102v2; (c) interpretazione che preveda correttamente le occorrenze del testo continuo e non venga costruita retrospettivamente; (d) separazione della paleografia delle note aggiunte rispetto al testo principale.
+
+Nessun artefatto RC1.4.2 è stato modificato. Questo rapporto non è una validazione della pipeline congelata.
