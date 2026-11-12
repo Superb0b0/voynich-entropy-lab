@@ -1,0 +1,56 @@
+# RC1.4.2 | Modello di attestazione esterna per il verbale DRAFT 04
+
+**STATO: MODELLO NON COMPILATO · NON FIRMATO · NESSUNA ATTESTAZIONE RILASCIATA**
+
+## A. Identificazione dell'attestazione
+
+- Identificativo univoco dell'attestazione: `[DA ATTRIBUIRE DALL'ATTESTANTE]`
+- Soggetto attestante, identità e ruolo: `[DA COMPILARE]`
+- Organizzazione o autorità di riferimento, ove applicabile: `[DA COMPILARE]`
+- Data e ora UTC dell'operazione indipendente: `[DA COMPILARE]`
+- Luogo/sistema di esecuzione della verifica: `[DA COMPILARE]`
+- Strumento e versione, comando o procedura: `[DA COMPILARE]`
+
+## B. Oggetto dell'attestazione
+
+- Nome esatto del file: `RC1_4_2_STATIC_CODE_REVIEW_DRAFT_04.md`
+- Provenienza della copia esaminata: `[DA DOCUMENTARE]`
+- Dimensione in byte misurata dall'attestante: `[DA COMPILARE]`
+- Algoritmo: `SHA-256`
+- SHA-256 ricalcolato dall'attestante sui byte effettivi: `[DA COMPILARE]`
+- Valore di confronto e origine del valore: `[DA DOCUMENTARE]`
+- Esito di coincidenza del digest: `[NOT_RUN / MATCH / MISMATCH]`
+- Evidenza macchina o log, con SHA-256 ove applicabile: `[DA ALLEGARE]`
+
+## C. Ambito rigorosamente limitato
+
+L'eventuale firma attesta **esclusivamente** l'operazione e l'esito dichiarati nel campo B sul file esattamente identificato. **Non** implica correttezza scientifica o metodologica del verbale, validazione empirica del generatore, origine degli artefatti storici, approvazione del codice, esecuzione autorizzata, chiusura di RP-01, apertura del gate o autorizzazione a generare i cinque artefatti.
+
+- RP-01: `OPEN`
+- Gate: `CLOSED_PENDING_VALIDATION`
+- Esecuzione generatore, parser, builder, PCA, clustering, coupling: `NOT_RUN` nell'ambito dell'attestazione
+- Eventuale approvazione metodologica separata: `[NON FORNITA / ESTREMI DOCUMENTALI]`
+
+## D. Sottoscrizione
+
+- Identità del firmatario: `[DA COMPILARE]`
+- Metodo di firma e sua verifica: `[DA COMPILARE]`
+- Data e ora di sottoscrizione UTC: `[DA COMPILARE]`
+- Documento di approvazione separato, se previsto: `[DA COMPILARE]`
+
+**Questo modello, finché non compilato e firmato, NON costituisce un'attestazione esterna.**
+
+## E. Checklist di completezza (tutte aperte)
+
+- [ ] Identità e ruolo dell'attestante documentati
+- [ ] Identificativo univoco attribuito
+- [ ] Data/ora UTC e ambiente di verifica registrati
+- [ ] File e copia esatti identificati
+- [ ] Dimensione in byte misurata
+- [ ] SHA-256 ricalcolato sui byte, algoritmo e comando documentati
+- [ ] Risultato di confronto e log allegati
+- [ ] Firma o attestazione esterna verificata, se prevista
+- [ ] Ambito limitato alla sola integrità dichiarato esplicitamente
+- [ ] RP-01 OPEN, gate chiuso, nessun nuovo PASS empirico
+
+**Distinzione:** attestazione di integrità ≠ approvazione metodologica ≠ validazione operativa ≠ provenienza storica.
