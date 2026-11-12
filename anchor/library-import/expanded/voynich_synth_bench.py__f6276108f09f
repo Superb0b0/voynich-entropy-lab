@@ -1,0 +1,385 @@
+#!/usr/bin/env python3
+"""
+Synthetic Voynich benchmark: baseline generator C + shared metrics.
+
+Standard-library only. This is a STARTER harness, not a Voynich decoder.
+It generates a synthetic corpus with:
+  * local character dependencies inside tokens;
+  * token templates reused with mutations;
+  * occasional copying of tokens from earlier lines;
+  * fixed, reproducible random seeds.
+
+Example:
+    python voynich_synth_bench.py --out corpus/C_seed_001.jsonl --seed 1
+
+Each JSONL row is a line with fields:
+    {"folio": 1, "line": 1, "tokens": ["..."], "source": "C"}
+
+The script also prints common metrics as JSON. The generator is deliberately
+parameterized: the defaults are illustrative and must not be tuned to make
+the synthetic data resemble the Voynich after looking at the results.
+"""
+
+from __future__ import annotations
+
+import argparse
+import collections
+import hashlib
+import json
+import math
+import random
+import statistics
+from pathlib import Path
+from typing import Iterable, Sequence
+
+
+DEFAULT_TOKENS = 27_755
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for block in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def entropy(counts: Iterable[int]) -> float:
+    vals = [x for x in counts if x > 0]
+    total = sum(vals)
+    if not total:
+        return 0.0
+    return -sum((n / total) * math.log2(n / total) for n in vals)
+
+
+def conditional_character_entropy(tokens: Sequence[str]) -> float:
+    """H(next character | previous character), estimated from within-token bigrams."""
+    pairs = collections.Counter()
+    contexts = collections.Counter()
+    for token in tokens:
+        for a, b in zip(token, token[1:]):
+            pairs[(a, b)] += 1
+            contexts[a] += 1
+    total = sum(pairs.values())
+    if total == 0:
+        return 0.0
+    h = 0.0
+    for (a, b), n_ab in pairs.items():
+        p_ab = n_ab / total
+        p_b_given_a = n_ab / contexts[a]
+        h -= p_ab * math.log2(p_b_given_a)
+    return h
+
+
+def zipf_summary(tokens: Sequence[str]) -> dict:
+    """Compact, reproducible summaries of the token-frequency rank curve."""
+    freqs = sorted(collections.Counter(tokens).values(), reverse=True)
+    if not freqs:
+        return {
+            "vocabulary_size": 0,
+            "hapax_types": 0,
+            "top1_token_share": 0.0,
+            "top10_token_share": 0.0,
+            "zipf_loglog_slope_top_80pct": None,
+        }
+    total = sum(freqs)
+    # Fit log(frequency) = intercept + slope * log(rank) over top 80% of types.
+    nfit = max(2, int(len(freqs) * 0.8)) if len(freqs) >= 2 else 1
+    xs = [math.log(i + 1) for i in range(nfit)]
+    ys = [math.log(freqs[i]) for i in range(nfit)]
+    if nfit >= 2:
+        xbar, ybar = statistics.mean(xs), statistics.mean(ys)
+        denom = sum((x - xbar) ** 2 for x in xs)
+        slope = sum((x - xbar) * (y - ybar) for x, y in zip(xs, ys)) / denom if denom else 0.0
+    else:
+        slope = None
+    return {
+        "vocabulary_size": len(freqs),
+        "hapax_types": sum(1 for f in freqs if f == 1),
+        "top1_token_share": freqs[0] / total,
+        "top10_token_share": sum(freqs[:10]) / total,
+        "zipf_loglog_slope_top_80pct": slope,
+    }
+
+
+def length_summary(tokens: Sequence[str]) -> dict:
+    lengths = [len(t) for t in tokens]
+    if not lengths:
+        return {"mean": 0.0, "median": 0.0, "stdev": 0.0, "histogram": {}}
+    hist = collections.Counter(lengths)
+    return {
+        "mean": statistics.mean(lengths),
+        "median": statistics.median(lengths),
+        "stdev": statistics.pstdev(lengths),
+        "histogram": {str(k): hist[k] for k in sorted(hist)},
+    }
+
+
+def adjacent_line_repetition(lines: Sequence[dict]) -> dict:
+    """Measures overlap of token types and exact tokens across adjacent lines."""
+    jaccards = []
+    containment = []
+    exact_shared_counts = []
+    ordered_line = sorted(lines, key=lambda x: (x["folio"], x["line"]))
+    for left, right in zip(ordered_line, ordered_line[1:]):
+        # Only compare lines in the same folio and with consecutive line numbers.
+        if left["folio"] != right["folio"] or right["line"] != left["line"] + 1:
+            continue
+        a, b = set(left["tokens"]), set(right["tokens"])
+        union = a | b
+        inter = a & b
+        jaccards.append(len(inter) / len(union) if union else 0.0)
+        containment.append(len(inter) / min(len(a), len(b)) if a and b else 0.0)
+        exact_shared_counts.append(len(inter))
+    def summary(xs):
+        return {
+            "n_adjacent_line_pairs": len(xs),
+            "mean": statistics.mean(xs) if xs else 0.0,
+            "median": statistics.median(xs) if xs else 0.0,
+        }
+    return {
+        "type_jaccard": summary(jaccards),
+        "shared_type_containment": summary(containment),
+        "shared_type_count": summary(exact_shared_counts),
+    }
+
+
+def bpe_pair_sequence(tokens: Sequence[str], max_merges: int = 64,
+                      min_pair_count: int = 3) -> list[tuple[str, str]]:
+    """
+    Run a minimal character-pair BPE over characters inside tokens.
+    Word boundaries are preserved; no pair crosses a token boundary.
+    Ties are resolved lexicographically for reproducibility.
+    Returns the ordered list of merged symbol pairs.
+    """
+    corpus = [list(t) for t in tokens if t]
+    merges = []
+    for _ in range(max_merges):
+        counts = collections.Counter()
+        for symbols in corpus:
+            counts.update(zip(symbols, symbols[1:]))
+        if not counts:
+            break
+        best_count = max(counts.values())
+        if best_count < min_pair_count:
+            break
+        best_pair = min(pair for pair, count in counts.items() if count == best_count)
+        merges.append(best_pair)
+        merged = []
+        for symbols in corpus:
+            out = []
+            i = 0
+            while i < len(symbols):
+                if i + 1 < len(symbols) and (symbols[i], symbols[i + 1]) == best_pair:
+                    out.append(symbols[i] + symbols[i + 1])
+                    i += 2
+                else:
+                    out.append(symbols[i])
+                    i += 1
+            merged.append(out)
+        corpus = merged
+    return merges
+
+
+def bpe_stability(lines: Sequence[dict], max_merges: int = 64,
+                  min_pair_count: int = 3) -> dict:
+    """Compare BPE merge pairs learned from alternating global line parity."""
+    even_tokens, odd_tokens = [], []
+    for idx, row in enumerate(lines):
+        (even_tokens if idx % 2 == 0 else odd_tokens).extend(row["tokens"])
+    even = bpe_pair_sequence(even_tokens, max_merges, min_pair_count)
+    odd = bpe_pair_sequence(odd_tokens, max_merges, min_pair_count)
+    even_set, odd_set = set(even), set(odd)
+    overlap = len(even_set & odd_set)
+    denom = max(len(even_set), len(odd_set))
+    return {
+        "even_merge_count": len(even),
+        "odd_merge_count": len(odd),
+        "overlap_unique_pairs": overlap,
+        "overlap_over_max_set_size": overlap / denom if denom else 0.0,
+        "even_ordered_pairs": [list(p) for p in even],
+        "odd_ordered_pairs": [list(p) for p in odd],
+    }
+
+
+def common_metrics(lines: Sequence[dict]) -> dict:
+    tokens = [t for row in lines for t in row["tokens"]]
+    return {
+        "line_count": len(lines),
+        "token_count": len(tokens),
+        "character_count_inside_tokens": sum(len(t) for t in tokens),
+        "conditional_character_entropy_bits": conditional_character_entropy(tokens),
+        "zipf": zipf_summary(tokens),
+        "token_lengths": length_summary(tokens),
+        "adjacent_line_repetition": adjacent_line_repetition(lines),
+        "bpe_stability_line_parity": bpe_stability(lines),
+    }
+
+
+def weighted_choice(rng: random.Random, items: Sequence[str],
+                    weights: Sequence[float]) -> str:
+    return rng.choices(items, weights=weights, k=1)[0]
+
+
+def generate_c(seed: int, target_tokens: int = DEFAULT_TOKENS,
+               tokens_per_line: int = 9, lines_per_folio: int = 20,
+               copy_probability: float = 0.12,
+               mutation_probability: float = 0.18) -> list[dict]:
+    """
+    Generator C: a lexicon-free local process.
+
+    It creates token strings from a character-transition process, then reuses
+    previously generated token templates with mutations. Some tokens are copied
+    from a nearby previous line. It has no natural-language dictionary or
+    semantic layer. The parameters are explicit and should be preregistered.
+    """
+    rng = random.Random(seed)
+    alphabet = list("otkedyqainshcfp")
+    starts = list("otkedy")
+    start_weights = [3, 3, 2, 2, 2, 1]
+    # Local transition bias. This is an illustrative synthetic mechanism,
+    # not a fitted model of the Voynich.
+    transitions = {
+        "o": ("tkeoy", [3, 2, 2, 2, 1]),
+        "t": ("hkeoy", [3, 2, 2, 1, 1]),
+        "k": ("hoyet", [3, 2, 2, 1, 1]),
+        "e": ("eoytka", [3, 2, 2, 2, 1, 1]),
+        "d": ("eoytka", [3, 2, 2, 2, 1, 1]),
+        "y": ("eotk", [3, 2, 2, 1]),
+        "q": ("ohe", [4, 1, 1]),
+        "a": ("inoty", [3, 2, 2, 1, 1]),
+        "i": ("inoty", [3, 2, 2, 1, 1]),
+        "n": ("ihtoy", [3, 2, 2, 1, 1]),
+        "s": ("hceoy", [3, 2, 2, 1, 1]),
+        "h": ("eoyt", [3, 2, 2, 1]),
+        "c": ("heoy", [3, 2, 2, 1]),
+        "f": ("eoyt", [3, 2, 2, 1]),
+        "p": ("heoy", [3, 2, 2, 1]),
+    }
+
+    def fresh_token() -> str:
+        length = rng.choices([3, 4, 5, 6, 7, 8], weights=[1, 4, 7, 6, 3, 1])[0]
+        out = [weighted_choice(rng, starts, start_weights)]
+        while len(out) < length:
+            ch = out[-1]
+            opts, weights = transitions.get(ch, (alphabet, [1] * len(alphabet)))
+            out.append(weighted_choice(rng, list(opts), list(weights)))
+        return "".join(out)
+
+    def mutate(token: str) -> str:
+        if not token:
+            return fresh_token()
+        chars = list(token)
+        operation = rng.choice(["substitute", "delete", "insert", "keep"])
+        idx = rng.randrange(len(chars))
+        if operation == "substitute":
+            chars[idx] = rng.choice(alphabet)
+        elif operation == "delete" and len(chars) > 3:
+            del chars[idx]
+        elif operation == "insert" and len(chars) < 10:
+            chars.insert(idx, rng.choice(alphabet))
+        return "".join(chars)
+
+    lines = []
+    template_pool = []
+    all_prior_lines = []
+    total = 0
+    line_no_global = 0
+    folio = 1
+    line_in_folio = 1
+
+    while total < target_tokens:
+        tokens = []
+        for _ in range(tokens_per_line):
+            if total >= target_tokens:
+                break
+            can_copy = bool(all_prior_lines) and rng.random() < copy_probability
+            if can_copy:
+                source_line = rng.choice(all_prior_lines[-min(12, len(all_prior_lines)):])
+                token = rng.choice(source_line)
+                if rng.random() < mutation_probability:
+                    token = mutate(token)
+            elif template_pool and rng.random() < 0.35:
+                token = rng.choice(template_pool)
+                if rng.random() < mutation_probability:
+                    token = mutate(token)
+            else:
+                token = fresh_token()
+            tokens.append(token)
+            total += 1
+            if token not in template_pool:
+                template_pool.append(token)
+        row = {"folio": folio, "line": line_in_folio, "tokens": tokens, "source": "C"}
+        lines.append(row)
+        all_prior_lines.append(tokens)
+        line_no_global += 1
+        line_in_folio += 1
+        if line_in_folio > lines_per_folio:
+            folio += 1
+            line_in_folio = 1
+
+    return lines
+
+
+def write_jsonl(path: Path, lines: Sequence[dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="\n") as f:
+        for row in lines:
+            f.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+
+
+def read_jsonl(path: Path) -> list[dict]:
+    rows = []
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                row = json.loads(line)
+                if not isinstance(row.get("tokens"), list):
+                    raise ValueError("Ogni riga deve avere un campo 'tokens' che sia una lista.")
+                rows.append(row)
+    return rows
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--seed", type=int, default=1)
+    parser.add_argument("--tokens", type=int, default=DEFAULT_TOKENS)
+    parser.add_argument("--out", type=Path, default=Path("corpus/C_seed_001.jsonl"))
+    parser.add_argument("--input", type=Path, help="Calcola le metriche su un JSONL già esistente.")
+    args = parser.parse_args()
+
+    if args.input:
+        path = args.input
+        lines = read_jsonl(path)
+        seed = None
+    else:
+        path = args.out
+        lines = generate_c(seed=args.seed, target_tokens=args.tokens)
+        write_jsonl(path, lines)
+        seed = args.seed
+
+    metrics = common_metrics(lines)
+    report = {
+        "status": "synthetic_generator_executed" if seed is not None else "metrics_on_existing_jsonl",
+        "generator": "C" if seed is not None else "input",
+        "seed": seed,
+        "input_or_output_path": str(path),
+        "sha256": sha256_file(path),
+        "parameters": {
+            "target_tokens": args.tokens if seed is not None else metrics["token_count"],
+            "tokens_per_line": 9,
+            "lines_per_folio": 20,
+            "copy_probability": 0.12,
+            "mutation_probability": 0.18,
+            "bpe_max_merges": 64,
+            "bpe_min_pair_count": 3,
+            "split": "alternating global line parity",
+        },
+        "metrics": metrics,
+    }
+    print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
