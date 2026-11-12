@@ -1,0 +1,89 @@
+{
+  "null": {
+    "datasets": 500,
+    "positives": 10,
+    "fraction": 0.02,
+    "n_min_max": [
+      25,
+      29
+    ],
+    "pairs_min_max": [
+      21,
+      29
+    ],
+    "p_min_max": [
+      0.005949702514874256,
+      1.0
+    ]
+  },
+  "planted": {
+    "datasets": 200,
+    "positives": 197,
+    "fraction": 0.985,
+    "n_min_max": [
+      25,
+      29
+    ],
+    "pairs_min_max": [
+      21,
+      29
+    ],
+    "p_min_max": [
+      4.999750012499375e-05,
+      0.192140392980351
+    ]
+  },
+  "seed_synthetic": 20261112,
+  "seed_vectorized_permutations_start": 20261113,
+  "examples_p_fast_vs_original_script": [
+    [
+      "null",
+      0,
+      [
+        28,
+        27,
+        2,
+        3.9094,
+        0.3792310384480776
+      ],
+      0.37728113594320284
+    ],
+    [
+      "null",
+      1,
+      [
+        25,
+        21,
+        7,
+        3.7417,
+        0.06724663766811659
+      ],
+      0.06844657767111645
+    ],
+    [
+      "planted",
+      0,
+      [
+        27,
+        25,
+        15,
+        5.4784,
+        4.999750012499375e-05
+      ],
+      4.999750012499375e-05
+    ],
+    [
+      "planted",
+      1,
+      [
+        27,
+        25,
+        17,
+        7.4141,
+        4.999750012499375e-05
+      ],
+      4.999750012499375e-05
+    ]
+  ],
+  "note": "Synthetic data only. Equivalent statistic, thresholds and p calculation; numpy vectorized permutation RNG differs from Python random.Random of frozen script. Original script used for 4 cross-checks."
+}
