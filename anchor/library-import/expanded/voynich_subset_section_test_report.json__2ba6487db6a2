@@ -1,0 +1,373 @@
+{
+  "status": "DIAGNOSTIC_ONLY",
+  "input_report": "/mnt/data/rc12_report.json",
+  "input_source": {
+    "filename": "ZL3b-n.txt",
+    "physical_lines": 8510,
+    "sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    "size_bytes": 411671
+  },
+  "section_map": "/mnt/data/voynich_section_map_explorer.tsv",
+  "section_map_note": "Map derived from embedded section labels in a Voynich Explorer HTML artifact, not verified as the PREREG3 map or as a canonical codicological concordance.",
+  "special_case": {
+    "folio": "fRos",
+    "assigned_section": "Cosmological",
+    "status": "EXPLICIT_ASSUMPTION_REQUIRES_REVIEW"
+  },
+  "historical_targets": {
+    "tokens": 34139,
+    "types": 7271,
+    "types_status": "ESTIMATE_IF_DERIVED_FROM_ROUNDED_TTR; NOT_VERIFIED"
+  },
+  "full_corpus": {
+    "loci": 4130,
+    "tokens": 35492,
+    "types": 6980,
+    "ttr": 0.19666403696607687
+  },
+  "section_summaries": {
+    "Astronomical": {
+      "loci": 89,
+      "tokens": 511,
+      "types": 358,
+      "ttr": 0.700587084148728
+    },
+    "Biological": {
+      "loci": 792,
+      "tokens": 6874,
+      "types": 1499,
+      "ttr": 0.21806808263020075
+    },
+    "Cosmological": {
+      "loci": 193,
+      "tokens": 1723,
+      "types": 772,
+      "ttr": 0.4480557167730702
+    },
+    "Herbal-A": {
+      "loci": 1553,
+      "tokens": 11621,
+      "types": 3252,
+      "ttr": 0.2798382239049996
+    },
+    "Pharmaceutical": {
+      "loci": 419,
+      "tokens": 3776,
+      "types": 1502,
+      "ttr": 0.3977754237288136
+    },
+    "Recipes-Stars": {
+      "loci": 1084,
+      "tokens": 10987,
+      "types": 3073,
+      "ttr": 0.27969418403567853
+    }
+  },
+  "missing_mapping_records": [],
+  "subset_type_bound": {
+    "max_types_any_subset": 6980,
+    "target_types": 7271,
+    "impossible_if_same_tokenization_and_pure_subset": true
+  },
+  "closest_combinations": [
+    {
+      "excluded_sections": [
+        "Cosmological"
+      ],
+      "loci": 3937,
+      "tokens": 33769,
+      "types": 6762,
+      "ttr": 0.20024282626077172,
+      "token_delta_from_target": -370,
+      "type_delta_from_target": -509,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Astronomical"
+      ],
+      "loci": 4041,
+      "tokens": 34981,
+      "types": 6876,
+      "ttr": 0.196563848946571,
+      "token_delta_from_target": 842,
+      "type_delta_from_target": -395,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Astronomical",
+        "Cosmological"
+      ],
+      "loci": 3848,
+      "tokens": 33258,
+      "types": 6657,
+      "ttr": 0.20016236694930542,
+      "token_delta_from_target": -881,
+      "type_delta_from_target": -614,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [],
+      "loci": 4130,
+      "tokens": 35492,
+      "types": 6980,
+      "ttr": 0.19666403696607687,
+      "token_delta_from_target": 1353,
+      "type_delta_from_target": -291,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Pharmaceutical"
+      ],
+      "loci": 3711,
+      "tokens": 31716,
+      "types": 6336,
+      "ttr": 0.19977298524404086,
+      "token_delta_from_target": -2423,
+      "type_delta_from_target": -935,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Astronomical",
+        "Pharmaceutical"
+      ],
+      "loci": 3622,
+      "tokens": 31205,
+      "types": 6225,
+      "ttr": 0.19948726165678576,
+      "token_delta_from_target": -2934,
+      "type_delta_from_target": -1046,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Cosmological",
+        "Pharmaceutical"
+      ],
+      "loci": 3518,
+      "tokens": 29993,
+      "types": 6110,
+      "ttr": 0.20371419997999532,
+      "token_delta_from_target": -4146,
+      "type_delta_from_target": -1161,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Astronomical",
+        "Cosmological",
+        "Pharmaceutical"
+      ],
+      "loci": 3429,
+      "tokens": 29482,
+      "types": 5998,
+      "ttr": 0.20344617054473915,
+      "token_delta_from_target": -4657,
+      "type_delta_from_target": -1273,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Biological"
+      ],
+      "loci": 3338,
+      "tokens": 28618,
+      "types": 6343,
+      "ttr": 0.2216437207352016,
+      "token_delta_from_target": -5521,
+      "type_delta_from_target": -928,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Astronomical",
+        "Biological"
+      ],
+      "loci": 3249,
+      "tokens": 28107,
+      "types": 6237,
+      "ttr": 0.2219020172910663,
+      "token_delta_from_target": -6032,
+      "type_delta_from_target": -1034,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Biological",
+        "Cosmological"
+      ],
+      "loci": 3145,
+      "tokens": 26895,
+      "types": 6116,
+      "ttr": 0.22740286298568507,
+      "token_delta_from_target": -7244,
+      "type_delta_from_target": -1155,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Astronomical",
+        "Biological",
+        "Cosmological"
+      ],
+      "loci": 3056,
+      "tokens": 26384,
+      "types": 6009,
+      "ttr": 0.22775166767738023,
+      "token_delta_from_target": -7755,
+      "type_delta_from_target": -1262,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Biological",
+        "Pharmaceutical"
+      ],
+      "loci": 2919,
+      "tokens": 24842,
+      "types": 5687,
+      "ttr": 0.22892681748651478,
+      "token_delta_from_target": -9297,
+      "type_delta_from_target": -1584,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Recipes-Stars"
+      ],
+      "loci": 3046,
+      "tokens": 24505,
+      "types": 5255,
+      "ttr": 0.21444603142215873,
+      "token_delta_from_target": -9634,
+      "type_delta_from_target": -2016,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Astronomical",
+        "Biological",
+        "Pharmaceutical"
+      ],
+      "loci": 2830,
+      "tokens": 24331,
+      "types": 5573,
+      "ttr": 0.22904936089762032,
+      "token_delta_from_target": -9808,
+      "type_delta_from_target": -1698,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Astronomical",
+        "Recipes-Stars"
+      ],
+      "loci": 2957,
+      "tokens": 23994,
+      "types": 5141,
+      "ttr": 0.21426189880803534,
+      "token_delta_from_target": -10145,
+      "type_delta_from_target": -2130,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Herbal-A"
+      ],
+      "loci": 2577,
+      "tokens": 23871,
+      "types": 5107,
+      "ttr": 0.21394160278161786,
+      "token_delta_from_target": -10268,
+      "type_delta_from_target": -2164,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Astronomical",
+        "Herbal-A"
+      ],
+      "loci": 2488,
+      "tokens": 23360,
+      "types": 4979,
+      "ttr": 0.21314212328767124,
+      "token_delta_from_target": -10779,
+      "type_delta_from_target": -2292,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Biological",
+        "Cosmological",
+        "Pharmaceutical"
+      ],
+      "loci": 2726,
+      "tokens": 23119,
+      "types": 5448,
+      "ttr": 0.2356503308966651,
+      "token_delta_from_target": -11020,
+      "type_delta_from_target": -1823,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    },
+    {
+      "excluded_sections": [
+        "Cosmological",
+        "Recipes-Stars"
+      ],
+      "loci": 2853,
+      "tokens": 22782,
+      "types": 4977,
+      "ttr": 0.21846194363971558,
+      "token_delta_from_target": -11357,
+      "type_delta_from_target": -2294,
+      "target_tokens_exact": false,
+      "target_types_exact": false,
+      "both_exact": false
+    }
+  ],
+  "exact_token_matches": [],
+  "exact_type_matches": [],
+  "exact_both_matches": [],
+  "interpretation": "Section filtering alone cannot yield more distinct types than the full corpus under the same tokenization. Combination results are conditional on this section map and the RC1.2 token sequences."
+}
