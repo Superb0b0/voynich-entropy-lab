@@ -1,0 +1,180 @@
+#!/usr/bin/env python3
+"""EXP-SEQ-01a. Exploratory, non-qualified, read-only corpus analysis.
+
+Independent minimal IVTFF reader: the frozen RC1.4 parser is NEVER imported.
+Requires the pinned ZL3b-n.txt (SHA-256 locked). Outputs 3 distinct figures
+and a CSV with per-line-weighted position-bin frequencies for Currier A and B.
+No inference about grammar, provenance or RC1.4.2 pipeline acceptance.
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+import hashlib
+import re
+from collections import defaultdict, Counter
+from pathlib import Path
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+CORPUS_SHA256 = "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc"
+P_TAGS = {"*P0", "*Pb", "+P0", "+P1", "+Pb", "+Pc", "+Pr", "=P0", "=Pt", "@P0", "@P1", "@Pb"}
+HEADER = re.compile(r"^<([^>]+)>[ \t]*(.*)$")
+PAGE = re.compile(r"^f(?:\d+[rv]\d*|Ros)$")
+LOCUS = re.compile(r"^f(?:\d+[rv]\d*|Ros)\.\d+$")
+COMMENTS = re.compile(r"<![^>]*>")
+SQUARE = re.compile(r"\[[^\[\]]*\]")
+WORDS = re.compile(r"[A-Za-z]+")
+MARKERS = ("<$>", "<%>", "<->", "<~>", "<d>", "<@H=2>", "<@H=3>")
+FORMS = {
+    "qo": lambda t: t.startswith("qo"),
+    "dy": lambda t: t.endswith("dy"),
+    "aiin": lambda t: t.endswith("aiin"),
+}
+
+
+def read_loci(path: Path):
+    raw = path.read_bytes()
+    actual = hashlib.sha256(raw).hexdigest()
+    if actual != CORPUS_SHA256:
+        raise ValueError(f"Corpus SHA-256 differs from frozen reference: {actual}")
+    physical = raw.decode("utf-8").splitlines()
+    # Source-lock makes an explicit fail-closed refusal of wrapped lines safe
+    # for this specific corpus (the pinned file has no physical continuations).
+    if any(line.startswith('/ ') or line.endswith('/') for line in physical):
+        raise ValueError("Wrapped IVTFF line: this lightweight reader refuses continuations")
+    metadata = {}
+    records = []
+    for line_no, line in enumerate(physical, 1):
+        matched = HEADER.match(line)
+        if not matched:
+            continue
+        key, body = matched.groups()
+        if PAGE.fullmatch(key):
+            metadata[key] = dict(re.findall(r"\$([A-Z])=([^ >]+)", body))
+            continue
+        if ',' not in key:
+            continue
+        locus_id, tag = key.split(',', 1)
+        if not re.match(r'^[+@=*/]P', tag):
+            continue
+        if tag not in P_TAGS or not LOCUS.fullmatch(locus_id):
+            raise ValueError(f"Unrecognized locus/tag at physical line {line_no}: {key}")
+        folio = locus_id.split('.')[0]
+        if folio not in metadata:
+            raise ValueError(f"Missing page metadata at physical line {line_no}: {folio}")
+        if body.count('<!') != len(COMMENTS.findall(body)):
+            raise ValueError(f"Unclosed comment at {locus_id}")
+        cleaned = COMMENTS.sub(' ', body)
+        for marker in MARKERS:
+            cleaned = cleaned.replace(marker, ' ')
+        # Curly delimiters represent ligature groups; preserve their letters.
+        if cleaned.count('{') != cleaned.count('}') or '{{' in cleaned or '}}' in cleaned:
+            raise ValueError(f"Unsupported curly group at {locus_id}")
+        cleaned = cleaned.replace('{', '').replace('}', '')
+        if cleaned.count('[') != cleaned.count(']'):
+            raise ValueError(f"Unsupported square alternative at {locus_id}")
+        cleaned = SQUARE.sub(' ', cleaned)
+        if any(ch in cleaned for ch in '<>[]{}'):
+            raise ValueError(f"Unsupported annotation at {locus_id}")
+        tokens = WORDS.findall(cleaned.lower())
+        if not tokens:
+            raise ValueError(f"Unexpected empty P locus: {locus_id}")
+        attrs = metadata[folio]
+        records.append((locus_id, folio, attrs.get('L'), attrs.get('I'), attrs.get('H'), tokens))
+    n_tokens = sum(len(r[-1]) for r in records)
+    if len(records) != 4130 or n_tokens != 35492:
+        raise ValueError(f"Exploratory tokenization inconsistent with historical reference: {len(records)} loci, {n_tokens} tokens")
+    return records
+
+
+def calculate(records):
+    # A bin represents rounded relative position in {0%, 10%, ..., 100%}.
+    # Within each line, if several tokens land in one bin, their mean counts
+    # as ONE line contribution: avoids overweighting unusually long lines.
+    accum = defaultdict(lambda: [0.0, 0])
+    line_counts = Counter()
+    for locus_id, folio, lang, section, hand, tokens in records:
+        if len(tokens) < 3 or lang not in ('A', 'B'):
+            continue
+        line_counts[lang] += 1
+        n = len(tokens)
+        bins = defaultdict(list)
+        for i, token in enumerate(tokens):
+            b = (0 if i == 0 else 10 if i == n - 1 else
+                 max(1, min(9, (20 * i + (n - 1)) // (2 * (n - 1)))))  # reserve boundaries for first/last only
+            bins[b].append(token)
+        for form, predicate in FORMS.items():
+            for b, items in bins.items():
+                avg_within_line = sum(predicate(t) for t in items) / len(items)
+                item = accum[(form, lang, b)]
+                item[0] += avg_within_line
+                item[1] += 1
+    rows = []
+    for form in FORMS:
+        for lang in ('A', 'B'):
+            for b in range(11):
+                sum_rate, supporting_lines = accum[(form, lang, b)]
+                rows.append({
+                    'form': form,
+                    'currier': lang,
+                    'position_pct': b * 10,
+                    'n_lines_in_bin': supporting_lines,
+                    'mean_occurrence_pct': round(100 * sum_rate / supporting_lines, 6) if supporting_lines else '',
+                    'n_eligible_lines': line_counts[lang],
+                })
+    return rows, line_counts
+
+
+def save(rows, out_dir):
+    out_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = out_dir / 'EXP_SEQ_01a_frequenze_posizionali.csv'
+    with csv_path.open('w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows)
+    for form in FORMS:
+        fig, ax = plt.subplots(figsize=(8.8, 4.7))
+        for lang, marker, line_style in [('A', 'o', '-'), ('B', 's', '--')]:
+            sub = [r for r in rows if r['form'] == form and r['currier'] == lang]
+            xs = [r['position_pct'] for r in sub]
+            ys = [r['mean_occurrence_pct'] for r in sub]
+            ax.plot(xs, ys, marker=marker, linestyle=line_style, linewidth=2, markersize=5,
+                    label=f"Currier {lang} (n={sub[0]['n_eligible_lines']:,} righe)".replace(',', '.'))
+        ax.set_title(f"EXP-SEQ-01a | {'prefisso qo-' if form=='qo' else 'suffisso -'+form}", fontsize=13, pad=12)
+        ax.set_xlabel('Posizione relativa nella riga (0% = prima; 100% = ultima)')
+        ax.set_ylabel('Frequenza media della forma (%)')
+        ax.set_xticks(range(0, 101, 10))
+        ax.set_xlim(-1, 101)
+        ax.set_ylim(bottom=0)
+        ax.grid(alpha=0.25)
+        ax.legend(frameon=False)
+        fig.text(0.5, 0.01, 'Righe con ≥3 token; ogni riga pesa una volta per bin; solo A/B. Analisi esplorativa.',
+                 ha='center', fontsize=8)
+        fig.tight_layout(rect=(0, 0.05, 1, 1))
+        fig.savefig(out_dir / f'EXP_SEQ_01a_{form}.png', dpi=180)
+        plt.close(fig)
+    return csv_path
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--corpus', type=Path, required=True)
+    ap.add_argument('--out', type=Path, required=True)
+    args = ap.parse_args()
+    records = read_loci(args.corpus)
+    rows, counts = calculate(records)
+    csv_path = save(rows, args.out)
+    print(f"loci={len(records)} tokens={sum(len(r[-1]) for r in records)} A={counts['A']} B={counts['B']}")
+    print(f"CSV: {csv_path}")
+    for form in FORMS:
+        for lang in ('A', 'B'):
+            sub = [r for r in rows if r['form']==form and r['currier']==lang]
+            print(form,lang, 'first=',sub[0]['mean_occurrence_pct'], 'mid=',sub[5]['mean_occurrence_pct'], 'last=',sub[-1]['mean_occurrence_pct'],
+                  'min_bin_support=',min(r['n_lines_in_bin'] for r in sub))
+
+
+if __name__ == '__main__':
+    main()
