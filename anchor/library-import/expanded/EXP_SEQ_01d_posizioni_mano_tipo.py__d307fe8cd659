@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+"""Esplorazione in sola lettura di qo-, -dy, -aiin in posizioni 1/2.
+Richiede accanto a questo file EXP_SEQ_01a_gradiente_posizionale.py.
+Il lettore indipendente verifica l'hash del corpus; non importa il parser congelato.
+"""
+from pathlib import Path
+from collections import defaultdict
+import csv
+from EXP_SEQ_01a_gradiente_posizionale import read_loci, HEADER, P_TAGS
+
+ROOT = Path(__file__).resolve().parent
+CORPUS = ROOT / 'ZL3b-n.txt'
+OUTPUT = ROOT / 'EXP_SEQ_01d_posizioni_mano_tipo.csv'
+
+
+def get_marker_flags(path):
+    flags = {}
+    for line in path.read_text(encoding='utf-8').splitlines():
+        match = HEADER.match(line)
+        if not match or ',' not in match.group(1):
+            continue
+        locus, tag = match.group(1).split(',', 1)
+        if tag in P_TAGS:
+            flags[locus] = '<%>' in match.group(2)
+    return flags
+
+
+def analyze():
+    flags = get_marker_flags(CORPUS)
+    grouped = defaultdict(list)
+    tests = (('qo-', lambda s: s.startswith('qo')),
+             ('-dy', lambda s: s.endswith('dy')),
+             ('-aiin', lambda s: s.endswith('aiin')))
+    for locus, folio, currier, section, hand, tokens in read_loci(CORPUS):
+        if currier not in {'A', 'B'} or not 6 <= len(tokens) <= 10:
+            continue
+        marker = flags[locus]
+        for label, fn in tests:
+            row = (int(fn(tokens[0])), int(fn(tokens[1])), folio)
+            grouped[(label, currier, str(hand), marker)].append(row)
+            grouped[(label, currier, 'ALL', marker)].append(row)
+    rows = []
+    for (form, currier, hand, marker), lines in sorted(grouped.items()):
+        n = len(lines)
+        first = sum(x[0] for x in lines)
+        second = sum(x[1] for x in lines)
+        rows.append(dict(form=form, currier=currier, hand=hand,
+                         marker_pct=marker, lines=n,
+                         folios=len({x[2] for x in lines}),
+                         first_hits=first, second_hits=second,
+                         first_pct=round(100*first/n, 2),
+                         second_pct=round(100*second/n, 2),
+                         delta_pp=round(100*(first-second)/n, 2)))
+    with OUTPUT.open('w', encoding='utf-8', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+        writer.writeheader()
+        writer.writerows(rows)
+    print('CSV:', OUTPUT)
+    for row in rows:
+        if row['form']=='qo-' and row['hand']=='ALL':
+            print(f"{row['currier']} marker={row['marker_pct']} n={row['lines']} "
+                  f"first={row['first_pct']}% second={row['second_pct']}% "
+                  f"delta={row['delta_pp']}pp")
+
+
+if __name__ == '__main__':
+    analyze()
