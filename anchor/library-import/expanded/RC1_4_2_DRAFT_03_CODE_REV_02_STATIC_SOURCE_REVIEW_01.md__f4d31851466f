@@ -1,0 +1,77 @@
+# RC1.4.2 V7.1 | Revisione statica del generatore diagnostico DRAFT 03_CODE rev. 02 | Rapporto 01
+
+**Data:** 10 novembre 2026  
+**Oggetto:** `RC1_4_2_DRAFT_03_CODE_REV_02.py`  
+**SHA-256 del sorgente materializzato:** `adc8d06ab62688efc4647991e0b95e449b27a0f02b9e8bde40bb34ad2397be90`  
+**Dimensione:** 11.473 byte; **righe:** 330.  
+**Verdetto:** `DIAGNOSTIC_SOURCE_ACCEPTANCE_NOT_GRANTED`  
+**Qualifica:** `INTERNAL_STATIC_SOURCE_REVIEW_ONLY; NOT_HARDENED; NOT_RUN; NO_EXTERNAL_ATTESTATION`.
+
+## 1. Perimetro e metodo
+
+Il sorgente è stato ricostruito dal blocco Python incollato nella conversazione, normalizzando l'escaping Markdown e gli spazi rappresentati come entità HTML, senza modificare la logica proposta. Il digest identifica **il file concretamente materializzato**, non una sequenza di byte originariamente allegata.
+
+Controlli in sola lettura: AST Python con `ast.parse` sul testo, elenco delle definizioni, ispezione delle chiamate e dei flussi di dati, `ast.literal_eval` dei pin dichiarati, dimensione e SHA-256 dei sei file originali presenti localmente. Il settimo input `corpus_metadata.csv` conserva il pin verificato precedentemente sul Git blob GitHub al commit `d4b31a245ba8133b727dc4255278b5e8349bbe39`, ma **non è stato nuovamente acquisito nella cartella locale per questo rapporto**. Nessun import, esecuzione, `compile` a bytecode, `py_compile`, test dinamico, parser o builder Voynich.
+
+## 2. Aspetti corretti nel perimetro limitato
+
+1. **Pin documentali corretti** (`:79-112`). I sei file disponibili (`configuration`, `semantic_profiles`, `ivtff_crosswalk`, `corpus`, `lexical_parser`, `offset_aware_mapper`) coincidono con SHA-256 e dimensioni fissati. Anche il pin `corpus_metadata` coincide con la precedente acquisizione via Git blob: 38.578 byte, SHA-256 `19b3e0885a467df849c352c650eeee864e987da3b2eaf295322345cf4e798625`.
+2. **Percorso CLI di lettura effettiva** (`:147-206`, `:302-326`): calcolo di lunghezza e SHA-256 sui byte ritornati da `Path.read_bytes()`, senza usare un flag `verified` del chiamante.
+3. **Assenza del generatore qualificato**: non sono presenti `build_validation_report`, `serialize_validation_artifacts`, `prepare_audit_from_verified_inputs` o `stage_new_audit_bundle` del DRAFT 02. Non si generano i cinque nomi di output ufficiali e nessun audit viene attestato nel percorso CLI previsto.
+4. **Separazione esplicita dei claim** (`:232-258`): `artifact_kind=DIAGNOSTIC_REPORT_NON_QUALIFIED`, `gate=CLOSED_PENDING_VALIDATION`, `rp_01=OPEN`, `doc_04=PENDING_EXTERNAL_ATTESTATION`, campi di audit e provenance `None`.
+5. **Nessun parser importato nel sorgente**: il contenuto dei parser è soltanto sottoposto a verifica dei digest; la generazione non acquisisce capacità di parser o builder.
+
+## 3. Rilievi sulla rev. 02 candidata
+
+### DBG-01 | BLOCCANTE per la correttezza delle dichiarazioni diagnostiche importabili
+
+**Evidenza:** `build_diagnostic_report(verification: dict, session_info: dict | None)` alle righe `213-258` riceve un `dict` arbitrario del chiamante e copia ogni `entry` nel report. A `:228-230` elimina solo le *chiavi* letterali `PASS`, `VALIDATED`, `ATTESTED`, ma non vieta valori `status='MATCH'` senza evidenza, né campi come `audit_result='PASS'` o `evidence='verified'`. `write_diagnostic_report(report: dict, ...)` (`:261-270`) serializza **qualunque** dizionario ricevuto. Le etichette protettive nel builder non proteggono le chiamate dirette allo scrittore.
+
+**Conseguenza:** l'affermazione "nessuna funzione produce report con PASS o MATCH non verificati" non è dimostrabile sull'API importabile. Questo **non** conferisce valore di audit qualificato agli output, ma falsifica la garanzia di autenticità diagnostica associata al modulo.
+
+**Correzione richiesta:** le API supportate devono costruire gli esiti direttamente dalle letture, senza un ingresso pubblico `verification` o `report` arbitrario nel percorso che scrive il file; proiettare ogni risultato su uno schema chiuso e ricalcolare/controllare `status` e completezza prima di scrivere. Dichiarare il report non attendibile se l'operatore controlla l'interprete Python: nessuna garanzia hardened.
+
+### DBG-02 | BLOCCANTE per la tutela dei file congelati
+
+**Evidenza:** `write_diagnostic_report()` (`:261-270`) crea liberamente la directory `--out` e usa `target.write_bytes(...)`. Il file esistente viene troncato; il metodo segue un symlink già presente in `rc1_4_2_diagnostic_report.json`. Nessuna condizione impedisce `--out` uguale o interno alla directory degli input congelati, oppure la presenza di un collegamento verso un file originale.
+
+**Conseguenza:** la promessa di mantenere **immutati** gli input congelati non è garantita dal percorso di scrittura se la destinazione è configurata male o manipolata. Il rischio esiste anche senza servizi privilegiati.
+
+**Correzione richiesta:** separare directory input/output, rifiutare l'output nel sottoalbero degli input e le destinazioni già esistenti; creare il report con semantica no-clobber (`O_CREAT|O_EXCL`, e protezione symlink ove disponibile), senza seguire collegamenti preesistenti. Non attribuire a ciò equivalenza con il publisher hardened `renameat2`.
+
+### DBG-03 | MAGGIORE: completezza dei sette esiti non fail-closed
+
+**Evidenza:** `build_diagnostic_report()` (`:223-233`) consente ruoli mancanti con `NOT_RUN` e ignora gli stati non compresi in `counts`; `main()` (`:325-326`) decide il codice di uscita usando soltanto `MISMATCH+ERROR` e non verifica `count(MATCH)==7`, la presenza dei sette ruoli o l'assenza di `NOT_RUN`/stati sconosciuti.
+
+**Conseguenza:** un insieme di verifiche incompleto può apparire senza anomalie nei conteggi. Nel flusso CLI non modificato `verify_all_pinned_files()` costruisce normalmente sette ruoli, quindi non è una prova che la CLI attuale ritorni 0 con file mancanti; resta un difetto del contratto delle funzioni e del controllo difensivo finale.
+
+**Correzione richiesta:** richiedere sette risultati, chiavi canoniche e stato finale `MATCH` per ciascun ruolo prima del codice d'uscita 0; tutti gli altri stati danno esito non zero. Contare/mostrare esplicitamente `NOT_RUN` ed esiti invalidi.
+
+### DBG-04 | MINORE: terminologia diversa dal patto diagnostico iniziale
+
+**Evidenza:** il nuovo sorgente usa `MATCH/MISMATCH` (`:69-76`) mentre la scelta iniziale della strada B indicava `EQUAL/DIFFERENT`; l'equivalenza non è codificata. Non si tratta di un PASS di audit, ma va scelto un vocabolario univoco, o documentata l'equivalenza.
+
+### DBG-05 | LIMITE DICHIARATO, non difetto diagnostico hardened
+
+`Path.is_file()` seguito da `Path.read_bytes()` (`:163-171`) non offre snapshot immutabile né protezione contro scrittori concorrenti. I bytes hashati sono quelli effettivamente letti, ma non sono vincolati a un futuro consumo parser, che questo script non effettua. Non promuovere la coincidenza dei digest in `PROVENANCE_ESTABLISHED`, `OPERATIONAL_VALIDATION_PASSED` o in una chiusura di `RP-01`/`DOC-04`.
+
+## 4. Confronto F-01–F-03 nel perimetro diagnostico
+
+| Difetto | Riscontro statico rev. 02 | Esito |
+|---|---|---|
+| **F-01** (API che emettono artefatti/PASS) | Eliminati i cinque output qualificati e il vecchio builder; **ma** importabile `write_diagnostic_report` accetta un payload arbitrario e può scrivere contenuti fuorvianti (DBG-01) | `PARTIAL_DIAGNOSTIC; NOT_ACCEPTED_AS_STATED` |
+| **F-02** (verifiche da dict, PASS predefiniti) | `read_and_verify` calcola realmente gli SHA su byte letti; **ma** `build_diagnostic_report` accetta ancora dict di verifica arbitrari (DBG-01) | `PARTIAL_DIAGNOSTIC; NOT_ACCEPTED_AS_STATED` |
+| **F-03** (staging/pubblicazione con bool e race) | Rimosso il publisher **qualificato**; non esiste autorizzazione basata su booleani. Il writer diagnostico resta non protetto da sovrascritture (DBG-02) | `QUALIFIED_STAGING_REMOVED; DIAGNOSTIC_OUTPUT_REQUIRES_NO_CLOBBER` |
+
+**Contratto hardened rev. 02.2:** F-01, F-02, F-03 rimangono `OPEN`; il nuovo ramo diagnostico non implementa i requisiti OS, né può conseguire `STATIC_SOURCE_ACCEPTANCE` come generatore qualificato.
+
+## 5. Invarianza, decisione e azione minima
+
+- Sorgente DRAFT 02 originale: SHA-256 ricalcolato `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325`, invariato.
+- Sei file congelati disponibili: dimensioni e digest coincidenti con PINNED; CSV Yale verificato in precedenza, **non** ricontrollato localmente in questa sessione.
+- `STATIC_SOURCE_ACCEPTANCE_REV_01: NOT_GRANTED`, `RP-01: OPEN`, `DOC-04: PENDING_EXTERNAL_ATTESTATION`, `f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER`, `manual_intervention_on_historical_data=false`, `GATE: CLOSED_PENDING_VALIDATION`.
+- Nessun parser/import/build, nessuna prova empirica, nessuna emissione dei cinque artefatti di audit e nessun PASS empirico.
+
+**Verdetto nuovo ramo:** `DIAGNOSTIC_SOURCE_ACCEPTANCE_NOT_GRANTED`, **soltanto** a causa di DBG-01–DBG-03; DBG-04 è una questione terminologica e DBG-05 una limitazione dichiarabile. Il perimetro rimane utile: bastano correzioni localizzate al flusso di report e alla scrittura no-clobber, non un'altra specifica né un Trusted OS Service.
+
+**Prossimo intervento concreto:** correggere i tre difetti DBG-01–DBG-03 nel file diagnostico come nuova versione separata, poi ispezionare staticamente il risultato. Nessuna esecuzione è implicitamente autorizzata dalla presente revisione.
