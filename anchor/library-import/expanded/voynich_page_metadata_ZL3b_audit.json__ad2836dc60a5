@@ -1,0 +1,64 @@
+{
+  "source_file": "ZL3b-n.txt",
+  "source_sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+  "source_bytes": 411671,
+  "page_headers": 227,
+  "unique_page_ids": 227,
+  "duplicate_page_ids": [],
+  "variable_coverage": {
+    "$Q": 227,
+    "$P": 227,
+    "$I": 227,
+    "$L": 197,
+    "$H": 227
+  },
+  "quire_counts": {
+    "A": 16,
+    "B": 14,
+    "C": 16,
+    "D": 16,
+    "E": 16,
+    "F": 16,
+    "G": 16,
+    "H": 8,
+    "I": 10,
+    "J": 6,
+    "K": 8,
+    "L": 2,
+    "M": 20,
+    "N": 7,
+    "O": 12,
+    "Q": 10,
+    "S": 10,
+    "T": 24
+  },
+  "language_counts": {
+    "(missing)": 30,
+    "A": 114,
+    "B": 83
+  },
+  "hand_counts": {
+    "1": 113,
+    "2": 46,
+    "3": 33,
+    "4": 27,
+    "5": 7,
+    "@": 1
+  },
+  "illustration_type_counts": {
+    "A": 8,
+    "B": 19,
+    "C": 11,
+    "H": 129,
+    "P": 16,
+    "S": 25,
+    "T": 7,
+    "Z": 12
+  },
+  "notes": [
+    "$Q, $P, $I, $L, and $H are copied verbatim from ZL3b page headers.",
+    "$H=@ is retained literally and must not be treated as a resolved hand.",
+    "Missing $L values are left blank; no language labels were inferred.",
+    "This is the full 227-header ZL3b crosswalk, not yet filtered to Lyons profile rows."
+  ]
+}
