@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+"""RC1.4-OA: provenance-only derivative. RC1.4 remains lexical authority."""
+from __future__ import annotations
+import argparse, hashlib, importlib.util, json, re, sys
+from collections import Counter
+from pathlib import Path
+
+EXPECTED_CORPUS_SHA256 = "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc"
+EXPECTED_PARENT_SHA256 = "075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d"
+EXPECTED_LOCI = 4130
+EXPECTED_TOKENS = 35492
+PARENT_FILENAME = "ivtff_parser_rc1_4.py"
+
+class OAError(RuntimeError): pass
+
+def load_parent(path: Path):
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest != EXPECTED_PARENT_SHA256:
+        raise OAError(f"PARENT_HASH_MISMATCH:{digest}")
+    spec = importlib.util.spec_from_file_location("rc14_frozen_parent", path)
+    if spec is None or spec.loader is None: raise OAError("PARENT_IMPORT_FAILED")
+    mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+    return mod, digest
+
+def physical_lines_with_offsets(raw: bytes):
+    text = raw.decode("utf-8", errors="strict")
+    chunks = text.splitlines(keepends=True)
+    lines=[]; byte_cursor=0
+    for chunk in chunks:
+        content=chunk
+        if content.endswith("\r\n"): content=content[:-2]
+        elif content.endswith(("\n", "\r", "\v", "\f", "\x1c", "\x1d", "\x1e", "\x85", "\u2028", "\u2029")): content=content[:-1]
+        offsets=[]; cur=byte_cursor
+        for ch in content:
+            offsets.append(cur); cur += len(ch.encode("utf-8"))
+        lines.append((content, offsets))
+        byte_cursor += len(chunk.encode("utf-8"))
+    if not chunks and text == "": return [], text
+    if len(lines) != len(text.splitlines()):
+        raise OAError("PHYSICAL_LINE_MAPPING_MISMATCH")
+    return lines, text
+
+def mapped_join(parent, physical):
+    strings=[x[0] for x in physical]
+    canonical=parent.join_continuations(strings)
+    out=[]; pending=False
+    for n,(line, offsets) in enumerate(physical,1):
+        starts=line.startswith("/ ")
+        if pending:
+            if not starts: raise OAError(f"JOIN_MAPPING_DIVERGENCE:{n}")
+            prev_n, prev, prev_map=out.pop()
+            out.append((prev_n, prev[:-1]+line[2:], prev_map[:-1]+offsets[2:]))
+            pending=parent._trailing_slash_is_continuation(out[-1][1])
+            continue
+        if starts: raise OAError(f"ORPHAN_CONTINUATION:{n}")
+        out.append((n,line,offsets))
+        pending=parent._trailing_slash_is_continuation(line)
+    if pending: raise OAError("EOF_AFTER_CONTINUATION")
+    mapped=[(n,s) for n,s,_ in out]
+    if mapped != canonical: raise OAError("JOIN_TEXT_NOT_EQUIVALENT_TO_PARENT")
+    return out
+
+def _sub_with_map(pattern, chars, offsets, replacement):
+    s="".join(chars); out_chars=[]; out_offsets=[]; cursor=0
+    for m in pattern.finditer(s):
+        out_chars.extend(chars[cursor:m.start()]); out_offsets.extend(offsets[cursor:m.start()])
+        repl_chars, repl_offsets = replacement(m, chars, offsets)
+        out_chars.extend(repl_chars); out_offsets.extend(repl_offsets)
+        cursor=m.end()
+    out_chars.extend(chars[cursor:]); out_offsets.extend(offsets[cursor:])
+    return out_chars,out_offsets
+
+def clean_body_map(parent, body, offsets, audit, local_markers):
+    chars=list(body); offs=list(offsets)
+    if body.count("<!") != len(parent.COMMENT_RE.findall(body)):
+        raise OAError("UNTRACEABLE_UNCLOSED_COMMENT")
+    chars,offs=_sub_with_map(parent.COMMENT_RE,chars,offs,lambda m,c,o:([" "],[-1]))
+    for marker in parent.STANDARD_MARKERS:
+        s="".join(chars); pat=re.compile(re.escape(marker))
+        count=len(pat.findall(s)); audit[f"marker:{marker}"] += count
+        chars,offs=_sub_with_map(pat,chars,offs,lambda m,c,o:([" "],[-1]))
+    for marker in parent.LOCAL_NONSTANDARD_MARKERS:
+        pat=re.compile(re.escape(marker)); count=len(pat.findall("".join(chars)))
+        if count:
+            audit[f"marker:{marker}"] += count; local_markers.extend([marker]*count)
+            chars,offs=_sub_with_map(pat,chars,offs,lambda m,c,o:([" "],[-1]))
+    cleaned="".join(chars)
+    parent.validate_balanced(cleaned,"{","}","brace")
+    brace_matches=list(parent.BRACE_RE.finditer(cleaned)); audit["brace_blocks_preserved_internal_text"] += len(brace_matches)
+    chars,offs=_sub_with_map(parent.BRACE_RE,chars,offs,lambda m,c,o:(c[m.start(1):m.end(1)],o[m.start(1):m.end(1)]))
+    cleaned="".join(chars)
+    parent.validate_balanced(cleaned,"[","]","square-bracket")
+    square_matches=list(parent.SQUARE_RE.finditer(cleaned)); audit["square_blocks_excluded"] += len(square_matches)
+    chars,offs=_sub_with_map(parent.SQUARE_RE,chars,offs,lambda m,c,o:([" "],[-1]))
+    cleaned="".join(chars)
+    m=parent.UNKNOWN_ANGLE_RE.search(cleaned)
+    if m: raise OAError(f"UNKNOWN_ANGLE_MARKER:{m.group(0)}")
+    if "<" in cleaned or ">" in cleaned: raise OAError("UNMATCHED_ANGLE_BRACKET")
+    # The transformed string must be byte-for-byte identical to RC1.4's cleaner.
+    expected=parent.clean_body(body,Counter(),[])
+    if cleaned != expected: raise OAError("CLEANING_DIVERGENCE_FROM_PARENT")
+    return cleaned,offs
+
+def segments_for_positions(positions):
+    if not positions or any(p < 0 for p in positions): return []
+    segs=[]; start=prev=positions[0]
+    for p in positions[1:]:
+        if p == prev+1: prev=p
+        else: segs.append([start,prev+1]); start=prev=p
+    segs.append([start,prev+1])
+    return segs
+
+def parse_offset_aware(corpus: Path, parent_path: Path):
+    parent,parent_sha=load_parent(parent_path)
+    raw=corpus.read_bytes(); corpus_sha=hashlib.sha256(raw).hexdigest()
+    if corpus_sha != EXPECTED_CORPUS_SHA256: raise OAError(f"CORPUS_HASH_MISMATCH:{corpus_sha}")
+    parent_report=parent.parse_corpus(corpus,verify_source=True)
+    physical,text=physical_lines_with_offsets(raw)
+    if len(physical) != parent_report["counts"]["physical_lines"]: raise OAError("PHYSICAL_LINE_COUNT_MISMATCH")
+    logical=mapped_join(parent,physical)
+    provenance=[]; audit=Counter(); records=[]; local_audit=[]
+    source_line_by_byte={p:n for n,_,mp in logical for p in mp}
+    for physical_line,line,line_map in logical:
+        m=parent.HEADER_RE.match(line)
+        if not m or "," not in m.group("header"): continue
+        locus_id,tag=m.group("header").split(",",1)
+        if not re.match(r"^[+@=*/]P",tag): continue
+        if tag not in parent.ALLOWED_P_TAGS: raise OAError(f"PARENT_TAG_REJECTION:{physical_line}:{tag}")
+        lm=parent.NUMERIC_LOCUS_RE.fullmatch(locus_id) or parent.ROSETTES_LOCUS_RE.fullmatch(locus_id)
+        if not lm: raise OAError(f"PARENT_LOCUS_REJECTION:{physical_line}:{locus_id}")
+        body_start=m.start("body"); body=m.group("body"); body_map=line_map[body_start:body_start+len(body)]
+        local=[]; cleaned,clean_map=clean_body_map(parent,body,body_map,audit,local)
+        for marker in local:
+            local_audit.append({"physical_line":physical_line,"locus_id":locus_id,"tag":tag,"marker":marker})
+        toks=[]
+        for token_index,tm in enumerate(parent.TOKEN_RE.finditer(cleaned),1):
+            token=tm.group(0).lower(); pos=clean_map[tm.start():tm.end()]
+            if len(pos)!=len(token) or any(p<0 for p in pos):
+                status="UNTRACEABLE"; segs=[]
+            else:
+                segs=segments_for_positions(pos)
+                status="TRACEABLE_CONTIGUOUS" if len(segs)==1 else "TRACEABLE_MULTISEGMENT"
+            source_lines=sorted({source_line_by_byte[p] for p in pos if p>=0 and p in source_line_by_byte})
+            segment_reason = ("NONE" if status == "TRACEABLE_CONTIGUOUS" else ("CROSS_PHYSICAL_LINE_JOIN" if len(source_lines) > 1 else "INTRA_LINE_TRANSFORMATION"))
+            item={"source_sha256":corpus_sha,"locus_id":locus_id,"token_index":token_index,"token_value":token,"physical_line":physical_line,"source_physical_lines":source_lines,"provenance_status":status,"multisegment_reason":segment_reason,"source_segments":[{"source_byte_start":a,"source_byte_end":b} for a,b in segs]}
+            if status=="TRACEABLE_CONTIGUOUS":
+                item["source_byte_start"]=segs[0][0]; item["source_byte_end"]=segs[0][1]
+            else:
+                item["source_byte_start"]=None; item["source_byte_end"]=None
+            toks.append(token); provenance.append(item)
+        if toks:
+            records.append({"physical_line":physical_line,"locus_id":locus_id,"folio":lm.group("folio"),"line_index":int(lm.group("line")),"tag":tag,"tokens":toks})
+    # Exact record-level lexical equivalence to the frozen parent's canonical report.
+    diffs=[]
+    expected=parent_report["records"]
+    if len(records)!=len(expected): diffs.append({"kind":"record_count","expected":len(expected),"actual":len(records)})
+    for i,(a,b) in enumerate(zip(expected,records)):
+        if a != b: diffs.append({"kind":"record_mismatch","index":i,"locus_id_expected":a.get("locus_id"),"locus_id_actual":b.get("locus_id"),"fields":[k for k in a if a.get(k)!=b.get(k)]})
+    flat=[t for r in records for t in r["tokens"]]
+    if len(provenance)!=len(flat): raise OAError("PROVENANCE_TOKEN_CARDINALITY_MISMATCH")
+    for p,t in zip(provenance,flat):
+        if p["token_value"]!=t: raise OAError("PROVENANCE_TOKEN_ORDER_MISMATCH")
+        for seg in p["source_segments"]:
+            a,b=seg["source_byte_start"],seg["source_byte_end"]
+            if not (0<=a<b<=len(raw)): raise OAError("BYTE_OFFSET_OUT_OF_RANGE")
+            fragment=raw[a:b]
+            if not fragment.decode("ascii",errors="strict").isalpha(): raise OAError("SOURCE_BYTE_SPAN_NOT_ASCII_TOKEN")
+    statuses=Counter(p["provenance_status"] for p in provenance)
+    multisegment_reasons=Counter(p["multisegment_reason"] for p in provenance)
+    gap_patterns=Counter()
+    for p in provenance:
+        segs=p["source_segments"]
+        if len(segs)>1:
+            for left,right in zip(segs,segs[1:]):
+                gap=raw[left["source_byte_end"]:right["source_byte_start"]]
+                gap_patterns[repr(gap)] += 1
+    return {"specification":"RC1.4-OA-SPEC-01","parser":"ivtff_parser_rc1_4_offset_aware.py","status":"TECHNICAL_VALIDATION_ONLY","source":{"filename":corpus.name,"sha256":corpus_sha,"size_bytes":len(raw),"physical_lines":len(physical),"logical_lines_after_parent_join":len(logical),"physical_lines_removed_by_continuation_join":len(physical)-len(logical)},"parent":{"filename":parent_path.name,"sha256":parent_sha,"canonical_loci":len(expected),"token_count":sum(len(r['tokens']) for r in expected)},"lexical_equivalence":{"expected_loci":len(expected),"actual_loci":len(records),"expected_tokens":sum(len(r['tokens']) for r in expected),"actual_tokens":len(provenance),"difference_count":len(diffs),"differences":diffs},"provenance_counts":dict(sorted(statuses.items())),"multisegment_reason_counts":dict(sorted(multisegment_reasons.items())),"multisegment_gap_patterns":dict(sorted(gap_patterns.items())),"v7_single_span_compatibility":{"compatible_tokens":statuses["TRACEABLE_CONTIGUOUS"],"incompatible_tokens_requiring_contract_review":statuses["TRACEABLE_MULTISEGMENT"],"status":"BLOCKED_FOR_MULTISEGMENT_TOKENS" if statuses["TRACEABLE_MULTISEGMENT"] else "COMPATIBLE"},"provenance_records":provenance,"records":records,"recognized_local_nonstandard_markers":local_audit,"transformation_counts":dict(sorted(audit.items()))}
+
+def main():
+    ap=argparse.ArgumentParser(); ap.add_argument("--corpus",type=Path,required=True); ap.add_argument("--parent",type=Path,required=True); ap.add_argument("--out",type=Path,required=True); a=ap.parse_args()
+    try: report=parse_offset_aware(a.corpus,a.parent)
+    except Exception as e: print(f"OA_VALIDATION_BLOCKED:{type(e).__name__}:{e}",file=sys.stderr); return 3
+    a.out.write_text(json.dumps(report,ensure_ascii=False,sort_keys=True,indent=2)+"\n",encoding="utf-8",newline="\n")
+    print(json.dumps({"lexical_equivalence":report["lexical_equivalence"],"provenance_counts":report["provenance_counts"],"report":str(a.out)},ensure_ascii=False,sort_keys=True)); return 0
+if __name__=="__main__": raise SystemExit(main())
