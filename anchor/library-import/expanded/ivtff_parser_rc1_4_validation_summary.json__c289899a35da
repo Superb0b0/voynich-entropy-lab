@@ -1,0 +1,25 @@
+{
+  "release": "ivtff_parser_rc1_4",
+  "status": "SYNTAX_VALIDATED_IVTT_DIFFERENTIAL_REPRODUCIBILITY_PENDING",
+  "source": {
+    "file": "ZL3b-n.txt",
+    "sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    "bytes": 411671,
+    "physical_lines": 8510
+  },
+  "parser_sha256": "075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d",
+  "counts": {
+    "p_locus_lines": 4130,
+    "canonical_p_loci": 4130,
+    "fRos_p_loci": 11,
+    "tokens": 35492,
+    "distinct_types": 6980,
+    "folio_identifiers_including_fRos": 207
+  },
+  "local_annotations": [
+    {"line": 8277, "locus_id": "f115r.1", "marker": "<@H=2>"},
+    {"line": 8297, "locus_id": "f115r.13", "marker": "<@H=3>"}
+  ],
+  "unit_tests": "PASS",
+  "tokenization_note": "Do not compare totals across different normalization profiles without per-locus differential reconciliation."
+}
