@@ -1,0 +1,96 @@
+{
+  "YL_01": {
+    "distinct_yale_canvas_identifiers": 213,
+    "metadata_rows": 213,
+    "missing_yale_canvas_identifiers": 0,
+    "repeated_image_id_groups": [
+      {
+        "canvas_ids": [
+          "1006200",
+          "1006201"
+        ],
+        "image_id": "f070v"
+      },
+      {
+        "canvas_ids": [
+          "1006204",
+          "1006205"
+        ],
+        "image_id": "f072v"
+      },
+      {
+        "canvas_ids": [
+          "1006228",
+          "1006229"
+        ],
+        "image_id": "f085r"
+      },
+      {
+        "canvas_ids": [
+          "1006234",
+          "1006235"
+        ],
+        "image_id": "f089v"
+      },
+      {
+        "canvas_ids": [
+          "1006242",
+          "1006243"
+        ],
+        "image_id": "f095v"
+      },
+      {
+        "canvas_ids": [
+          "1006250",
+          "1006251"
+        ],
+        "image_id": "f101v"
+      },
+      {
+        "canvas_ids": [
+          "1006252",
+          "1006253"
+        ],
+        "image_id": "f102v"
+      }
+    ],
+    "repeated_image_id_policy_satisfied": true,
+    "repeated_normalized_image_id_groups": 7,
+    "status": "PASS"
+  },
+  "YL_02": {
+    "canonical_sorted_set_sha256": "2357d2ae183ce44f3f537d1c36dd6723f907903e812611a91df3e2c22287d688",
+    "metadata_distinct_normalized_image_ids": 206,
+    "metadata_set_sha256": "2357d2ae183ce44f3f537d1c36dd6723f907903e812611a91df3e2c22287d688",
+    "profile_distinct_normalized_image_ids": 206,
+    "profile_set_sha256": "2357d2ae183ce44f3f537d1c36dd6723f907903e812611a91df3e2c22287d688",
+    "set_equality": true,
+    "status": "PASS"
+  },
+  "evidence_id": "RC1.4.2-A1-YALE-METADATA-01",
+  "normalization": {
+    "comparison": "set of distinct normalized image_id values",
+    "row_level_bijection_required": false,
+    "rule": "trim whitespace, lowercase, remove leading zeroes from numeric folio component while preserving side suffix and non-folio cover identifiers"
+  },
+  "raw_file_integrity": {
+    "bytes": 38578,
+    "expected_bytes_match": true,
+    "expected_sha256_match": true,
+    "git_blob_sha_match": true,
+    "sha256": "19b3e0885a467df849c352c650eeee864e987da3b2eaf295322345cf4e798625",
+    "status": "PASS"
+  },
+  "scope_limits": {
+    "does_not_authorize_analytical_execution": true,
+    "does_not_open_gate": true,
+    "does_not_validate_candidate_or_exclusion_generation": true,
+    "metadata_checks_only": true
+  },
+  "source": {
+    "commit": "d4b31a245ba8133b727dc4255278b5e8349bbe39",
+    "git_blob_sha": "eb05cb69d4847f6acb34a9d095e05c38369010d2",
+    "path": "data/public/voynich_semantic_profiles/corpus_metadata.csv",
+    "repository": "xenoglyph-ai/voynich-public"
+  }
+}
