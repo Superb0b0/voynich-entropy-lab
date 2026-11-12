@@ -1,0 +1,21 @@
+import re, json, hashlib
+from pathlib import Path
+src=Path('/mnt/data/files/ZL3b-n.txt')
+rows=[]
+for line in src.read_text(encoding='utf-8').splitlines():
+ m=re.match(r'^<([^>]+)>\s*(.+)$',line)
+ if m and '.' in m.group(1): rows.append((m.group(1),m.group(2)))
+
+def loci(f):return [(a,b) for a,b in rows if a.split('.')[0]==f]
+frags=loci('f89r2'); page=loci('f35v')
+labels=[{'locus':a,'reading':b.strip()} for a,b in frags if '@Lf' in a or '+Lf' in a]
+words=set()
+for _,v in page:
+ # split EVA separators; don't claim canonical tokenization
+ words.update(re.findall(r'[a-z]+',re.sub(r'<[^>]*>',' ',v)))
+# f89r2.4 is the third label in the first group, provisional mapping to #35
+candidate=next((x for x in labels if x['locus'].startswith('f89r2.4,')),None)
+exact= len([1 for a,b in rows if re.search(r'(?<![a-z])'+re.escape(candidate['reading'])+r'(?![a-z])',b)]) if candidate else None
+result={'experiment':'ANCHOR-17','date':'2026-11-12','corpus':str(src),'corpus_sha256':hashlib.sha256(src.read_bytes()).hexdigest(),'f35v_text_lines':len(page),'f89r2_first_row_candidate_label':candidate,'mapping_caveat':'Third label in f89r2 first label sequence may correspond to fragment 35 if catalog reading-order is left-to-right; mapping NOT geometrically verified.', 'candidate_occurrences_in_zl3b_lines':exact,'candidate_exact_string_in_f35v': candidate['reading'] in ' '.join(t for _,t in page) if candidate else None,'label_inventory_first_group':labels[:4], 'external':{'egerton_747_f37':'ebulus + edera niger appear as two separate plant depictions; source British Library manuscript and image catalogue','bnf_lat_6823_f60r':'edera nigra pictured, compared with Voynich f35v; historical known comparison'},'conclusion':'Two candidate taxa appear on one external medieval folio; this is a testable hypothesis pair, NOT a decoded word, and exact f89r2 label does not occur on f35v.'}
+Path('/mnt/data/ANCHOR_17_EVIDENCE.json').write_text(json.dumps(result,indent=2,ensure_ascii=False),encoding='utf-8')
+print(json.dumps(result,indent=2,ensure_ascii=False))
