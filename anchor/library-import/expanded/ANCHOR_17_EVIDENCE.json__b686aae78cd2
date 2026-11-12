@@ -1,0 +1,37 @@
+{
+  "experiment": "ANCHOR-17",
+  "date": "2026-11-12",
+  "corpus": "/mnt/data/files/ZL3b-n.txt",
+  "corpus_sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+  "f35v_text_lines": 21,
+  "f89r2_first_row_candidate_label": {
+    "locus": "f89r2.4,@Lf",
+    "reading": "saloiinsheol"
+  },
+  "mapping_caveat": "Third label in f89r2 first label sequence may correspond to fragment 35 if catalog reading-order is left-to-right; mapping NOT geometrically verified.",
+  "candidate_occurrences_in_zl3b_lines": 1,
+  "candidate_exact_string_in_f35v": false,
+  "label_inventory_first_group": [
+    {
+      "locus": "f89r2.2,@Lf",
+      "reading": "doly"
+    },
+    {
+      "locus": "f89r2.3,@Lf",
+      "reading": "opchosam"
+    },
+    {
+      "locus": "f89r2.4,@Lf",
+      "reading": "saloiinsheol"
+    },
+    {
+      "locus": "f89r2.5,@Lf",
+      "reading": "opcheor"
+    }
+  ],
+  "external": {
+    "egerton_747_f37": "ebulus + edera niger appear as two separate plant depictions; source British Library manuscript and image catalogue",
+    "bnf_lat_6823_f60r": "edera nigra pictured, compared with Voynich f35v; historical known comparison"
+  },
+  "conclusion": "Two candidate taxa appear on one external medieval folio; this is a testable hypothesis pair, NOT a decoded word, and exact f89r2 label does not occur on f35v."
+}
