@@ -1,0 +1,34 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: ANCHOR01_AI04_REFERENCE_MATCHES.csv>
+index,model,reference_id,model_local_id,distance_normalized
+0,Claude,O01,O01,6.4
+1,Claude,O02,O02,30.02
+2,Claude,O03,O03,29.07
+3,Claude,O04,O04,26.0
+4,Claude,O05,O05,46.84
+5,Claude,O06,O06,26.68
+6,Claude,O07,O07,25.81
+7,Claude,O08,O08,23.35
+8,Claude,O09,O09,25.08
+9,Claude,O10,O10,10.63
+10,Claude,I01,I01,10.0
+11,Claude,I02,I02,3.61
+12,Claude,I03,I03,15.0
+13,Claude,I04,I04,24.21
+14,Claude,I05,I05,16.12
+15,Gemini,O01,O10,44.91
+16,Gemini,O02,O09,40.26
+17,Gemini,O08,O03,25.24
+18,Gemini,O09,O02,28.16
+19,Gemini,I01,I08,23.19
+20,DeepSeek,O01,O02,10.63
+21,DeepSeek,O02,O03,33.73
+22,DeepSeek,O05,O06,36.69
+23,DeepSeek,O06,O07,16.76
+24,DeepSeek,O07,O08,32.65
+25,DeepSeek,O08,O09,42.95
+26,DeepSeek,O09,O10,46.17
+27,DeepSeek,O10,O01,14.14
+28,DeepSeek,I01,I02,13.6
+29,DeepSeek,I04,I07,14.87
+30,DeepSeek,I05,I01,7.81
