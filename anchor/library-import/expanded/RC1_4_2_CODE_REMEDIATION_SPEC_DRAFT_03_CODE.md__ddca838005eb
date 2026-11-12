@@ -1,0 +1,75 @@
+# RC1.4.2 V7.1 | Specifica source-only per DRAFT 03_CODE
+
+**Tipo:** specifica tecnica non eseguibile. **Data:** 10 novembre 2026.
+**Sorgente esaminato:** `rc1_4_2_generator_clean_DRAFT_02.py`, 41.856 byte, SHA-256 `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325` (ricalcolo locale sui byte in sola lettura).
+**Base documentale:** `RC1_4_2_STATIC_CODE_REVIEW_DRAFT_04.md`, 14.817 byte, SHA-256 `490a4235951acbbb169f966ee6be46487973070219feeeecb79201c965b09983` (ricalcolo locale sui byte in sola lettura).
+**Oggetto:** progettare correzioni a F-01, F-02 e F-03 senza scrivere, importare, compilare o eseguire il generatore e senza creare i cinque artefatti di validazione.
+**Conservazione:** DRAFT 02, parser RC1.4, mapper OA, corpus, profili, metadati Yale, crosswalk e verbali DRAFT 02–DRAFT 04 non vengono alterati.
+
+## 1. Decisione di perimetro
+
+Il gate della pipeline rimane `CLOSED_PENDING_VALIDATION`. Questa specifica non costituisce un'autorizzazione di esecuzione. Il codice futuro deve continuare a distinguere una procedura limitata agli artefatti *audit-only*, autorizzabile solo tramite decisione esterna verificata, dalle operazioni analitiche vietate (builder storico, PCA, clustering, conditional coupling, promozione dei profili).
+
+`f085v` resta `UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER`, `manual_intervention_on_historical_data=false`. La partizione documentale è `206 = 9 + 196 + 1`, dove i 197 manoscritti sono 196 associati a IVTFF e uno senza match IVTFF. Nessuna correzione del codice può fabbricare un match f085v.
+
+La preparazione di DRAFT 03_CODE è indipendente dalla risoluzione di DOC-04 (attestazione esterna del verbale) e da RP-01 (provenienza del generatore storico).
+
+## 2. Mappa F-01/F-02/F-03, modifiche e criteri di accettazione statica
+
+| Rilievo | Difetto documentato in DRAFT 02 | Modifica prevista nella futura versione sorgente | Criterio di accettazione statico (non PASS empirico) |
+|---|---|---|---|
+| **F-01** | `__main__` blocca la sola CLI, ma `prepare_audit_from_verified_inputs()` (r. 684–711), `serialize_validation_artifacts()` (r. 632–660) e `build_validation_report()` (r. 602–629) sono chiamabili dopo import; il percorso del parser è ugualmente richiamabile (r. 258–289). | Separare trasformazioni pure senza effetti collaterali, verifica dell'input e orchestrazione esterna autenticata. Ogni API che può avviare parser, preparare un audit, attribuire PASS o serializzare file deve verificare una sessione autorizzata non auto-assegnabile. DRAFT 03_CODE di sola revisione non deve esporre operazioni attivabili. | Lettura di ogni punto di accesso e suo call graph: nessun percorso diretto o indiretto produce PASS, dati finali o import del parser da un chiamante non autorizzato; `__main__` non è l'unico presidio. Il criterio è **da verificare in futura revisione**, non già superato. |
+| **F-02** | `verify_input_integrity()` (r. 162–183) legge i byte, ma restituisce un normale dizionario modificabile; `prepare_audit_from_verified_inputs()` può ricevere un dizionario costruito arbitrariamente; `build_validation_report()` marca un insieme fisso di sezioni `PASS` senza ricevere prove vincolate all'esito di ogni controllo. | Introdurre una rappresentazione di snapshot dei byte effettivamente acquisiti, con hash e dimensioni calcolati nel contesto autorizzato, e uno stato di controllo derivato da verifiche effettuate sugli stessi byte **consumati**. Eliminare ogni `PASS` generato automaticamente sulla base della sola presenza di chiavi, hash del chiamante o conteggi attesi. Bloccare la preparazione in assenza della catena verificata; non attribuire certificazioni di indipendenza. | Tracciabilità statica **byte letti → digest → parsing degli stessi byte → esito controllo → eventuale stato**. Impossibilità, per le API previste, di produrre un `PASS` tramite un semplice `dict` sostitutivo. Verificare anche il rischio di rilettura dei parser tramite file di percorso (TOCTOU). |
+| **F-03** | `stage_new_audit_bundle()` (r. 756–797) considera sufficienti booleani `authorization` forniti dal chiamante e usa un controllo `target.exists()` prima di `staging.rename(target)` che non costituisce garanzia atomica universale di mancata sostituzione in caso di concorrenza. | Nel sorgente revisionato rimuovere o rendere incondizionatamente indisponibile lo staging; specificare un orchestratore separato futuro che autentichi un addendum verificabile, identità autorizzante, scopo `validation_artifacts_only`, elenco degli input e percorsi consentiti; utilizzi una primitiva di creazione atomica no-clobber e mantenga i congelati fuori da ogni directory scrivibile. | La semplice costruzione di `{signed_addendum_verified_externally: true}` non deve sbloccare nulla. Nessuna chiamata importata può creare cartelle/CSV/JSON di audit. Nella futura implementazione autorizzata, prova statica della semantica no-replace senza la finestra check-then-rename e percorso non risolvibile verso input protetti. |
+
+## 3. Funzioni esistenti e regime richiesto dopo import (DRAFT 03_CODE)
+
+| Funzione esistente | Regime della prossima bozza | Motivazione |
+|---|---|---|
+| `prepare_audit_from_verified_inputs()` | `BLOCKED` in assenza di contesto esterno attestato; nessuna API pubblica che accetti un dizionario sostitutivo | F-01/F-02 |
+| `build_validation_report()` | Non deve produrre `PASS` da `hashes`, `counts` o `provenance` auto-dichiarati; ammettere solo relazione diagnostica `NOT_RUN` o verifiche realmente provate in un contesto futuro autorizzato | F-02 |
+| `serialize_validation_artifacts()` | Non accessibile da chiamate ordinarie dopo import; nella bozza di revisione mantenere un blocco incondizionato | F-01 |
+| `sha256sums_external()` | La produzione del sidecar è parte della generazione di artefatti; bloccare in revisione o limitare al futuro orchestratore | F-01 |
+| `acquire_frozen_lexical_and_provenance()` e `_load_verified_module()` | Nessun import/esecuzione dei parser senza autorizzazione esterna effettiva; verificare che i byte importati coincidano con quelli controllati | F-01/F-02 |
+| `stage_new_audit_bundle()` | `BLOCKED` senza eccezioni nel codice source-only; sostituibile soltanto in un futuro modulo esterno con controllo forte e no-clobber | F-03 |
+| `build_external_execution_record()` | Solo predisposizione di schema `NOT_RUN`, nessuna creazione di log «storici» o attestazioni con contenuti auto-dichiarati | F-02, separazione da RP-01 |
+| `compare_generation_bytes()` e `compare_two_read_only_directories()` | Utilità pura di confronto consentita **solo** come diagnostica, senza certificare indipendenza, provenienza, approvazione o apertura del gate. Per dati di audit ufficiale servono le prove contestuali delle due esecuzioni | Limite probatorio |
+| `canonical_json()`, `canonical_csv()`, `norm()`, `sha256()` | Funzioni pure senza letture/scritture né attestazioni: separabili, ma l'API di generazione non deve aggirare il perimetro mediante chiamate dirette | Modularità |
+
+**Nota sul modello di sicurezza:** nessun file sorgente Python può impedire in assoluto a chi possiede controllo completo dell'interprete di modificarlo o bypassare una guardia. L'obiettivo verificabile è l'assenza di API **supportate** che emettano artefatti o PASS non autorizzati, insieme a una verifica della decisione di autorizzazione fuori dal processo controllato dal chiamante. Un token o booleano costruibile nello stesso processo non costituisce autorizzazione affidabile.
+
+## 4. Contratto di provenienza per futura sessione separatamente autorizzata
+
+Qualsiasi futura sessione, **non avviata da questa specifica**, deve registrare: identificativo univoco, autorizzazione esterna autenticata e scopo, istante UTC, esatta versione e SHA-256 del codice, byte count/SHA-256 dei raw input e dei parser, percorso verificato, ambiente, comando effettivo, exit code, log originali con digest, nomi e digest dei cinque output, confronto byte-per-byte tra due generazioni e verifica indipendente. Le prove assenti restano `NOT_RUN`/`NOT_AVAILABLE`, mai `PASS`.
+
+I byte utilizzati dal parsing devono essere gli stessi buffer identificati in fase di acquisizione o un'istantanea immutabile autenticata: confrontare l'hash di un file e poi far rileggere potenzialmente un altro file sullo stesso percorso non basta. Una decisione di autorizzazione separata non può trasformare i `PASS` storici presenti in un report preesistente in verifiche nuove.
+
+La comparazione tra due esecuzioni del nuovo generatore dimostra al massimo la ripetibilità delle due esecuzioni sotto le condizioni realmente osservate; non ricostruisce la provenienza storica dei cinque artefatti contestati da RP-01. Viceversa recuperare il generatore storico non dimostra l'idoneità del nuovo codice.
+
+## 5. Stato documentale e limiti
+
+```text
+artifact: RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE.md
+artifact_kind: SOURCE_ONLY_SPECIFICATION_NOT_EXECUTABLE
+source_DRAFT_02: PRESERVED_UNMODIFIED
+code_remediation_required: true
+F-01: OPEN
+F-02: OPEN
+F-03: OPEN
+DOC-01: RESOLVED_LOCAL_DOCUMENTATION (perimetro §1.1 del verbale DRAFT 04)
+DOC-02: RESOLVED_DOCUMENTARY
+DOC-03: RESOLVED_DOCUMENTARY
+DOC-04: PENDING_EXTERNAL_ATTESTATION
+RP-01: OPEN
+f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data: false
+gate: CLOSED_PENDING_VALIDATION
+source_import: NOT_RUN
+parser_execution: NOT_RUN
+generator_execution: NOT_RUN
+five_artifact_generation: NOT_RUN
+analytical_builder_PCA_clustering_coupling: NOT_RUN
+new_empirical_PASS: NONE
+```
+
+**Decisione:** specifica pronta per revisione umana/source-only. **Non è un codice corretto, non è un test superato, non è una firma, non chiude RP-01 e non apre il gate.** La futura eventuale implementazione DRAFT 03_CODE deve essere conservata come sorgente separato da DRAFT 02.
