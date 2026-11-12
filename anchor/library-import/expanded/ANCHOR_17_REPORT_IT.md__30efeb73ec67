@@ -1,0 +1,40 @@
+# ANCHOR-17 — Confronto esterno a due piante (12 novembre 2026)
+
+## Risultato documentale
+
+* British Library Egerton MS 747, f. 37: un'immagine documentata mostra due piante distinte denominate *ebulus* ed *edera niger*; la prima è sambuco ebbio, la seconda edera (nome storico).
+* Bibliothèque nationale de France, Latin 6823, f. 60r: immagine catalogata come edera; è il precedente confronto pubblicato con Voynich f35v (Zandbergen, 2012).
+* Nel Voynich f23r è stata proposta l'identificazione *Sambucus ebulus* (Siv Bugge Vatne, 2022), mentre f35v è stato confrontato con una figura di edera associata a una quercia. Queste due identificazioni NON sono accertate.
+* f23r e f35v non costituiscono una coppia di bifoglio: il fatto che le due piante candidate siano affiancate in Egerton 747 non dimostra trasmissione o un medesimo ordine di copia.
+
+## Controllo testuale delimitato (ZL3b)
+
+Corpus verificato: `ZL3b-n.txt`, 411671 byte, SHA-256 `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc`.
+
+* f35v: 21 righe testuali P.
+* f89r2: prima fila quattro frammenti numerati 33, 34, 35, 36; le quattro etichette `@Lf` iniziali in ordine di trascrizione sono `doly`, `opchosam`, `saloiinsheol`, `opcheor`.
+* **Associazione provvisoria**: soltanto se l'ordine di trascrizione coincide con la sequenza spaziale delle quattro etichette, la terza (`saloiinsheol`, `f89r2.4,@Lf`) corrisponde al frammento 35, segnalato come somigliante a f35v. La corrispondenza etichetta/frammento NON è verificata geometricamente.
+* La stringa esatta `saloiinsheol` appare in una sola riga ZL3b e **non** nel testo di f35v. Non segue che l'etichetta sia un nome botanico o che il nome non possa essere cifrato differentemente.
+
+## Stato dell'ipotesi
+
+Evidenza nuova nel presente controllo: **identificazione di un doppio bersaglio esterno, ebulus + edera, sulla stessa pagina documentata Egerton 747**, e localizzazione di una possibile etichetta di controllo f89r2.4. Non è stato ottenuto un legame grafema-significato. Le piante possono essere iconografie appartenenti alla stessa tradizione anziché copie dirette; un insieme di erbari campione è necessario per pesare la coincidenza.
+
+## Prova vincolante successiva
+
+1. Far annotare in cieco le caratteristiche diagnostiche di Egerton 747 f37 e BnF Lat 6823 f60r contro i facsimili f23r e f35v, assieme a controlli negativi della medesima tradizione. Non usare i nomi latini durante la valutazione.
+2. Verificare la mappa geometrica fra il frammento #35 e la sua etichetta: non assegnare `saloiinsheol` senza questa verifica.
+3. Se il confronto visivo risulta specifico rispetto ai controlli, scegliere PRIMA un modello scritto per passare dai nomi alle forme EVA. Applicarlo senza riadattarlo a una seconda specie e ai loci farmaceutici.
+4. Solo dopo successo fuori campione si può parlare di candidata relazione semantica, non automaticamente di traduzione.
+
+## Fonti
+
+- https://searcharchives.bl.uk/catalog/032-001983805 (catalogo primario Egerton MS 747)
+- https://picryl.com/media/dwarf-elder-and-ivy-from-bl-eg-747-f-37-0097ec (riproduzione Egerton 747 f37, i due nomi)
+- https://portail.biblissima.fr/ark:/43093/ifdata306264506a84685b0f7486f00d66e160db74366d (descrizione BnF Latin 6823 f60r)
+- https://www.voynich.nu/illustr.html (confronto pubblicato f35v / BnF)
+- https://www.voynich.nu/q05/index.html (descrizione Voynich f35v)
+- https://www.voynich.nu/q15/index.html (frammenti e loci di f89r2)
+- https://crackingthevoynichcipher.com/wp-content/uploads/2022/10/5_the_morphology_of_the_voynich_plants_siv_bugge_vatne_2022.pdf (identificazione proposta f23r come Sambucus ebulus)
+
+Questo rapporto è un ramo esplorativo autonomo e non modifica RC1.4.2 né i suoi audit congelati.
