@@ -1,0 +1,255 @@
+# RC1.4.2 V7.1 | DRAFT 03_CODE, revisione 02.2
+
+**Tipo:** contratto prescrittivo di accettazione statica, *spec-only*, senza codice eseguibile.  
+**Data della revisione:** 10 novembre 2026.  
+**Stato:** `PROPOSED_STATIC_ACCEPTANCE_CONTRACT_PENDING_REVIEW`; A-01 e A-02 aggiunti a R-01/S-02 come appendice normativa obbligatoria (§7.2); **accettazione statica del testo integrato ancora da effettuare**; nessuna verifica del futuro codice è dichiarata superata.  
+**Riferimenti immutati:**
+
+- `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_1.md` (rev. 02.1 **conservata intatta**), 30.496 byte, SHA-256 `4271b2351ddc8fac147fca120220b932dabe2aafaa9b9ae6964cad81cbf0b6a3`.
+- `RC1_4_2_STATIC_ACCEPTANCE_REVIEW_REV_02_1_01.md`, 8.677 byte, SHA-256 `cd3c74f3160edc936497503e6a0a82131d0de0770f28f7470e602183f691a8e6` (rilievi A-01/A-02).
+- `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02.md` (rev. 02, **conservata intatta**), 23.479 byte, SHA-256 `cb9e0098baf0eb29ea0e798e84ac834cce1c60a5a6e27d956443968794351a6b`.
+- `RC1_4_2_STATIC_SPEC_ACCEPTANCE_REVIEW_REV_02_02.md`, 8.098 byte, SHA-256 `341aca883be16dca6630e6b6bb7b78aac67401266c174a3841859439f29e960f` (rilievi normativi R-01/R-02).
+- `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE.md` (rev. 01), 9.874 byte, SHA-256 `c26268f659ef4ed529c6e1a57e4fd9da046f290120c0cf01200e0d72a941c10d`.
+- `RC1_4_2_SPECIFICATION_STATIC_REVIEW_DRAFT_03_CODE_01.md`, 9.008 byte; rilievi S-01–S-05.
+- `rc1_4_2_generator_clean_DRAFT_02.py`, 41.856 byte, SHA-256 `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325`.
+- `RC1_4_2_STATIC_CODE_REVIEW_DRAFT_04.md`, 14.817 byte, SHA-256 `490a4235951acbbb169f966ee6be46487973070219feeeecb79201c965b09983`.
+
+Gli hash sopra sono identificatori storici registrati; questa specifica non li eleva a nuova attestazione indipendente. L'integrità di questo nuovo documento viene registrata **fuori dal documento** con digest calcolato dopo la sua chiusura.
+
+## 1. Scopo e confine di fiducia
+
+La revisione definisce **quali proprietà dovranno risultare ispezionabili nel futuro sorgente** per risolvere, sul piano dell'implementazione, F-01, F-02 e F-03. Non implementa tali modifiche, non concede una nuova autorizzazione e non modifica alcun input congelato, parser, mapper, builder, configurazione V7.1 o verbale precedente.
+
+Il controllo si applica alle **API supportate** che emettono risultati qualificati di audit o artefatti ufficiali. Non si afferma che un modulo Python possa impedire a chi controlla l'interprete di manipolare bytes, invocare funzioni interne o modificare codice arbitrariamente. La radice di fiducia dell'autorizzazione e l'eventuale ambiente operativo isolato devono rimanere **fuori dal processo controllato dal chiamante**. Un booleano, una classe `Verified`, una variabile d'ambiente o un token autocostruito nello stesso processo non costituiscono prova sufficiente.
+
+**Gate invariato:** `CLOSED_PENDING_VALIDATION`. **RP-01:** `OPEN`. **f085v:** `UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER`, con `manual_intervention_on_historical_data=false`. La partizione `206 = 9 + 196 + 1` resta un contratto documentale, non una nuova misura empirica.
+
+### 1.1 Capacità e loro regime
+
+| Capacità | Disponibilità nell'eventuale futuro modulo di sola revisione | Autorità necessaria per una futura sessione distinta |
+|---|---|---|
+| Normalizzazione, SHA-256 di un buffer in memoria, confronto di valori, serializzazione **generica** deterministica senza I/O | Consentita come trasformazione pura, senza marcature `PASS` o artefatti qualificati di audit | Nessuna, purché non siano esposti bundle ufficiali o claim di audit |
+| Confronto di due directory in sola lettura | Non pura: diagnostica di I/O in lettura; senza valore certificativo | Politica di lettura appropriata, non autorizzazione a certificare |
+| Preparazione di registri/manifest/report **qualificati RC1.4.2** o emissione dei cinque file (anche solo in memoria) | **Non esposta** nelle API supportate; blocco incondizionato nel source-only | Sessione distinta approvata, con input verificati e controlli effettivamente completati |
+| Attribuzione di un `PASS` di audit, `AUDIT_VALIDATED_REPEATABILITY`, `PROVENANCE_ESTABLISHED`, `OPERATIONAL_VALIDATION_PASSED` | **Non disponibile** nella bozza source-only | Evidenze proprie del controllo, non un dizionario del chiamante |
+| Import/avvio dei parser congelati, staging, scrittura, pubblicazione, sidecar di audit | **Non disponibile** nella bozza source-only | Orchestratore autenticato e separato; staging disabilitato per impostazione predefinita |
+
+La distinzione fra serializzazione generica e generazione di artefatti di audit **non** può dipendere solo dal nome del metodo: la futura revisione statica controllerà call graph, tipi di risultato e percorsi di emissione ufficialmente supportati.
+
+## 2. S-01 | Uguaglianza tecnica diversa da PASS di audit
+
+**Decisione:** sostituire, nell'eventuale nuovo sorgente, l'esito diagnostico `technical_repeatability: PASS` della funzione `compare_generation_bytes()` (DRAFT 02, r. 663–681) con una struttura che rappresenti **soltanto** `TECHNICAL_BYTE_EQUALITY`.
+
+- Valori ammessi per la diagnostica: `EQUAL`, `DIFFERENT` oppure errore di schema; possono essere riportati digest e dimensioni dei buffer forniti.
+- L'output diagnostico non deve contenere i valori `PASS`, `VALIDATED`, `ATTESTED` o un alias semanticamente equivalente per ripetibilità/provenienza indipendente.
+- `AUDIT_VALIDATED_REPEATABILITY` è una proprietà separata, assegnabile solo nel futuro orchestratore autorizzato dopo acquisizione delle evidenze di **due esecuzioni effettive**, identificate e confrontate, inclusi run ID distinti, input, codice, configurazione, comando, ambiente, exit code, log e digest degli output. Due run ID distinti da soli non provano indipendenza metodologica.
+- `PROVENANCE_ESTABLISHED` riguarda **soltanto la ricostruzione documentale delle esecuzioni storiche** pertinenti a RP-01; non è derivabile da una coppia di output del nuovo generatore.
+- `OPERATIONAL_VALIDATION_PASSED` richiede controlli di comportamento del nuovo generatore in ambiente autorizzato; non è sinonimo di uguaglianza dei bytes né della provenienza storica.
+- Nessuna di queste ultime tre qualifiche è autorizzata dalla presente specifica: valore operativo attuale `NOT_RUN` o `NOT_ESTABLISHED` secondo la categoria, mai `PASS`.
+
+**Accettazione statica futura S-01:** inventario delle stringhe/enum emesse, dei tipi di ritorno, di tutti i call site di `compare_generation_bytes()` e di `compare_two_read_only_directories()`; nessun percorso diagnostico non autorizzato raggiunge l'emissione di una qualifica di audit. Il controllo statico non dimostra che un confronto futuro sia stato eseguito correttamente.
+
+## 3. S-02 | Snapshot dei byte realmente consumati e limite TOCTOU
+
+I parser congelati sono *path-based*: in DRAFT 02, `_load_verified_module()` usa percorsi di modulo e `acquire_frozen_lexical_and_provenance()` chiama `parent.parse_corpus(corpus_path, verify_source=True)` e `mapper.parse_offset_aware(corpus_path, parent_path)` (r. 258–289). Il mapper a sua volta rilegge il corpus dal percorso. **Non basta** passare un buffer Python al chiamante: i parser non dispongono di quell'interfaccia, né possono essere modificati entro questo perimetro.
+
+**Architettura prescritta per una futura sessione separatamente autorizzata, NON implementata qui:**
+
+1. Un **orchestratore fidato separato** apre i file originali attraverso un'area di input consentita e protetta da politica di filesystem; acquisisce ogni originale una volta come buffer di bytes, calcolando su tale buffer dimensione, SHA-256 e, dove previsto, Git blob. Registra il riferimento esatto e la versione dello schema.
+2. Per i file che i parser richiedono come percorsi, l'orchestratore costruisce da **quei buffer verificati** una *snapshot tree* privata su un filesystem e in un ambiente controllati. L'operazione di copia in questa area sarebbe ammessa **solo in una futura sessione specificamente autorizzata**: non avviene ora. Nessun parser riceve i percorsi degli originali mutabili.
+3. Prima di esporre lo snapshot ai parser, l'orchestratore ne rilegge e confronta i bytes completi con i buffer acquisiti, non soltanto nomi, dimensioni, inode o mtime. La snapshot tree deve contenere anche i sorgenti esatti dei parser e il relativo modulo padre. Symlink, traversal e path alias verso gli originali devono essere vietati.
+4. **R-01, requisito OBBLIGATORIO per il backend Linux selezionato (nessun fallback):** il runner fidato, esterno al processo Python controllato dal chiamante, crea dai soli buffer originali verificati una **snapshot tree privata**, con directory e file non accessibili in scrittura ai soggetti non fidati. Dopo una rilettura integrale dei file dello snapshot e il confronto con i buffer di origine, il runner prepara un **mount namespace Linux dedicato** al processo dei parser e vi espone lo snapshot mediante **bind mount in sola lettura**, con propagazione dei mount controllata. Prima dell'import o avvio dei parser devono essere controllati: (i) permessi e proprietà della snapshot tree; (ii) isolamento dalla vista dei percorsi originali e delle altre copie mutabili; (iii) assenza di descrittori aperti in scrittura o riferimenti ai percorsi originali ereditati dal processo parser; (iv) negazione al processo parser di `CAP_SYS_ADMIN` e delle altre capability o credenziali che consentirebbero rimontaggio, modifica del backing store o accesso fuori dal perimetro; (v) accesso ai soli file verificati di corpus, moduli del parser e dipendenze autorizzate nello snapshot; (vi) protezione del backing store da scrittori estranei al **dominio fidato** durante l'intera sessione. **Soggetti fidati:** il verificatore/orchestratore separato e gli amministratori esplicitamente contemplati nella policy approvata. **Soggetti non fidati:** il chiamante, il processo parser, processi concorrenti non autorizzati e qualunque componente privo delle credenziali del verificatore. Se una di queste precondizioni, il backend mount namespace/bind mount read-only oppure la verifica del confine di fiducia non è disponibile o fallisce, il percorso ufficiale è `BLOCKED` **prima dell'import del parser**, senza generazione, staging, pubblicazione o `PASS` di audit. Un semplice `chmod`, un hash prima/dopo, il bind mount in sola lettura o il mount namespace **non provano da soli immutabilità assoluta** contro un soggetto privilegiato che possa modificare il backing store o rimontare risorse. L'efficacia delle protezioni, le letture effettive del parser e l'assenza di race dovranno essere provate in una futura validazione ambientale autorizzata.
+5. Il parser lessicale, il mapper OA e il caricamento dei relativi moduli ricevono **esclusivamente** percorsi interni alla snapshot tree isolata. È vietata ogni rilettura degli originali tramite `root` o rimpiazzo di path tra hash e parsing.
+6. Nell'eventuale record esterno dell'esecuzione si distinguono hash dei buffer originali, hash dei file dello snapshot, file effettivamente offerti ai parser, risultato della loro verifica interna e limiti dell'isolamento. Nessun `PASS` è derivato soltanto dai metadati forniti dal chiamante; se manca una prova relativa al controllo, il suo stato resta `NOT_RUN`/`NOT_ESTABLISHED`.
+
+**Clausola di prevalenza A-01/A-02:** il precedente punto R-01 e il suo elenco di controlli restano requisiti di base, ma sono integrati obbligatoriamente dal §7.2, che precisa il meccanismo di radice confinata e la policy a capacità zero.
+
+**Criterio statico futuro S-02:** l'interfaccia del runner e il data-flow documentano un unico punto di acquisizione degli originali, il calcolo del digest dai byte letti, la creazione dello snapshot dai **medesimi buffer**, la verifica di uguaglianza integrale e l'uso esclusivo di percorsi interni al mount isolato. Il call graph non deve ammettere un parser su percorsi esterni dopo la verifica. È richiesto un controllo del contratto del backend di isolamento e una strategia fail-closed quando indisponibile. **Non è staticamente dimostrabile** che il sistema operativo rispetti il contratto: isolamento, assenza di race, identità dei byte letti dal parser ed efficacia delle protezioni richiedono verifiche ambientali autorizzate. Nessuna garanzia assoluta TOCTOU è dichiarata ora.
+
+## 4. S-03 | Autorizzazione esterna e pubblicazione no-replace
+
+### 4.1 Confine di fiducia (scelta prescrittiva)
+
+**Soggetto autorizzante:** responsabile nominativamente designato nel futuro addendum approvato. **Soggetto verificatore:** servizio/orchestratore di esecuzione separato, che opera sotto identità e credenziali non controllate dal chiamante; esegue la verifica dell'addendum **prima** di qualsiasi parsing, generazione qualificata, scrittura o pubblicazione. Nessun componente source-only diviene automaticamente verificatore autorizzato.
+
+**Materiale autenticato minimo:** ID univoco e versione dell'addendum, identità/ruolo dell'autorità, firma digitale o attestazione verificabile con una radice di fiducia preconfigurata **fuori dal codice e dal caller**, intervallo di validità, identificativo della sessione, scope `validation_artifacts_only`, revisione V7.1, digest del sorgente futuro, lista chiusa dei byte digest/size degli input e dei parser, destinazione finale consentita, nomi esatti dei cinque artefatti e vincolo `gate_remains_closed=true`. La decisione del verificatore deve vincolare tali elementi e impedire riutilizzo fuori perimetro (nonce/run ID, politica anti-replay verificabile).
+
+**Policy:** identità emittente, chiavi fidate, regole di autorizzazione, allowlist dei percorsi e stato di revoca sono mantenuti in un dominio fidato distinto dal processo Python controllato dal chiamante. L'eventuale assenza di un'autorità di firma designata, di una chiave fidata o di un backend verificabile comporta `BLOCKED`, non approvazione implicita. Il presente documento **non crea** un'autorità o una firma.
+
+### 4.2 Pubblicazione Linux: decisione prescrittiva, non certificazione runtime
+
+Per un'eventuale piattaforma **Linux** con supporto effettivo della primitiva, la creazione/pubblicazione di una **directory** di cinque artefatti dovrà usare un'operazione atomica **no-replace** sul nome di destinazione, come `renameat2(..., RENAME_NOREPLACE)` tramite un componente fidato che ne controlli disponibilità, filesystem e semantica. `open(..., O_CREAT|O_EXCL)` è applicabile alla creazione esclusiva dei **singoli file**, ma **non sostituisce** una primitive no-replace per la pubblicazione finale della directory.
+
+- La destinazione finale sarà una nuova directory sotto un root di output dedicato, fissato dal verificatore in forma canonica; l'eventuale nome richiesto dal chiamante sarà trattato come dato non attendibile.
+- **R-02, requisito OBBLIGATORIO per la risoluzione ancorata (nessun fallback):** il verificatore fidato conserva descrittori `dirfd` delle directory radice di input, snapshot e output, identificate dalla policy e **non sostituibili né scrivibili dal chiamante**. Le componenti già esistenti dei percorsi vengono risolte mediante `openat2()` ancorato al relativo `dirfd`, con i flag **`RESOLVE_BENEATH | RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS`**; si aggiunge `RESOLVE_NO_XDEV` dove la policy vieta attraversamenti di mount. Ogni handle così aperto viene usato coerentemente per le successive operazioni, evitando di ritornare a stringhe di percorso non ancorate. Il nome della nuova directory finale è un'unica componente relativa, convalidata contro separatori, `.`/`..`, nomi riservati, symlink e collisioni. La pubblicazione finale della directory tramite `renameat2(..., RENAME_NOREPLACE)` deve operare su descrittori delle directory genitrici già ancorati, con sorgente e destinazione sullo stesso filesystem. Sono **vietati** `Path.exists()` come autorizzazione alla successiva scrittura, `check-then-rename`, `rename()` sostitutivo, percorsi assoluti forniti dal caller e risoluzioni con symlink o traversal. Se `openat2()`, i flag richiesti, `renameat2(RENAME_NOREPLACE)` o le semantiche necessarie del kernel/filesystem non sono disponibili, oppure vi sono conflitti, race, mismatch o un'autorità incerta, il flusso è `BLOCKED`: nessun nuovo staging viene avviato, nessuna pubblicazione avviene, nessun artefatto ufficiale o `PASS` viene emesso. Se uno staging privato era già stato creato prima di un errore successivo, resta non pubblicabile e deve essere eliminato o quarantinato secondo policy senza attribuire esiti di audit; la sua creazione precedente non può essere cancellata retroattivamente.
+- Lo staging dovrà risiedere sullo stesso filesystem del target, con nomi non prevedibili e permessi minimi; contenuti e manifest verificati prima della pubblicazione; `fsync` dei file e delle directory secondo il modello di durabilità stabilito. La creazione dello staging è vietata finché non esiste una sessione autorizzata.
+- Su target esistente, errore, race rilevata, mismatch dei digest, primitive non supportata, impossibilità di dimostrare l'isolamento o difetto di autorizzazione: **nessuna sostituzione e nessuna pubblicazione**. Il fallimento va attestato senza creare un `PASS` fittizio.
+- Il semplice `rename()` dopo `target.exists()` del DRAFT 02 (r. 756–797) **non** soddisfa il contratto no-replace sotto concorrenza.
+
+**Criterio statico futuro S-03:** il call graph di tutte le capacità di pubblicazione passa per il verificatore in un dominio di fiducia separato; gli schemi dell'addendum e della policy vincolano esplicitamente identità, input, codice, scopo, percorsi e output; il backend di staging è disabilitato nel source-only; il backend futuro usa una primitiva identificata con gestione di errore e conflitti *fail-closed*, non check-then-rename. La verifica dell'efficacia della firma, del syscall, del filesystem e delle proprietà di durabilità è **futura, non eseguita**.
+
+## 5. S-04 | Tassonomia delle funzioni ed effetti
+
+| Funzioni del DRAFT 02 | Classe corretta | Regime richiesto |
+|---|---|---|
+| `sha256()`, `norm()`, `canonical_json()`, `canonical_csv()`, `compare_generation_bytes()` **solo dopo rimozione delle etichette di audit** | Trasformazioni pure **se** input/parametri sono dati in memoria e nessuna dipendenza esterna è introdotta | Possono restare diagnostiche, con output non certificativo |
+| `compare_two_read_only_directories()` | `READ_ONLY_IO`, non pura; dipende dallo stato del filesystem e può fallire in presenza di mutazioni concorrenti | Confronto tecnico senza attribuzione di `AUDIT_VALIDATED_REPEATABILITY` |
+| `checked_bytes()`, `verify_input_integrity()`, `_load_verified_module()`, `acquire_frozen_lexical_and_provenance()` | `INPUT_IO` / `PARSER_EXECUTION` (la seconda fase può importare/eseguire codice) | Non supportate nella modalità source-only; richiedono futura sessione autorizzata |
+| `build_validation_report()`, `serialize_validation_artifacts()`, `prepare_audit_from_verified_inputs()`, `sha256sums_external()` | `AUDIT_RESULT_PRODUCTION`, anche se alcune operano soltanto in memoria | **Bloccate** come API qualificate RC1.4.2; funzioni di encoding generico separate e non certificative |
+| `build_external_execution_record()` | `EVIDENCE_SCHEMA_DRAFTING` quando usa soltanto dati del chiamante; non è attestazione di esecuzione | Può definire uno schema non probatorio; non può asserire esecuzione effettiva |
+| `stage_new_audit_bundle()` | `OUTPUT_IO_AND_PUBLICATION` | **Bloccata**; sostituibile soltanto dal futuro orchestratore separato |
+
+**Nota:** `READ_ONLY_IO` significa assenza di scritture previste, non assenza di effetti di sistema: leggere dipende da stato, permessi e modifiche concorrenti. «Pura» si riferisce al modello della funzione per input immutabili, non garantisce che la futura implementazione non abbia mutazioni nascoste.
+
+## 6. S-05 | Due livelli di accettazione, mai confusi
+
+### `STATIC_SOURCE_ACCEPTANCE` (prospettico, non ancora valutato su codice corretto)
+
+Una futura revisione **solo statica** può accertare, per ispezione di sorgenti e configurazioni:
+
+1. Inventario delle API supportate e call graph completo verso le capacità protette, anche dopo import del modulo.
+2. Nessuna emissione non autorizzata di stati `PASS` di audit, bundle ufficiali, sidecar o pubblicazione; diagnostica con soli `EQUAL`/`DIFFERENT`.
+3. Tracciabilità prescritta `input byte buffer → digest → snapshot dei medesimi byte → percorsi esclusivi dei parser congelati → evidenza per-controllo`, con gestione fail-closed delle lacune.
+4. Assenza di decisioni di autorizzazione auto-dichiarate: verificatore esterno, schemi firmati e policy fuori dal caller.
+5. Requisiti obbligatori R-01/R-02: mount namespace Linux dedicato e bind mount read-only con confine di fiducia e capability negate; `openat2()` con `RESOLVE_BENEATH | RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS`, percorsi ancorati a `dirfd`; `renameat2(RENAME_NOREPLACE)` per la directory finale, senza fallback e con fail-closed.
+6. Separazione di trasformazioni pure, I/O in lettura, esecuzione parser, produzione audit e scrittura/output.
+7. Nessuna modifica retroattiva ai congelati e nessuna attribuzione di `PASS` per controlli `NOT_RUN`.
+
+Questi sono **criteri di ispezione del codice futuro**, non prova che siano già soddisfatti; il loro esito oggi è `NOT_EVALUATED_FUTURE_SOURCE`.
+
+### `FUTURE_OPERATIONAL_VALIDATION_NOT_RUN`
+
+Solo dopo autorizzazione esterna separata e in ambiente controllato potranno essere valutati: autenticazione reale, protezione delle credenziali, policy/revoca, contenimento della sessione, TOCTOU e assenza di letture mutate, sicurezza effettiva del filesystem/symlink, primitiva no-replace e comportamento in race, durabilità, parsing e mapping, conteggi, disgiunzione, partizioni, confronto di due generazioni, provenienza delle evidenze e correttezza degli output. **Nessuno di questi controlli è stato eseguito o approvato in questa revisione.**
+
+Anche due generazioni future byte-identiche del nuovo generatore non chiudono RP-01. Viceversa, il recupero della provenienza storica non dimostra l'idoneità del codice nuovo. L'attestazione esterna di integrità del verbale (DOC-04) costituisce un terzo perimetro, indipendente.
+
+## 7. Matrice S-01–S-05: modifica prescrittiva e criterio statico
+
+| Rilievo | Risoluzione nella **specifica** | Criterio di accettazione statica sul **futuro sorgente** | Stato qui |
+|---|---|---|---|
+| **S-01** | Diagnostica `TECHNICAL_BYTE_EQUALITY` con `EQUAL`/`DIFFERENT`; qualifiche di audit segregate | Inventario dei return path: nessun `PASS` o alias certificativo raggiungibile dal confronto puro | `SPECIFIED_NOT_IMPLEMENTED` |
+| **S-02** | **R-01 con A-01/A-02 obbligatori (§7.2):** snapshot da buffer verificati; mount namespace Linux dedicato, `pivot_root` con vecchia root distaccata, bind mount read-only, cinque set capability vuoti, confine di fiducia e backing store protetto | Data-flow e call graph input → digest → snapshot → parser; nessun fallback, import del parser bloccato in assenza del backend verificato; non si deduce immutabilità assoluta | `SPECIFIED_NOT_IMPLEMENTED` |
+| **S-03** | **R-02 obbligatorio:** verificatore fuori processo e policy autenticata; `openat2()` con flag prescritti e `dirfd` fidati; pubblicazione `renameat2(RENAME_NOREPLACE)` | Ispezione di API, syscall, flag, ancoraggio degli handle, validazione del nome finale, ramo fail-closed; nessun booleano autorizzante, check-then-rename o fallback | `SPECIFIED_NOT_IMPLEMENTED` |
+| **S-04** | Classificazione `PURE`, `READ_ONLY_IO`, `PARSER_EXECUTION`, `AUDIT_RESULT_PRODUCTION`, `OUTPUT_IO` | Inventario degli effetti e confini di dipendenza; nessuna funzione che legge directory classificata pura | `SPECIFIED_NOT_IMPLEMENTED` |
+| **S-05** | Contratti disgiunti `STATIC_SOURCE_ACCEPTANCE` e `FUTURE_OPERATIONAL_VALIDATION_NOT_RUN` | Static review non marca mai verifiche ambientali come `PASS` | `SPECIFIED_NOT_IMPLEMENTED` |
+
+`SPECIFIED_NOT_IMPLEMENTED` certifica soltanto che il requisito è scritto in questa revisione, **non** che il sorgente sia corretto. L'idoneità della presente specifica come contratto è sottoposta a revisione separata.
+
+### 7.1 Registro normativo R-01/R-02 della rev. 02.1
+
+La tabella seguente definisce requisiti da **ispezionare nel futuro sorgente**, non proprietà già dimostrate sul sistema operativo. `SPECIFIED_NOT_IMPLEMENTED` non è un `PASS` tecnico.
+
+| Residuo | Prescrizione vincolante della rev. 02.1 | Criterio di accettazione **statica** del futuro codice | Stato |
+|---|---|---|---|
+| **R-01 / S-02 + A-01/A-02** | Backend Linux obbligatorio: snapshot tree privata dai buffer verificati, mount namespace dedicato, `pivot_root` con distacco root precedente, manifest dipendenze chiuso, bind mount read-only, cinque set capability vuoti, `no_new_privs` e protezione backing store; `BLOCKED` in assenza di precondizioni | Presenza di configurazioni e call graph che creano snapshot dai buffer già hashati, confrontano integralmente i byte, negano descrittori scrivibili e capability ai parser, fissano il confine di fiducia e interrompono il flusso **prima dell'import** se indisponibile; nessun percorso alternativo supportato | `SPECIFIED_NOT_IMPLEMENTED` |
+| **R-02 / S-03** | Directory `dirfd` fidate; `openat2(..., RESOLVE_BENEATH | RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS)` e, dove prescritto, `RESOLVE_NO_XDEV`; pubblicazione con `renameat2(..., RENAME_NOREPLACE)` e blocco senza fallback | Ispezione delle syscall e dei flag obbligatori, continuità dell'uso di descrittori ancorati, validazione della singola componente finale, assenza di `check-then-rename`, gestione `BLOCKED` per errori/conflitti e assenza di staging/publication prima dell'autorizzazione | `SPECIFIED_NOT_IMPLEMENTED` |
+
+**Limite dei criteri statici:** la sola lettura del sorgente non può certificare capacità effettivamente negate, isolamento dagli scrittori privilegiati, disponibilità dei syscall, assenza di TOCTOU, semantiche del filesystem o vera identità dei byte letti dal parser. Tali proprietà restano `FUTURE_OPERATIONAL_VALIDATION_NOT_RUN`. Se il futuro target non è Linux o non fornisce tutte le primitive e garanzie previste, il percorso ufficiale rimane `BLOCKED`: nessuna sostituzione automatica con un backend più debole.
+
+## 7.2 Appendice normativa A-01/A-02 alla rev. 02.1 (obbligatoria, spec-only)
+
+**Identità e precedenza.** Questa appendice integra soltanto **R-01/S-02** della rev. 02.1 e prevale, per tale ambito, su formule non esaustive quali «`CAP_SYS_ADMIN` e altre capability» e «accesso ai soli file verificati». **R-02/S-03, S-01, S-04 e S-05 non vengono modificati.** Nessuna proprietà descritta è implementata o convalidata da questa specifica. Gli obblighi si applicano **esclusivamente** all'eventuale futuro runner Linux sotto autorizzazione distinta. In questa fase ogni percorso di import, parsing, generazione e pubblicazione rimane `BLOCKED`/`NOT_RUN`.
+
+### A-01 | Confinamento effettivo della radice filesystem del processo parser
+
+**Meccanismo unico prescritto:** `mount namespace` Linux **dedicato e privato**, `pivot_root()` verso una nuova root costruita dal runner fidato e contenente **solo** lo snapshot verificato e le dipendenze runtime esplicitamente consentite, seguito da **distacco della vecchia root**. Non sono ammessi `chroot()` da solo, un mount namespace senza nuova root, un bind mount read-only da solo, accessi non mediati a directory dell'host o backend alternativi automaticamente selezionati.
+
+Il futuro codice e il suo manifest dovranno prescrivere, in ordine:
+
+1. **Preparazione nel dominio fidato.** Prima di qualunque import dei parser, il runner separato verifica l'autorizzazione esterna (§4.1), acquisisce gli originali in buffer, ne controlla i digest e costruisce un albero privato esclusivamente da tali buffer. Monta una nuova root separata, privata, con `MS_REC | MS_PRIVATE` per impedirne la propagazione; i file dati e i sorgenti parser sono esposti in sola lettura. L'eventuale snapshot contenente file ulteriormente riscrivibili da soggetti privilegiati non è considerato assolutamente immutabile: la policy deve proteggere il backing store per tutta la sessione.
+2. **Radice confinata.** Nel mount namespace dedicato, il runner allestisce la nuova root come mount appropriato, prepara una directory interna di distacco (`put_old`), chiama `pivot_root(new_root, put_old)`, porta la directory di lavoro su `/`, effettua `umount2(put_old, MNT_DETACH)` e rimuove il punto `put_old`. Il runner deve dimostrare, prima di consegnare il controllo al parser, che né la vecchia root né gli originali sono raggiungibili tramite mount residui, working directory, root di altri processi, file descriptor ereditati, symlink o alias. Il successo della sola chiamata `pivot_root` **non** costituisce il controllo completo.
+3. **Albero consentito a elenco chiuso.** La nuova root contiene unicamente: (a) il corpus originale verificato e i file di input congelati esattamente identificati; (b) i sorgenti congelati del parser padre e del mapper OA, inclusi i moduli effettivamente importati; (c) l'eseguibile dell'interprete Python, il loader dinamico, le librerie condivise, i moduli Python standard/di estensione e gli eventuali file di configurazione **strettamente necessari**. Tutte le dipendenze di (c) devono comparire in un manifest approvato con percorso *interno*, funzione, versione, dimensione e SHA-256 del file effettivamente esposto. La lista non può essere inventata in questa fase: se non è possibile enumerarla e verificarla **prima del parsing futuro**, il runner deve rispondere `BLOCKED`. La policy vieta user-site, plugin, moduli di ricerca non previsti, percorsi Python derivati dal caller e qualunque dipendenza aggiunta per comodità.
+4. **Superficie di accesso.** Non vengono montati `/proc`, `/sys`, directory home, root dell'host, repository o copie mutabili. Nessun `/dev` generale è esposto; eventuali device minimi necessari sono nominati e autorizzati singolarmente, senza consentire l'accesso agli originali. Il parser non deve ereditare file descriptor verso host, root precedente, snapshot scrivibile, socket di rete o directory non consentite; i soli fd eventualmente mantenuti sono elencati in un manifest chiuso, con ruolo e modalità di accesso. `stdin`, `stdout` e `stderr`, se presenti, sono sotto controllo del runner; i descriptor inattesi vengono chiusi. `cwd`, variabili d'ambiente, `sys.path`, import path, loader path e parametri sono fissati da policy non controllata dal chiamante.
+5. **Nessuna via laterale.** Lo snapshot è l'unica origine ammessa dei percorsi dati e dei sorgenti parser; eventuali collegamenti hard link, mount bind, accessi da `/proc/self/fd`, file descriptor preesistenti, link simbolici e aperture indirette che aggirino la radice sono vietati. La policy deve prevedere l'assenza o il blocco delle vie non autorizzate di rete e di modifica della vista dei mount. Un parser che tenta di risolvere una dipendenza esterna non ottiene un fallback verso l'host: il controllo si interrompe senza `PASS` e senza pubblicazione.
+6. **Ordine obbligatorio.** Ogni operazione che richiede privilegi di setup è completata da un soggetto fidato **prima** dell'applicazione della policy A-02 al parser. Il parser viene importato o avviato solo dopo il confinamento e i controlli sui permessi e sulle credenziali. L'ambiente del runner privilegiato non è consegnato al parser e non è controllabile dal chiamante.
+
+**Criterio di accettazione statica A-01 del futuro sorgente:** configurazione/call graph e codice del runner devono evidenziare `unshare(CLONE_NEWNS)` o creazione equivalente di namespace privato; propagazione privata; nuova root e allowlist di dipendenze; `pivot_root`; `umount2(MNT_DETACH)` della vecchia root; reset di `cwd`; chiusura di descriptor non ammessi; nessun mount dell'host o `/proc` raggiungibile; caricamento dei parser soltanto dopo tutti i controlli; uscita `BLOCKED` se manca una condizione. La disponibilità effettiva di namespace, kernel, syscall, mount, isolamento, assenza di riferimenti residui e assenza di TOCTOU **non** può essere attestata dalla sola analisi statica: resta `FUTURE_OPERATIONAL_VALIDATION_NOT_RUN`.
+
+### A-02 | Policy dei privilegi a elenco chiuso e impedimento del loro recupero
+
+**Policy unica prescritta per il processo parser:** **nessuna Linux capability concessa**. I set **effective (`CapEff`), permitted (`CapPrm`), inheritable (`CapInh`), ambient (`CapAmb`) e bounding (`CapBnd`) devono essere tutti vuoti**, non soltanto il set effective. In particolare non devono essere disponibili `CAP_SYS_ADMIN`, `CAP_DAC_OVERRIDE`, `CAP_DAC_READ_SEARCH`, `CAP_SYS_PTRACE`, `CAP_SYS_CHROOT`, `CAP_SETUID`, `CAP_SETGID`, `CAP_SETPCAP`, `CAP_SYS_MODULE`, `CAP_BPF` e qualunque altra capability supportata dal kernel. L'elenco dei set vuoti è esaustivo, indipendentemente dall'aggiunta futura di nuove capability Linux. **Nessuna eccezione è ammessa in questa revisione**: se il parser richiede una capability, il percorso ufficiale resta `BLOCKED` fino a un contratto separato e riesaminato.
+
+Il futuro codice e la policy dovranno prescrivere:
+
+1. Il runner di setup esegue eventuali operazioni privilegiate solo nel proprio dominio fidato e **prima** del rilascio del processo parser. È distinto per identità, credenziali e controllo del ciclo di vita dal processo che esegue i parser.
+2. Prima dell'import/avvio del parser, vengono fissati UID e GID **non privilegiati**, designati da una policy firmata/verificabile e non provenienti dal caller; i gruppi supplementari vengono azzerati. UID/GID effettivi, reali e salvati devono risultare nella stessa identità non privilegiata; nessun file in snapshot è controllabile in scrittura da tale identità. Il parser non deve condividere identità/permessi che consentano a un processo non fidato di modificare il suo stato.
+3. Il runner svuota le capability permitted, effective, inheritable e ambient e rimuove **tutte** le voci del bounding set (`PR_CAPBSET_DROP` o meccanismo verificato equivalente, prima di perdere i privilegi richiesti). La sequenza esatta di perdita dei privilegi, inclusa la gestione di capability legate a transizioni di UID, deve essere fissata e controllabile staticamente. Non è sufficiente rimuovere solo `CAP_SYS_ADMIN`.
+4. Prima dell'import/avvio, viene impostato `prctl(PR_SET_NO_NEW_PRIVS, 1)` e il runner verifica il suo effetto, insieme ai cinque set di capability vuoti. Nessun passo successivo può riacquisire privilegi o mantenere handle privilegiati. Programmi/setuid/setgid, file capabilities e loader non previsti sono assenti dalla root ammessa o resi non acquisibili dalla policy, `no_new_privs` incluso.
+5. Viene impedito il debugging o la manipolazione da soggetti non fidati: il processo parser non è tracciabile dal chiamante (identità separata, `PR_SET_DUMPABLE(0)` ove supportato e policy sull'accesso di processi esterni). La policy del runner deve impedire la modifica dei mount, l'acquisizione di nuove credenziali o namespace privilegiati e l'uso di vie di escalation non necessarie. Un eventuale profilo seccomp è fissato e versionato con regole esatte e sottoposto a verifica; la semplice parola «seccomp» non costituisce un controllo già implementato.
+6. I controlli finali esaminano effettivamente UID/GID, gruppi, `no_new_privs` e i cinque set di capability, prima di qualsiasi parser. L'evidenza è raccolta nel dominio fidato, non autocertificata da un dizionario del chiamante. Nessuna attestazione è attribuita da questo documento: la futura validazione dovrà verificare efficacia e limiti della misura sul kernel/ambiente reali.
+
+**Criterio di accettazione statica A-02 del futuro sorgente:** inventario chiuso degli UID/GID e delle cinque famiglie di capability; passi espliciti e ordinati di drop (incluso bounding set e ambient), `PR_SET_NO_NEW_PRIVS`, gestione dei gruppi, `PR_SET_DUMPABLE`, esclusione di setuid/setgid e file capabilities e controllo post-drop; ogni possibile import/avvio del parser è dominato nel call graph dai controlli. Non basta vedere una stringa `CAP_SYS_ADMIN` o un `prctl` nel sorgente. La prova che il kernel abbia applicato i controlli è **rinviata** a verifica ambientale futura autorizzata.
+
+### A-01/A-02 | Fail-closed e condizioni per la revisione successiva
+
+| ID | Precondizione obbligatoria | Evidenza staticamente ricercabile nel futuro sorgente | Se non soddisfatta |
+|---|---|---|---|
+| A-01.1 | Nuova root costruita da snapshot e dipendenze approvate, `pivot_root` e vecchia root distaccata | Ordine delle syscall, albero di mount previsto, `umount2(MNT_DETACH)`, `cwd` ristabilita | `BLOCKED` prima di import/parser |
+| A-01.2 | Solo percorsi e fd ammessi; nessuna root originale, `/proc` o copia mutabile accessibile | Manifest a elenco chiuso, politica dei mount, chiusura fd, ambiente/import path fissati | `BLOCKED` prima di import/parser |
+| A-01.3 | Dipendenze Python/native identificate e verificate sui byte | Allowlist con versione/percorso/size/SHA-256, verifica digest dai buffer | `BLOCKED` se ignote/non verificabili |
+| A-02.1 | Cinque set capability tutti vuoti e UID/GID non privilegiati | Sequenza di drop e controlli dei set CapEff/CapPrm/CapInh/CapAmb/CapBnd | `BLOCKED` prima di import/parser |
+| A-02.2 | `no_new_privs`, fd, gruppi e anti-tracing configurati | `PR_SET_NO_NEW_PRIVS`, `PR_SET_DUMPABLE`, gruppi e sanitizzazione fd | `BLOCKED` prima di import/parser |
+| A-01/A-02.3 | Non esiste percorso alternativo ufficialmente supportato | Inventario entrypoint/call graph, gestione delle eccezioni e abort prima delle emissioni | Nessun nuovo staging/pubblicazione, nessun artefatto qualificato, nessun `PASS` |
+
+**Limiti della specifica:** questi criteri sono **ispezionabili**, non già soddisfatti. Un ambiente con privilegi superiori che possa modificare il backing store, l'assenza di un backend realmente isolato, la possibilità di bypass del kernel e le race del filesystem non sono esclusi dal testo. Solo una futura validazione operativa, indipendente e autorizzata può valutare tali proprietà entro un modello di minaccia dichiarato. Anche un esito operativo favorevole del nuovo runner non chiude la provenienza storica RP-01.
+
+**Registro A-01/A-02:** `A-01=SPECIFIED_NOT_IMPLEMENTED`; `A-02=SPECIFIED_NOT_IMPLEMENTED`; `R-01=PROPOSED_WITH_ADDENDA_PENDING_STATIC_REVIEW`; `R-02=UNCHANGED_ADEQUATE_AS_NORMATIVE_REQUIREMENT`; `STATIC_SOURCE_ACCEPTANCE=NOT_EVALUATED_FUTURE_SOURCE`; `FUTURE_OPERATIONAL_VALIDATION=NOT_RUN`.
+
+## 8. Matrice F-01/F-02/F-03: requisiti e criteri verificabili
+
+| Difetto originale | Requisito contrattuale | Evidenza statica futura richiesta | Limite/criterio differito |
+|---|---|---|---|
+| **F-01**: API invocabili dopo import | Ogni percorso supportato che prepara artefatti RC1.4.2 o emette claim di audit è protetto da sessione verificata fuori dal caller; in source-only è indisponibile anche dopo import | Simboli esportati, call graph, mappa di scritture/serializzazioni/claim, assenza di bypass supportati | Efficacia runtime delle protezioni da validare in futuro |
+| **F-02**: dizionari arbitrari e PASS automatici | Acquisizione dei byte originali in snapshot, prova di identità dei byte ai parser e evidenze **per controllo**; niente `PASS` basati su affermazioni fornite | Codice di acquisizione, hash, snapshot, relazione di evidenza, blocco fail-closed in assenza di controllo | Consumo effettivo, isolamento, risultati parsing e correttezza ancora `NOT_RUN` |
+| **F-03**: autorizzazione auto-dichiarata e race | Autorità esterna, firma/policy vincolata e pubblicazione directory no-replace su Linux; staging sempre disabilitato di default | Protocollo di attestazione, call graph del runner, syscall/semantica di errore espliciti, root fisicamente separato | Firma, race/no-clobber e filesystem operativi ancora `NOT_RUN` |
+
+## 9. Registro delle formulazioni rettificate rispetto a rev. 01 e rev. 02
+
+| Classificazione | Formulazione precedente da correggere/limitare | Rettifica in rev. 02 |
+|---|---|---|
+| **REMOVED as audit claim** | `technical_repeatability: PASS` può fungere da risultato della diagnostica pura | Rimossa la qualifica di audit; solo `EQUAL`/`DIFFERENT` |
+| **CLARIFIED** | «Nessuna chiamata importata può creare cartelle/CSV/JSON» | Divieto circoscritto alle API **supportate** che producono artefatti qualificati; guardia nel dominio fidato |
+| **EXPANDED** | «Snapshot dei byte consumati» senza tragitto ai parser | Aggiunta snapshot tree isolata, percorso esclusivo e fallback bloccato |
+| **EXPANDED** | «No-clobber» non qualificato | Scelta Linux `renameat2(RENAME_NOREPLACE)`, non `rename()` ordinario, con casi di blocco |
+| **CORRECTED** | `compare_two_read_only_directories()` classificata pura | Riclassificata `READ_ONLY_IO` |
+| **CLARIFIED** | «La verifica statica dimostra protezione dell'isolamento e del filesystem» | Distinte architettura ispezionabile e garanzie runtime ancora non provate |
+| **REINFORCED** | Autorizzazione esterna come etichetta | Radice di fiducia, policy, firma, scope, nonce e input/output vincolati |
+
+Le sole integrazioni normative della rev. 02.1 rispetto alla rev. 02 erano **R-01** e **R-02** (oltre alle necessarie sincronizzazioni di titolo, matrice e stato). R-01 sostituisce integralmente il precedente punto esemplificativo al §3; R-02 sostituisce integralmente il precedente punto esemplificativo al §4.2. **La presente rev. 02.2 aggiunge esclusivamente A-01/A-02 sotto R-01 e aggiorna i relativi riferimenti; R-02, S-01, S-04 e S-05 restano invariati nel merito.**
+
+I termini «rimosso» e «corretto» descrivono **testo prescrittivo** e comportamento richiesto al futuro sorgente: il codice DRAFT 02 **non è stato modificato**. La prima riga **non** afferma che il comportamento originario di DRAFT 02 sia già stato cambiato.
+
+## 10. Chiusura del perimetro
+
+```text
+artifact: RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_2.md
+artifact_kind: SPECIFICATION_ONLY_NON_EXECUTABLE
+specification_status: PROPOSED_STATIC_ACCEPTANCE_CONTRACT_PENDING_REVIEW
+S-01_to_S-05: SPECIFIED_NOT_IMPLEMENTED
+R-01: PROPOSED_WITH_ADDENDA_A01_A02_PENDING_STATIC_REVIEW
+A-01: SPECIFIED_NOT_IMPLEMENTED; PENDING_INDEPENDENT_STATIC_REVIEW
+A-02: SPECIFIED_NOT_IMPLEMENTED; PENDING_INDEPENDENT_STATIC_REVIEW
+R-02: SPECIFIED_NOT_IMPLEMENTED; PENDING_INDEPENDENT_STATIC_REVIEW
+F-01: OPEN
+F-02: OPEN
+F-03: OPEN
+code_remediation_required: true
+DOC-01: RESOLVED_DOCUMENTALLY
+DOC-02: RESOLVED_DOCUMENTALLY
+DOC-03: RESOLVED_DOCUMENTALLY
+DOC-04: PENDING_EXTERNAL_ATTESTATION
+RP-01: OPEN
+f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data: false
+gate: CLOSED_PENDING_VALIDATION
+STATIC_SOURCE_ACCEPTANCE: NOT_EVALUATED_FUTURE_SOURCE
+FUTURE_OPERATIONAL_VALIDATION: NOT_RUN
+parser_import_or_execution: NOT_RUN
+generator_import_or_execution: NOT_RUN
+builder_PCA_clustering_conditional_coupling: NOT_RUN
+five_validation_artifacts: NOT_GENERATED
+new_empirical_PASS: NONE
+frozen_files_or_preceding_drafts_modified: false
+```
+
+**Decisione:** la rev. 02.2 incorpora in via prescrittiva A-01 e A-02 nel contratto precedente, senza ritoccare il requisito normativo R-02. Il giudizio `SPECIFICATION_ADEQUATE_AS_ACCEPTANCE_CONTRACT` resta **non attribuito** in attesa di revisione statica separata. Le rev. 02 e 02.1 sono conservate intatte. Questa è una **rettifica documentale spec-only**, non codice, non una validazione operativa, non un'autorizzazione a eseguire o pubblicare. Non sostituisce DOC-04, non chiude RP-01 e non apre il gate.
