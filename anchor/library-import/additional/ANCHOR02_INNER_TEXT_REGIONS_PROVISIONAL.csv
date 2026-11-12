@@ -1,0 +1,23 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: ANCHOR02_INNER_TEXT_REGIONS_PROVISIONAL.csv>
+index,region_id,tile,montage_bbox,type,transcription,figure_label_link,segmentation_status,note
+0,T01,I01,"180,181,272,225",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+1,T02,I01,"46,136,151,206",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+2,T03,I02,"366,95,564,133",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+3,T04,I02,"472,184,603,226",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+4,T05,I03,"680,80,782,123",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+5,T06,I03,"817,161,908,232",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+6,T07,I04,"1118,154,1165,282",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+7,T08,I04,"1195,123,1238,254",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+8,T09,I05,"40,420,83,513",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+9,T10,I05,"198,416,248,552",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+10,T11,I06,"494,560,597,619",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+11,T12,I06,"354,419,402,509",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+12,T13,I07,"679,545,816,608",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+13,T14,I07,"838,419,919,470",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+14,T15,I08,"1011,453,1063,566",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+15,T16,I08,"1082,482,1128,588",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+16,T17,I09,"103,745,146,855",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+17,T18,I09,"148,799,193,911",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+18,T19,I10,"356,824,430,933",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
+19,T20,I10,"494,737,542,837",candidate_text_region,,UNRESOLVED,PROVISIONAL_MANUAL_REGION,Broad approximate region; may contain multiple tokens or partial strokes; not a verified label
