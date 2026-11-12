@@ -1,0 +1,16 @@
+# RC1.4.2 - registro locale di integrità DRAFT 04
+
+- UTC del ricalcolo: `2026-11-10T10:29:46Z`
+- Algoritmo: `SHA-256`
+- Metodo: `wc -c` e `sha256sum` sui byte dei file locali
+- Operatore/sistema: ambiente locale di elaborazione; non attestante esterno
+- Scopo: identificazione delle versioni e confronto di integrità, non approvazione
+- Firma esterna: `NOT_AVAILABLE`
+
+| File | Dimensione byte | SHA-256 |
+|---|---:|---|
+| `RC1_4_2_STATIC_CODE_REVIEW_DRAFT_04.md` | 14817 | `490a4235951acbbb169f966ee6be46487973070219feeeecb79201c965b09983` |
+| `RC1_4_2_ATTESTAZIONE_ESTERNA_MODELLO_DRAFT_04.md` | 2826 | `88abbe8699be28b06c1acdfa792efe1fec2d31a0babfaadc9cd09e797f53a572` |
+| `RC1_4_2_STATIC_CODE_REVIEW_DRAFT_03.md` | 16864 | `29bb1da4ccedb045c69a99075976870173d98bb2552a9117c736da0b75b0f0c2` |
+
+**Nota:** il verbale DRAFT 04 è stato identificato dopo la sua finalizzazione. La corrispondenza SHA-256 non costituisce attestazione indipendente firmata. Nessuna esecuzione del generatore o del builder.
