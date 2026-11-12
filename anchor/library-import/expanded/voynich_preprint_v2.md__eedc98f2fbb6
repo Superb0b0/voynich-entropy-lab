@@ -1,0 +1,268 @@
+# voynich_preprint_v2.md
+
+**Nota documentale:** `voynich_nota_cinque_processi.md` non risulta presente in Library. L'assemblaggio utilizza `voynich_paper_v1.md`, `benchmark_dieci_processi_voynich_2026-11-03.md` e i risultati del test per sezione riportati nella richiesta.
+
+# Abstract
+
+Il manoscritto Voynich presenta un profilo statistico caratterizzato da densità lessicale elevata, dipendenza locale tra righe e una quota consistente di hapax. Questo lavoro confronta il corpus con processi generativi e di ricombinazione, valutati attraverso una pipeline comune e quattro metriche: densità, adiacenza, ripetizione locale e hapax. Nessuno dei dieci processi del benchmark iniziale riproduce simultaneamente le quattro metriche. Anche le due architetture a più strati aggiunte al confronto, Morphe-Sync e Two-layer, falliscono il vincolo congiunto in direzioni opposte; Skribe è registrato come non comparabile per disallineamento di tokenizzazione. I modelli migliori restano complementari: la memoria locale riproduce tre metriche su quattro, ma non la distribuzione degli hapax; lo shuffle riproduce densità e hapax, ma non la struttura locale; Workshop Cipher riproduce adiacenza e ripetizione, ma non densità e hapax. Un'ulteriore analisi ricalcola le quattro metriche per sei sezioni del manoscritto, mostrando profili interni distinti e una quota di hapax elevata in tutte le sezioni. Il confronto resta circoscritto alle implementazioni, ai parametri e alle condizioni effettivamente esaminati. La definizione di adiacenza del testbed originale non è reperibile, perciò i confronti quantitativi tra generazioni sono interni alla pipeline adottata. Il risultato identifica un vincolo quantitativo verificabile, senza implicare una decifrazione né escludere tutte le possibili famiglie di modelli generativi.
+
+# Introduzione
+
+Il manoscritto Voynich è oggetto di analisi computazionali da decenni. Una parte consistente della ricerca ha confrontato il testo con lingue naturali, cifrari e processi generativi, cercando regolarità statistiche, strutture lessicali e dipendenze sequenziali. La difficoltà principale consiste nel distinguere le proprietà effettivamente presenti nel corpus da quelle che possono essere riprodotte da processi artificiali costruiti per imitare alcune caratteristiche del testo.
+
+Una caratterizzazione statistica basata su una sola proprietà non è sufficiente. La densità lessicale descrive la concentrazione delle forme nel vocabolario; l'adiacenza e la ripetizione locale riguardano invece la relazione tra righe consecutive. La quota di hapax descrive la distribuzione delle frequenze lessicali. Queste dimensioni possono rispondere in modo diverso allo stesso processo generativo.
+
+Il lavoro considera congiuntamente quattro metriche: densità, adiacenza, ripetizione locale e hapax. L'obiettivo è verificare se processi generativi e di ricombinazione, compresi alcuni generatori pubblicamente disponibili, riescano a riprodurre simultaneamente il profilo osservato nel corpus Voynich.
+
+Il confronto non è impostato come tentativo di decifrazione. Non vengono attribuiti significati alle sequenze e non si assume che la somiglianza statistica costituisca una prova di equivalenza tra un generatore e il processo storico di produzione del manoscritto. Il criterio adottato è più circoscritto: verificare se i processi esaminati producano valori compatibili con quelli del corpus reale secondo intervalli stabiliti prima della valutazione.
+
+Il lavoro si articola in tre contributi. Il primo è la caratterizzazione del corpus attraverso una pipeline uniforme, applicata ai marcatori P della trascrizione ZL3b-n.txt. Il secondo è il confronto tra processi generativi differenti, inclusi modelli Markov, ricombinazioni, memoria locale e generatori pubblici. Il terzo è il ricalcolo delle metriche per sezione, per verificare se il profilo aggregato descriva in modo adeguato le diverse parti del manoscritto.
+
+Un ulteriore elemento di contesto è l'eterogeneità di formato della trascrizione IVTFF. Le categorie di trascrizione non sono distribuite uniformemente tra i gruppi di quire: le posizioni botaniche e farmaceutiche presentano una classificazione diversa da quelle astronomiche e dal gruppo dei foldout e della sezione biologica. Questa disomogeneità costituisce un vincolo descrittivo per i modelli che assumono un testo lineare uniforme.
+
+# Dati e metodi
+
+## Corpus
+
+Il corpus di riferimento è `ZL3b-n.txt`, trascrizione IVTFF del manoscritto Voynich. L'analisi delle quattro metriche utilizza i marcatori P.
+
+- File: `ZL3b-n.txt`
+- SHA-256: `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc`
+- Token: 34.323
+- Righe: 4.130
+
+| Metrica | Corpus reale |
+|---|---:|
+| Densità | 0,9557 |
+| Adiacenza | 0,0284 |
+| Ripetizione locale | 0,0581 |
+| Hapax | 0,7113 |
+
+## Pipeline e definizioni
+
+La valutazione è effettuata con `valuta_corpus_v2.py`, applicata ai corpus tokenizzati. Le quattro metriche sono definite come segue.
+
+**Densità.** Frazione dei token che presentano almeno un vicino a distanza di Levenshtein pari a 1 nel lessico del corpus.
+
+**Adiacenza.** Jaccard medio tra gli insiemi di token appartenenti a righe consecutive.
+
+**Ripetizione locale.** Frazione dei token di una riga che compaiono anche nella riga precedente.
+
+**Hapax.** Rapporto tra il numero di tipi con frequenza pari a 1 e il numero totale di tipi distinti.
+
+La pipeline viene mantenuta invariata nel confronto tra corpus reale e sintetici. Questo consente di confrontare i risultati all'interno dello stesso sistema di misurazione.
+
+## Bande di riferimento
+
+| Metrica | Banda |
+|---|---:|
+| Densità | 0,91–0,96 |
+| Adiacenza | 0,02–0,04 |
+| Ripetizione locale | 0,045–0,070 |
+| Hapax | 0,65–0,75 |
+
+Un modello supera il criterio congiunto soltanto se tutte e quattro le metriche rientrano simultaneamente nelle rispettive bande.
+
+## Cautela sulla definizione di adiacenza
+
+La formula esatta utilizzata dal testbed originale per il valore di adiacenza pari a 0,04–0,05 è **NON REPERIBILE**. Non è quindi possibile stabilire un'equivalenza diretta tra quel valore e quello prodotto dalla pipeline attuale.
+
+I confronti riportati in questo lavoro sono interni alla pipeline `valuta_corpus_v2.py`: corpus reale e sintetici sono valutati con la stessa procedura. Il valore aggregato attuale del corpus reale è 0,0284.
+
+## Processi generativi esaminati
+
+Il benchmark comprende processi di ricombinazione e generatori pubblici:
+
+- Markov-1 e Markov-2;
+- distribuzione uniforme;
+- shuffle;
+- memoria locale con diversi valori di `p_copy`;
+- Workshop Cipher;
+- Zattera slot grammar;
+- Voynich-MS, per il quale il benchmark Replit dichiara l'assenza di un'implementazione eseguibile corrispondente alla specifica root-conditioned.
+
+I test sono stati condotti in due ambienti distinti, Google Colab e Replit. Le due implementazioni del modello con memoria locale non sono identiche: in Colab la copia è posizionale, mentre in Replit è stata adottata una finestra di copia di 20 token. I risultati dei due ambienti vengono pertanto riportati separatamente.
+
+## Analisi per sezione
+
+Per verificare l'eterogeneità interna, le quattro metriche sono state ricalcolate sui corpus attribuiti alle diverse sezioni, utilizzando la stessa pipeline. La classificazione folio-sezione è basata sulla mappatura Beinecke/voynich.nu.
+
+# Risultati
+
+## Profilo statistico del corpus
+
+Il corpus reale presenta densità pari a 0,9557, adiacenza pari a 0,0284, ripetizione locale pari a 0,0581 e hapax pari a 0,7113.
+
+Il profilo combina una densità elevata con una quota consistente di forme che compaiono una sola volta. Adiacenza e ripetizione locale descrivono inoltre una componente di dipendenza tra righe consecutive.
+
+## Test 1: Colab
+
+Il primo test è stato eseguito in Google Colab, con Python 3.13. Ogni corpus sintetico contiene esattamente 34.323 token. Le lunghezze delle righe sono campionate dalla distribuzione empirica del corpus reale. Per ciascun modello sono stati utilizzati due seed, 1 e 2.
+
+Nel modello con memoria locale, la copia dalla riga precedente segue tre modalità: stessa posizione (50%), posizione precedente (30%) e token casuale dalla riga precedente (20%).
+
+| Modello | Densità | Adiacenza | Ripetizione | Hapax | Metriche in banda |
+|---|---:|---:|---:|---:|---:|
+| **Reale** | 0,9557 | 0,0284 | 0,0581 | 0,7113 | — |
+| Markov-1 | 0,9498 ✓ | 0,0134 ✗ | 0,0262 ✗ | 0,4203 ✗ | 1/4 |
+| Markov-2 | 0,9517 ✓ | 0,0143 ✗ | 0,0280 ✗ | 0,4275 ✗ | 1/4 |
+| Uniforme | 0,9500 ✓ | 0,0131 ✗ | 0,0256 ✗ | 0,4123 ✗ | 1/4 |
+| Shuffle | 0,9557 ✓ | 0,0139 ✗ | 0,0271 ✗ | 0,7113 ✓ | 2/4 |
+| Memoria p=0,02 | 0,9503 ✓ | 0,0243 ✓ | 0,0467 ✓ | 0,4146 ✗ | 3/4 |
+| Memoria p=0,03 | 0,9491 ✓ | 0,0297 ✓ | 0,0564 ✓ | 0,4049 ✗ | 3/4 |
+| Memoria p=0,04 | 0,9508 ✓ | 0,0349 ✓ | 0,0657 ✓ | 0,4141 ✗ | 3/4 |
+| Memoria p=0,05 | 0,9502 ✓ | 0,0403 ✗ | 0,0755 ✗ | 0,4096 ✗ | 1/4 |
+
+Nessun modello supera simultaneamente tutte e quattro le metriche.
+
+Le configurazioni con memoria locale `p_copy=0,02`, `p_copy=0,03` e `p_copy=0,04` raggiungono tre metriche in banda: densità, adiacenza e ripetizione locale. Tutte falliscono sulla quota di hapax, che rimane intorno a 0,41 rispetto al valore reale di 0,7113.
+
+Lo shuffle raggiunge due metriche in banda, densità e hapax, ma non riproduce adiacenza e ripetizione locale. Markov-1, Markov-2 e Uniforme raggiungono soltanto la densità.
+
+## Test 2: Replit
+
+Il secondo test è stato eseguito in Replit Agent, con la stessa pipeline di valutazione, lo stesso corpus reale e le stesse bande.
+
+Il modello con memoria locale utilizza una finestra di copia di 20 token. Questa scelta è dichiarata nel report Replit, poiché il brief originario non specificava la finestra. Il test comprende inoltre Workshop Cipher, pacchetto di replica v1.2, e Zattera slot grammar, implementazione pubblica del progetto `Frank-Masciopinto/voynich-manuscript-decipher`.
+
+Voynich-MS è dichiarato **NOT REPRODUCIBLE**: non è stata individuata un'implementazione eseguibile corrispondente alla specifica root-conditioned.
+
+| Modello | Densità | Adiacenza | Ripetizione | Hapax | Metriche in banda |
+|---|---:|---:|---:|---:|---:|
+| **Reale** | 0,9557 | 0,0284 | 0,0581 | 0,7113 | — |
+| Markov-1 | ✓ | ✗ | ✗ | ✗ | 1/4 |
+| Markov-2 | ✓ | ✗ | ✗ | ✗ | 1/4 |
+| Uniforme | ✗ | ✗ | ✗ | ✗ | 0/4 |
+| Shuffle | ✓ 0,9557 | ✗ | ✗ | ✓ 0,7113 | 2/4 |
+| Memoria p=0,05 | ✓ | ✓ | ✓ | ✗ | 3/4 |
+| Workshop Cipher | ✗ | ✓ 0,0248 | ✓ 0,0507 | ✗ | 2/4 |
+| Zattera slot grammar | ✗ | ✗ | ✗ | ✓ | 1/4 |
+| Voynich-MS | — | — | — | — | NOT REPRODUCIBLE |
+
+Nel test Replit, il modello con memoria locale raggiunge tre metriche in banda. Workshop Cipher raggiunge due metriche: adiacenza pari a 0,0248 e ripetizione locale pari a 0,0507. Lo shuffle raggiunge densità e hapax.
+
+I valori numerici non riportati nella tabella Replit non vengono ricostruiti: sono mantenuti i soli esiti in banda dichiarati nel report.
+
+## Confronto tra i due ambienti
+
+I due test sono coerenti sulla conclusione generale: nessuna delle configurazioni valutabili supera tutte e quattro le metriche.
+
+Le configurazioni Markov e uniforme non riproducono la struttura locale. Lo shuffle riproduce densità e hapax, ma non adiacenza e ripetizione. Il modello con memoria locale è quello che raggiunge il maggior numero di metriche in banda in entrambi gli ambienti.
+
+I dettagli differiscono. In Colab le configurazioni con memoria locale `p_copy=0,02`, `p_copy=0,03` e `p_copy=0,04` raggiungono tutte 3/4. In Replit la configurazione riportata è `p_copy=0,05`, anch'essa a 3/4.
+
+La differenza è compatibile con le diverse implementazioni della memoria locale: copia posizionale in Colab e finestra di 20 token in Replit. I due risultati non sono pertanto repliche della stessa identica configurazione.
+
+## Complementarità dei modelli
+
+I risultati mostrano tre profili distinti:
+
+| Modello | Metriche riprodotte | Metrica o metriche non riprodotte |
+|---|---|---|
+| Memoria locale | Densità, adiacenza, ripetizione | Hapax |
+| Shuffle | Densità, hapax | Adiacenza, ripetizione |
+| Workshop Cipher | Adiacenza, ripetizione | Densità, hapax |
+
+Il dato centrale del modello con memoria locale è la combinazione di adiacenza e ripetizione in banda, accompagnata da una quota di hapax intorno a 0,41, contro 0,7113 del corpus reale. La memoria locale riproduce quindi alcune proprietà della struttura sequenziale, ma non la distribuzione delle forme rare.
+
+Workshop Cipher presenta un comportamento analogo rispetto alle due metriche locali, con adiacenza 0,0248 e ripetizione 0,0507. Lo shuffle presenta invece densità e hapax uguali ai valori del corpus reale riportati nel benchmark, ma non riproduce la struttura locale.
+
+# Eterogeneità interna delle metriche
+
+Le metriche aggregate sono medie di sottoblocchi con profili distinti. Per verificare questa eterogeneità, le quattro metriche sono state ricalcolate per sezione, utilizzando la mappatura folio-sezione di Beinecke/voynich.nu e la stessa pipeline di valutazione.
+
+| Sezione | Token | Densità | Adiacenza | Ripetizione | Hapax |
+|---|---:|---:|---:|---:|---:|
+| Astronomica | 1.700 | 0,859 | 0,016 | 0,032 | 0,772 |
+| Biologica | 6.762 | 0,959 | 0,047 | 0,094 | 0,679 |
+| Botanica | 9.661 | 0,918 | 0,024 | 0,050 | 0,735 |
+| Farmaceutica | 3.607 | 0,898 | 0,021 | 0,045 | 0,730 |
+| Foldout | 1.661 | 0,902 | 0,025 | 0,053 | 0,708 |
+| Testuale | 10.893 | 0,958 | 0,026 | 0,055 | 0,695 |
+| Aggregato | 34.323 | 0,956 | 0,028 | 0,058 | 0,711 |
+
+La sezione astronomica ha densità 0,859, adiacenza 0,016 e ripetizione 0,032: tutte al di sotto delle bande di riferimento.
+
+La sezione biologica ha adiacenza 0,047 e ripetizione 0,094: entrambe al di sopra delle bande.
+
+La sezione botanica, con densità 0,918, adiacenza 0,024 e ripetizione 0,050, è la più vicina al modello con memoria locale, che presenta rispettivamente 0,950, 0,024 e 0,047. Fallisce tuttavia sull'hapax: 0,735 contro 0,415.
+
+L'hapax è alto in tutte le sezioni, con valori compresi tra 0,679 e 0,772, ed è sensibile alla dimensione della sezione.
+
+Nessun generatore riproduce tutte e quattro le metriche di nessuna sezione. Il gap strutturale (hapax 0,68–0,77 in tutte le sezioni, 0,41–0,53 nei generatori) non è un artefatto della miscela: è una proprietà di ogni sezione.
+
+# Frontiera empirica
+
+Nel confronto effettuato, il punto reale si colloca fuori dalla regione raggiungibile dai modelli generativi e di ricombinazione testati. La frontiera empirica descrive una tensione strutturale tra la riproduzione della dipendenza locale e quella della distribuzione lessicale, senza implicare che siano state esaurite tutte le architetture o le famiglie di processi possibili. Il risultato è compatibile con H2, intesa come ipotesi di tensione strutturale tra queste proprietà.
+
+# Test di architetture a più strati
+
+Dopo che la frontiera empirica ha mostrato che i modelli a uno strato non soddisfano il vincolo, sono state testate due architetture progettate per disaccoppiare memoria e morfogenesi.
+
+## Morphe-Sync: memoria e morfogenesi
+
+Morphe-Sync è un modello ibrido progettato per combinare memoria locale (`p_copy=0,30`) e morfogenesi a slot (`p_mut=0,20`, `lam_new=0,50`, `k_mem=10`). I parametri sono fissi e non ottimizzati. Sono stati generati 34.323 token in 4.130 righe, con un solo seed. La densità non è stata calcolata per limiti computazionali; il test copre quindi tre metriche su quattro.
+
+| Metrica | Reale | Morphe-Sync | Banda | Esito |
+|---|---:|---:|---:|---|
+| Adiacenza | 0,0284 | 0,1265 | 0,02–0,04 | FAIL (4,5×) |
+| Ripetizione | 0,0581 | 0,2586 | 0,045–0,070 | FAIL (4,5×) |
+| Hapax | 0,7113 | 0,5628 | 0,65–0,75 | FAIL |
+| Densità | 0,9557 | non calcolata | 0,91–0,96 | non misurata |
+
+Morphe-Sync copia troppo: adiacenza e ripetizione locale sono entrambe pari a 4,5 volte il valore reale. Il vocabolario non è sufficientemente aperto: l'hapax è 0,5628, inferiore di circa il 21% rispetto al valore reale. Il pattern è coerente con quello dei modelli a memoria locale, nei quali la copia risulta troppo aggressiva.
+
+## Two-layer: morfogenesi e memoria su due strati
+
+Two-layer è progettato per disaccoppiare la produzione di hapax dalla struttura locale. Lo strato profondo utilizza un vocabolario Zipfiano di 150.000 parole casuali (`alpha=0,7`); lo strato superficiale applica memoria e mutazione (`p_copy=0,05`, `p_adj=0,8`, `p_mut=0,3`, `window=5`). I parametri sono fissi e non ottimizzati. Sono stati generati 34.323 token in 4.130 righe, con tre seed (11, 22, 33). I risultati riportati sono la media dei tre seed; tutti i seed sono coerenti.
+
+| Metrica | Reale | Two-layer | Banda | Esito |
+|---|---:|---:|---:|---|
+| Densità | 0,9557 | 0,374 | 0,91–0,96 | FAIL |
+| Adiacenza | 0,0284 | 0,004 | 0,02–0,04 | FAIL |
+| Ripetizione | 0,0581 | 0,008 | 0,045–0,070 | FAIL |
+| Hapax | 0,7113 | 0,793 | 0,65–0,75 | FAIL |
+
+Two-layer produce il comportamento opposto a Morphe-Sync. Il vocabolario casuale porta l'hapax a 0,793, oltre la banda, ma la densità scende a 0,374: le parole casuali non presentano vicini a distanza di Levenshtein 1 e manca la struttura morfologica condivisa che contribuisce alla densità del Voynich. Anche adiacenza e ripetizione restano al di sotto delle rispettive bande.
+
+Nessuna delle due architetture a più strati soddisfa il vincolo congiunto. Morphe-Sync fallisce per eccesso di copia (adiacenza e ripetizione 4,5× il reale); Two-layer fallisce per eccesso di casualità (densità 0,37 vs 0,96). I due fallimenti sono complementari: la struttura morfologica condivisa (che produce densità alta) e la novità lessicale (che produce hapax alto) non sono state ottenute simultaneamente da nessuna architettura testata.
+
+## Nota su Skribe
+
+Il modello Skribe (Quim Quadrada, 2026) è stato testato, ma la tokenizzazione è diversa (2,3 parole/riga vs 8,3 del reale). Il confronto con `valuta_corpus_v2.py` non è valido. Il modello è pertanto registrato come **non comparabile per disallineamento di tokenizzazione**, non come fallimento.
+
+# Discussione
+
+Il confronto tra i processi generativi mostra che le quattro metriche non vengono riprodotte simultaneamente da nessuna delle configurazioni valutate. I modelli migliori sono complementari: la memoria locale riproduce densità e struttura di ripetizione, ma non la quota di hapax; lo shuffle riproduce densità e hapax, ma non la struttura locale; Workshop Cipher riproduce adiacenza e ripetizione, ma non densità e hapax.
+
+Il risultato indica che la corrispondenza con una parte del profilo statistico non implica la riproduzione dell'intero profilo. In particolare, la memoria locale raggiunge tre metriche in banda, ma la quota di hapax rimane nettamente inferiore a quella del corpus reale. Il dato non è risolto aumentando o diminuendo semplicemente il parametro di copia nelle configurazioni riportate.
+
+L'analisi per sezione mostra inoltre che il profilo aggregato non descrive uniformemente tutte le parti del manoscritto. La sezione astronomica presenta valori di densità, adiacenza e ripetizione inferiori alle bande, mentre la sezione biologica presenta adiacenza e ripetizione superiori. La quota di hapax rimane elevata in tutte le sezioni.
+
+Il benchmark richiama anche il confronto indipendente attribuito a Rozanova & Temerev (2026), secondo cui i cifrari che imitano il Voynich riprodurrebbero alcune caratteristiche statistiche, ma non la distribuzione delle forme rare. La nota di benchmark riporta il confronto tra il 70% di tipi singleton nel Voynich e intervalli del 41–60% nei cifrari. Tale riferimento è riportato come riscontro bibliografico indicato nella nota, ma non è accompagnato nei materiali disponibili da una citazione bibliografica completa o dal relativo testo di verifica. Non viene quindi utilizzato come sostituto dei risultati sperimentali qui presentati.
+
+Il risultato complessivo è circoscritto ai processi e alle implementazioni effettivamente valutati. La mancata corrispondenza delle quattro metriche non costituisce una dimostrazione dell'impossibilità di ogni possibile processo generativo.
+
+# Limiti
+
+I limiti principali dello studio sono i seguenti:
+
+- **Definizione di adiacenza.** La formula esatta del testbed originale, associata all'intervallo 0,04–0,05, è NON REPERIBILE. I confronti sono interni alla pipeline attuale.
+- **Dimensione del campione.** I test Colab e Replit utilizzano due seed per modello. I risultati sono esplorativi e non costituiscono una stima stabile della variabilità.
+- **Differenze tra implementazioni.** La memoria locale in Colab utilizza una copia posizionale; in Replit utilizza una finestra di 20 token. Non è stata testata una griglia completa di finestre.
+- **Voynich-MS.** Non è stato testato nel benchmark Replit perché non è disponibile un'implementazione eseguibile corrispondente alla specifica root-conditioned.
+- **Workshop Cipher.** È stato utilizzato il pacchetto di replica v1.2. Il record Zenodo indica come autore Vitaly Averyanov.
+- **Zattera slot grammar.** È stata utilizzata un'implementazione pubblica con dipendenze NumPy installate per il test. Non è stata verificata l'equivalenza con la versione dell'autore.
+- **Eterogeneità delle metriche lessicali.** Le metriche aggregate sono medie di sottoblocchi con profili distinti. L'aggregato va letto come descrizione del corpus intero, non delle sue parti.
+- **Sensibilità dell'hapax alla dimensione della sezione.** L'hapax varia da 0,679 nella sezione biologica, con 6.762 token, a 0,772 nella sezione astronomica, con 1.700 token. Parte dell'eterogeneità è attribuibile alla dimensione del campione.
+- **Nessuna sezione è completamente riprodotta da un generatore.** Anche la botanica, la più vicina al modello con memoria locale con tre metriche su quattro in banda, fallisce sull'hapax: 0,735 contro 0,415.
+- **Mappatura folio-sezione.** La classificazione utilizza la mappatura Beinecke/voynich.nu e non è codificata in ZL3b-n.txt. La robustezza dei risultati alla scelta della mappatura non è stata testata.
+- **Test di Morphe-Sync parziale.** La densità non è stata calcolata per limiti computazionali: la pipeline `valuta_corpus_v2.py` è O(n²) su circa 25.000 tipi. Il test copre adiacenza, ripetizione e hapax, ma non densità.
+- **Test di Two-layer con parametri fissi.** I parametri (V=150.000, alpha=0,7, p_copy=0,05, p_mut=0,3) sono stati fissati prima dell'esecuzione, non ottimizzati. Il fallimento non esclude che una diversa combinazione di parametri possa funzionare; una taratura post-hoc invaliderebbe tuttavia il test.
+- **Skribe non comparabile.** Il modello Skribe (Quim Quadrada, 2026) non è stato confrontato in modo valido a causa del disallineamento di tokenizzazione (2,3 parole/riga contro 8,3 del corpus reale). Va registrato come non comparabile, non come fallimento.
+- **Nessuna architettura a più strati ha risolto la tensione.** Morphe-Sync e Two-layer falliscono in direzioni opposte: il primo copia troppo, il secondo genera troppo casualmente. La tensione tra struttura morfologica e novità lessicale non è risolta da queste architetture.
+- **Letteratura indipendente.** Il riferimento a Rozanova & Temerev (2026) è riportato nel benchmark, ma i materiali disponibili non contengono una citazione bibliografica completa che consenta di verificare autonomamente i valori attribuiti allo studio.
+
+# Conclusione
+
+Il progetto ha testato 10+ processi generativi e tre architetture a più strati (Skribe, Morphe-Sync, Two-layer). Nessuno soddisfa simultaneamente densità, adiacenza, ripetizione locale e hapax del corpus Voynich. I modelli migliori sono complementari: la memoria locale risolve la struttura dinamica ma non gli hapax; lo shuffle risolve gli hapax ma non la struttura dinamica; Morphe-Sync copia troppo (adiacenza e ripetizione 4,5× il reale); Two-layer genera troppo casualmente (densità 0,37 vs 0,96). Il punto reale sta fuori dalla regione raggiungibile da tutti i modelli testati. Questo sostiene l'ipotesi che memoria locale e vocabolario aperto siano in tensione strutturale, e che nessuna architettura nota le abbia entrambe. Il risultato identifica un vincolo quantitativo verificabile, senza implicare una decifrazione né escludere tutte le possibili famiglie di modelli generativi.
