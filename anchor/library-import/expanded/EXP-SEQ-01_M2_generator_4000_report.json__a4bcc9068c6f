@@ -1,0 +1,65 @@
+{
+  "status": "M2_BLOCK_PERMUTATION_GENERATOR_4000_REPLICAS_COMPLETED",
+  "corpus_sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+  "parser_report_sha256": "f694b54d9cdeb6e1e676d7d5eaee38ee5323e64675ef4a960ee187fb1d8b4d78",
+  "mapping_sha256": "7ab05214cece6a0fa0239b2a056193947d68093de79338537c5eebefab3e7890",
+  "python": "3.13.5",
+  "numpy": "2.3.5",
+  "physical_groups": 98,
+  "folios": 207,
+  "loci": 4130,
+  "tokens": 35492,
+  "seed_template": "EXP-SEQ-01::M2::L={L:02d}::REP={rep:04d}::SALT=bf5b6d4ac1e3a51b",
+  "seed_conversion": "SeedSequence(list(SHA256_digest_bytes))",
+  "prng": "PCG64",
+  "fisher_yates": "vectorized descending Fisher-Yates, j sampled by Generator.integers(0,i+1)",
+  "scales": {
+    "2": {
+      "replicas": 1000,
+      "permutable_loci": 4045,
+      "identity_loci": 85,
+      "identity_tokens": 147,
+      "changed_loci_total": 3712585,
+      "replicas_with_any_change": 1000,
+      "fisher_yates_index_permutations_validated": true,
+      "first_replica_payload_multisets_sampled_and_verified": true
+    },
+    "5": {
+      "replicas": 1000,
+      "permutable_loci": 3367,
+      "identity_loci": 763,
+      "identity_tokens": 3030,
+      "changed_loci_total": 2070384,
+      "replicas_with_any_change": 1000,
+      "fisher_yates_index_permutations_validated": true,
+      "first_replica_payload_multisets_sampled_and_verified": true
+    },
+    "10": {
+      "replicas": 1000,
+      "permutable_loci": 1142,
+      "identity_loci": 2988,
+      "identity_tokens": 21596,
+      "changed_loci_total": 576198,
+      "replicas_with_any_change": 1000,
+      "fisher_yates_index_permutations_validated": true,
+      "first_replica_payload_multisets_sampled_and_verified": true
+    },
+    "20": {
+      "replicas": 1000,
+      "permutable_loci": 15,
+      "identity_loci": 4115,
+      "identity_tokens": 35138,
+      "changed_loci_total": 7518,
+      "replicas_with_any_change": 1000,
+      "fisher_yates_index_permutations_validated": true,
+      "first_replica_payload_multisets_sampled_and_verified": true
+    }
+  },
+  "elapsed_seconds": 2.01,
+  "limitations": [
+    "Python runtime is 3.13.5, not specified 3.11.x.",
+    "SeedSequence does not accept bytes directly; the 32-byte digest was passed as a 32-integer entropy sequence.",
+    "M2 block index permutations generated in memory; no corpus byte serialization.",
+    "M5/M6 formula and inner-fold specification are not fully specified in the available canonical text; predictive scoring and final A/B/C inference not executed."
+  ]
+}
