@@ -1,0 +1,27 @@
+{
+  "experiment": "ANCHOR-13",
+  "status": "TRANSCRIPTION_LEVEL_CONDITIONAL_FALSIFICATION",
+  "hypothesis": "The five original glyphs transcribed as doaro represent TOARE under a strict character-by-character substitution",
+  "source_preprint": "Caspari & Faccini (2025), A Key to the Voynich Manuscript, Fig.1C (TOARE)",
+  "reported_reading": "TOARE",
+  "transcription_token": "doaro",
+  "source_transcriptions": {
+    "ZL3b": {
+      "f68r3.11": "doaro",
+      "f2r.2_first_word": "dorchory",
+      "corpus_sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+      "corpus_bytes": 411671
+    },
+    "Takahashi_IT2a": {
+      "f68r3.11": "doaro",
+      "f2r.2_first_word": "dorchory",
+      "corpus_sha256": "7f27a8b0feed8f6de0a99900df6bf912dd1d295c38e5f830bac8b41c3f536fb5",
+      "corpus_bytes": 342104
+    }
+  },
+  "test": "Equal source symbols must yield equal target letters in strict monoalphabetic substitution",
+  "expected_pattern": "TOARE: character 2 != character 5",
+  "observed_pattern": "doaro: character 2 == character 5",
+  "result": "FAIL_CONDITIONAL_ON_TRANSCRIPTION_IDENTITY",
+  "qualifier": "Authors explicitly reject automatic equivalence of EVA glyph segmentation; requires direct visual discrimination of second and fifth glyph on f68r3"
+}
