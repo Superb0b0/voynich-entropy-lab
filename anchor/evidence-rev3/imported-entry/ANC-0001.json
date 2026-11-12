@@ -1,0 +1,48 @@
+{
+  "id": "ANC-0001",
+  "branch": "EXPLORATORY_ANCHOR",
+  "experiment": "ANCHOR-02",
+  "classification": "ESPLORATIVO",
+  "status": "PENDING",
+  "claim": "Il rapporto ANCHOR-02 riporta 239 etichette zodiacali in 10 pannelli e nessun segnale semantico convincente; 13 su 30 associazioni geometriche richiedono revisione indipendente. Risultati non riprodotti in questa acquisizione.",
+  "limitations": [
+    "Risultati acquisiti dal rapporto, non ricalcolati",
+    "Script, output originali e immagini cieche certificate non acquisiti",
+    "Hash del corpus e degli altri artefatti citati nel rapporto non verificati sui rispettivi byte"
+  ],
+  "source_files": [
+    {
+      "filename": "ANCHOR_02_REPORT_IT.md",
+      "canonical_id": "sha256:072fa83aac591aee88317d91635eb501249d5688771c46113508dbcbab91b763",
+      "sha256": "072fa83aac591aee88317d91635eb501249d5688771c46113508dbcbab91b763",
+      "size_bytes": 9472,
+      "origin": "ChatGPT Library, file originale materializzato",
+      "library_file_id": "libfile_4b99271d9d1481918732d9511a203a2c"
+    }
+  ],
+  "execution": {
+    "script_filename": null,
+    "script_sha256": null,
+    "command": null,
+    "execution_date": null
+  },
+  "verification": {
+    "reviewer": null,
+    "checked_at": null,
+    "recomputed": false,
+    "evidence_refs": [],
+    "notes": "Digest calcolato sul rapporto materializzato; nessuna riproduzione scientifica"
+  },
+  "gate_effect": "NONE",
+  "evidence_level": "RIPORTATO",
+  "related_folios": [
+    "f70v2",
+    "f70v1",
+    "f71r",
+    "f71v",
+    "f72r1",
+    "f72r2",
+    "f72r3",
+    "f72v3"
+  ]
+}
