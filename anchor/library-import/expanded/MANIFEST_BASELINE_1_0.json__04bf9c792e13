@@ -1,0 +1,89 @@
+{
+  "manifest_id": "VOYNICH_BASELINE_1_0",
+  "version": "1.0",
+  "decision_date": "2026-10-25",
+  "status": "FROZEN_BASELINE_1_0",
+  "decision": "RC1.2 promoted to the operational canonical parsing baseline by explicit user approval. No edits made to the existing specification, parser, or report; this manifest records the promotion decision and takes precedence for current governance status.",
+  "benchmark_governance": {
+    "predictive_benchmarks": "UNBLOCKED",
+    "generative_benchmarks": "UNBLOCKED",
+    "execution_status": "NOT_YET_RUN",
+    "requirement": "Register benchmark protocol, train/test split, metrics, and competing baselines before execution."
+  },
+  "corpus": {
+    "file": "ZL3b-n.txt",
+    "sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    "bytes": 411671,
+    "physical_lines": 8510
+  },
+  "parser_counts": {
+    "canonical_loci": 4130,
+    "tokens": 35492,
+    "types": 6980,
+    "folios": 207,
+    "empty_loci": 0,
+    "parse_errors": 0
+  },
+  "verification": {
+    "synthetic_tests_passed": 30,
+    "repeat_report_byte_identical": true,
+    "repeat_report_sha256": "f694b54d9cdeb6e1e676d7d5eaee38ee5323e64675ef4a960ee187fb1d8b4d78"
+  },
+  "artifacts": {
+    "specification": {
+      "file": "PARSER_SPEC_V1_RC1_2.md",
+      "sha256": "6c3e9469dd53dd9323a2ba9b2b0dfd304796f620a757bf3f8712e3a0dd2edd7d",
+      "bytes": 8379
+    },
+    "parser": {
+      "file": "ivtff_parser_rc1_2.py",
+      "sha256": "8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5",
+      "bytes": 10599
+    },
+    "canonical_report": {
+      "file": "parser_rc1_2_report.json",
+      "sha256": "f694b54d9cdeb6e1e676d7d5eaee38ee5323e64675ef4a960ee187fb1d8b4d78",
+      "bytes": 1373593
+    },
+    "execution_note": {
+      "file": "RC1_2_EXECUTION_NOTE_01.md",
+      "sha256": "e9862dfe0422e21b3efa60c241287276acef3ebff9f67868be005e6708c865f7",
+      "bytes": 2848
+    },
+    "independent_audit": {
+      "file": "RC1_2_INDEPENDENT_AUDIT_01.md",
+      "sha256": "04180538d8fe9388049b1d6d50c98bf0721cfff73cfc07e5c135ee3294a8adb0",
+      "bytes": 11263
+    },
+    "corpus": {
+      "file": "ZL3b-n.txt",
+      "sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+      "bytes": 411671
+    }
+  },
+  "known_limits": [
+    {
+      "id": "RC1.2-01",
+      "status": "ACCEPTED_WITH_NOTE",
+      "summary": "The brace transformation counter measures syntactic transformations, not final persistence. 39 of 394 brace blocks are contained in square-bracket blocks and are subsequently excluded. The observed order of brace/square transformations did not change final text or token counts in the audit."
+    },
+    {
+      "id": "SQUARE_ALTERNATIVES",
+      "status": "PRIMARY_POLICY_LIMITATION",
+      "summary": "All 656 square-bracket blocks are excluded in full, including alternatives. This is an explicit operational policy with information loss, not a claim that the excluded readings are philologically invalid."
+    },
+    {
+      "id": "HISTORICAL_BASELINE",
+      "status": "UNVERIFIED_NOT_TARGET",
+      "summary": "Historical counts 3957 loci, 33613 tokens, and 7417 types remain unreproduced and were not used to select the parser."
+    }
+  ],
+  "scope_and_non_changes": {
+    "corpus_modified": false,
+    "ivtff_parser_v2_modified": false,
+    "scaffold_modified": false,
+    "rc1_1_artifacts_modified": false,
+    "rc1_2_spec_or_code_or_report_modified_for_promotion": false
+  },
+  "authority_note": "The embedded status line in the RC1.2 specification is retained unchanged as part of the hashed artifact. This manifest records the subsequent explicit promotion decision; the artifact itself is not rewritten."
+}
