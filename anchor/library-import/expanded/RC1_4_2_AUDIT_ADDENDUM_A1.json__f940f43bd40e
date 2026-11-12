@@ -1,0 +1,81 @@
+{
+  "authorization_basis": "Explicit user authorization in the current conversation",
+  "authorized_scope": {
+    "permitted_artifacts": [
+      "RC1_4_2_candidate_register.csv",
+      "RC1_4_2_exclusion_register.csv",
+      "RC1_4_2_unresolved_register.csv",
+      "RC1_4_2_validation_report.json",
+      "RC1_4_2_MANIFEST.json"
+    ],
+    "permitted_operations": [
+      "Read-only validation of pinned source inputs",
+      "Deterministic generation of the five audit artifacts in the new revision namespace",
+      "Independent second generation",
+      "Byte-for-byte and SHA-256 comparison of all five artifacts",
+      "Documentary update of control statuses supported by direct evidence"
+    ],
+    "purpose": "Generate and document the five RC1.4.2 audit artifacts only",
+    "validation_artifact_generation_allowed_by_this_addendum": true
+  },
+  "date": "2026-11-10",
+  "document_id": "RC1.4.2-AUDIT-ADDENDUM-A1",
+  "gate": {
+    "analytical_execution_after_validation": "REQUIRES_SEPARATE_FORMAL_APPROVAL",
+    "gate_review_authorized": false,
+    "status": "CLOSED_PENDING_VALIDATION"
+  },
+  "generation_and_reproducibility": {
+    "byte_for_byte_comparison": "PENDING",
+    "five_artifact_generation": "AUTHORIZED_NOT_YET_EXECUTED",
+    "independent_second_generation": "PENDING",
+    "reason_for_pending": "The RC1.4.2 five-artifact generator and complete source-level input set have not yet been located together in the active working environment. Existing generated registers are not to be treated as a substitute for a source-level regeneration."
+  },
+  "metadata_controls": {
+    "IN-05": "PASS",
+    "YL-01": "PASS",
+    "YL-02": "PASS",
+    "evidence_document": "RC1_4_2_A1_YALE_METADATA_VERIFICATION.json"
+  },
+  "non_authorized_operations": {
+    "analytical_execution_allowed": false,
+    "builder_execution_allowed": false,
+    "clustering_allowed": false,
+    "conditional_coupling_allowed": false,
+    "manual_intervention_on_f085v_allowed": false,
+    "pca_allowed": false,
+    "profile_promotion_allowed": false,
+    "source_or_frozen_artifact_mutation_allowed": false
+  },
+  "parent_configuration": {
+    "filename": "RC1_4_2_CONFIG_v7_1.json",
+    "immutable": true,
+    "sha256": "abed55bd3d44be25e751cafa0a2f3279f857175232ec8d884610e810e850e3f0",
+    "validation_artifact_generation_allowed_in_parent": false
+  },
+  "population_invariants": {
+    "cover_or_binding_profiles": 9,
+    "f085v": {
+      "association_forced": false,
+      "manual_intervention": false,
+      "status": "UNRESOLVED"
+    },
+    "multipanel_sensitivity_population": 9,
+    "primary_and_sensitivity_disjoint": true,
+    "primary_population": 146,
+    "profile_partition": {
+      "cover_or_binding": 9,
+      "reconciled": 196,
+      "total": 206,
+      "unresolved": 1
+    }
+  },
+  "relationship_to_parent": {
+    "creates_new_revision_namespace": true,
+    "modifies_frozen_sources": false,
+    "modifies_parent_configuration": false,
+    "type": "separate_authorization_overlay"
+  },
+  "revision": "RC1.4.2-A1",
+  "status": "AUTHORIZED"
+}
