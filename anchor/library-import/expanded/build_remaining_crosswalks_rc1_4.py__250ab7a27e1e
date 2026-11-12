@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+"""Build the RC1.4 photographic and analytical crosswalks from frozen inputs.
+
+Inputs (same directory unless overridden):
+  corpus_metadata.csv                  Yale canvas metadata from frozen GitHub commit
+  voynich_profiles.json                206 visual profiles from same commit
+  folio_ivtff_crosswalk.csv            RC1.4 IVTFF unit crosswalk
+
+This script does not modify any input and does not run conditional coupling.
+"""
+from __future__ import annotations
+import argparse, csv, json, re, hashlib
+from pathlib import Path
+
+EXPECTED_COMMIT = 'd4b31a245ba8133b727dc4255278b5e8349bbe39'
+EXPECTED_PROFILE_BLOB = '560779cf06e15a167799d210f6a0d4ecf1b8c8e1'
+EXPECTED_METADATA_BLOB = 'eb05cb69d4847f6acb34a9d095e05c38369010d2'
+THRESHOLD = 75
+
+
+def read_csv(p):
+    with p.open(encoding='utf-8-sig', newline='') as f:
+        return list(csv.DictReader(f))
+
+def write_csv(p, rows, fields):
+    with p.open('w', encoding='utf-8', newline='') as f:
+        w=csv.DictWriter(f, fieldnames=fields, extrasaction='ignore')
+        w.writeheader(); w.writerows(rows)
+
+def canvas_number(row):
+    # The metadata's image_service_url is the canonical IIIF image URL.
+    m=re.search(r'/iiif/2/(\d+)$', row.get('image_service_url',''))
+    if not m: raise ValueError(f"Cannot parse Yale canvas id for {row.get('image_id')}")
+    return m.group(1)
+
+def main():
+    ap=argparse.ArgumentParser()
+    ap.add_argument('--input-dir',type=Path,default=Path('.'))
+    ap.add_argument('--output-dir',type=Path,default=Path('.'))
+    a=ap.parse_args(); a.output_dir.mkdir(parents=True,exist_ok=True)
+    meta=read_csv(a.input_dir/'corpus_metadata.csv')
+    units=read_csv(a.input_dir/'folio_ivtff_crosswalk.csv')
+    profiles=json.loads((a.input_dir/'voynich_profiles.json').read_text(encoding='utf-8'))
+    if len(meta)!=213: raise ValueError(f'Expected 213 canvas rows, got {len(meta)}')
+    if len(profiles)!=206: raise ValueError(f'Expected 206 profile records, got {len(profiles)}')
+    score_keys=list(profiles[0]['archetype_scores'])
+    if len(score_keys)!=16 or any(list(p['archetype_scores'])!=score_keys for p in profiles):
+        raise ValueError('archetype_scores must preserve exactly 16 ordered keys for every profile')
+    pmap={p['image_id']:p for p in profiles}
+    if len(pmap)!=206: raise ValueError('Duplicate image_id in profiles')
+    # One row per Yale canvas, never one row per IVTFF panel.
+    canvas_rows=[]
+    for r in meta:
+        iid=r['image_id']; pid=canvas_number(r)
+        canvas_rows.append({**r,'yale_canvas_id':pid,'profile_present':str(iid in pmap).lower(),
+                            'profile_image_id':iid if iid in pmap else ''})
+    write_csv(a.output_dir/'folio_canvas_crosswalk.csv',canvas_rows,
+              list(meta[0].keys())+['yale_canvas_id','profile_present','profile_image_id'])
+    # Aggregate subordinate IVTFF units at folio_key.
+    agg={}
+    for u in units:
+        k=u['page_id']; z=agg.setdefault(k,{'unit_count':0,'p_locus_count':0,'token_count':0,'unit_ids':[]})
+        z['unit_count']+=1; z['p_locus_count']+=int(u['unit_p_locus_count'] or 0)
+        z['token_count']+=int(u['unit_token_count'] or 0); z['unit_ids'].append(u['unit_id'])
+    # Profiles represent 206 image ids; nine unknown cover/binding profiles are excluded,
+    # leaving the 197 manuscript folios described in the frozen source documentation.
+    analytical=[]
+    for iid,p in pmap.items():
+        if iid.startswith('_'): continue
+        g=agg.get(iid)
+        # The only known profile without an IVTFF folio match is f085v.
+        if g is None:
+            cls='unmatched_ivtff'
+            units_n=p_count=tokens=0; unit_ids=''
+        else:
+            units_n=g['unit_count']; p_count=g['p_locus_count']; tokens=g['token_count']; unit_ids=';'.join(g['unit_ids'])
+            if units_n>1 and p_count>0: cls='multipanel_sensitivity'
+            elif units_n>1 and p_count==0: cls='multipanel_no_P'
+            elif p_count==0: cls='single_no_P'
+            else: cls='primary_candidate'
+        admitted=(cls=='primary_candidate' and tokens>=THRESHOLD)
+        row={'image_id':iid,'folio_key':iid,'ivtf_unit_ids':unit_ids,'ivtf_unit_count':units_n,
+             'p_locus_count':p_count,'rc1_4_token_count':tokens,'classification':cls,
+             'primary_threshold':THRESHOLD,'primary_admitted':str(admitted).lower()}
+        for k in score_keys: row[k]=p['archetype_scores'][k]
+        analytical.append(row)
+    fields=['image_id','folio_key','ivtf_unit_ids','ivtf_unit_count','p_locus_count','rc1_4_token_count',
+            'classification','primary_threshold','primary_admitted']+score_keys
+    write_csv(a.output_dir/'conditional_coupling_sample.csv',analytical,fields)
+    # Fail closed on the frozen expected classifications.
+    from collections import Counter
+    counts=Counter(x['classification'] for x in analytical)
+    admitted=sum(x['primary_admitted']=='true' for x in analytical)
+    checks={'canvas_rows':len(canvas_rows),'canvas_unique_ids':len({x['yale_canvas_id'] for x in canvas_rows}),
+            'duplicate_image_id_groups':sum(1 for v in __import__('collections').Counter(x['image_id'] for x in meta).values() if v>1),
+            'analytical_rows':len(analytical),'score_dimensions':len(score_keys),'class_counts':dict(counts),
+            'primary_admitted':admitted,'threshold':THRESHOLD,'conditional_coupling_run':False}
+    expected={'primary_candidate':175,'multipanel_sensitivity':11,'single_no_P':8,'multipanel_no_P':2,'unmatched_ivtff':1}
+    if len(canvas_rows)!=213 or len(analytical)!=197 or len(score_keys)!=16 or dict(counts)!=expected or admitted!=146:
+        raise SystemExit('VALIDATION FAILED: '+json.dumps(checks,ensure_ascii=False))
+    (a.output_dir/'RC1_4_remaining_crosswalks_validation.json').write_text(json.dumps(checks,indent=2),encoding='utf-8')
+    print(json.dumps(checks,indent=2))
+
+if __name__=='__main__': main()
