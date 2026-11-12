@@ -1,0 +1,28 @@
+import csv, json, re
+from collections import Counter, defaultdict
+from pathlib import Path
+root=Path(__file__).parent
+pages=list(csv.DictReader((root/'voynich_page_metadata_ZL3b.csv').open(encoding='utf-8-sig',newline='')))
+report=json.loads((root/'ivtff_parser_rc1_4_report.json').read_text(encoding='utf-8'))
+stats=defaultdict(lambda:[0,0])
+for rec in report['records']:
+    stats[rec['folio']][0]+=1
+    stats[rec['folio']][1]+=len(rec['tokens'])
+def folio_key(unit):
+    return re.sub(r'([rv])[0-9]+$',r'\1',unit)
+unit_counts=Counter(folio_key(x['source_page_id']) for x in pages)
+fields=['page_id','source_page_id','source_line','folio_key','unit_id','quire','page_in_quire','folio_within_quire','bifolio','illustration_type_I','currier_language_L','hand_H','currier_class_C','extra_X','unit_p_locus_count','unit_token_count','unit_has_P','folio_unit_count']
+with (root/'folio_ivtff_crosswalk.csv').open('w',encoding='utf-8-sig',newline='') as f:
+    w=csv.DictWriter(f,fieldnames=fields); w.writeheader()
+    for p in pages:
+        n,t=stats[p['source_page_id']]
+        row={k:p.get(k,'') for k in fields if k in p}
+        row.update(folio_key=folio_key(p['source_page_id']),unit_id=p['source_page_id'],unit_p_locus_count=n,unit_token_count=t,unit_has_P=bool(n),folio_unit_count=unit_counts[folio_key(p['source_page_id'])])
+        w.writerow(row)
+out=list(csv.DictReader((root/'folio_ivtff_crosswalk.csv').open(encoding='utf-8-sig',newline='')))
+assert len(pages)==227 and len(out)==227
+assert len({x['page_id'] for x in out})==227 and len({x['source_page_id'] for x in out})==227
+assert sum(int(x['unit_p_locus_count']) for x in out)==4130
+assert sum(int(x['unit_token_count']) for x in out)==35492
+assert sum(x['source_page_id']=='fRos' and int(x['unit_p_locus_count'])>0 for x in out)==1
+print({'rows':len(out),'unique_page_ids':len(set(x['page_id'] for x in out)),'p_loci':sum(int(x['unit_p_locus_count']) for x in out),'tokens':sum(int(x['unit_token_count']) for x in out),'units_with_P':sum(int(x['unit_p_locus_count'])>0 for x in out),'fRos_p_loci':sum(int(x['unit_p_locus_count']) for x in out if x['source_page_id']=='fRos')})
