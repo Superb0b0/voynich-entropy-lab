@@ -1,0 +1,60 @@
+# Protocollo di confronto differenziale IVTFF / IVTT 2.4
+
+## Stato
+
+`SPECIFICATO · NON ESEGUITO CONTRO IVTT`. Il corpus `ZL3b-n.txt` non viene modificato. Nel runtime dell'audit non è presente un eseguibile IVTT 2.4 verificabile; pertanto nessun risultato è attribuito al confronto con il riferimento.
+
+## Input congelati
+
+- Corpus: `ZL3b-n.txt`
+- SHA-256 atteso: `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc`
+- Parser candidato RC1.2: `ivtff_parser_rc1_2.py`
+- SHA-256 parser RC1.2 atteso: `8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5`
+- Riferimento: IVTT 2.4, manuale issue 2.4 del 07/09/2025; IVTFF issue 2.0.1, documento 2.0.2 del 08/07/2025.
+
+## Profilo IVTT di riferimento
+
+Comando previsto:
+
+```sh
+ivtt -f0 -c3 -p3 -l1 -u0 -w1 +@P ZL3b-n.txt ivtt_reference_P.txt
+```
+
+Significato delle opzioni rilevanti:
+
+- `+@P`: seleziona i loci della famiglia P.
+- `-f0`: mantiene intestazioni/foliazione e identificatori dei loci per l'allineamento.
+- `-c3`: rimuove commenti testuali, variabili di pagina e tag testuali.
+- `-p3`: rimuove marcatori dedicati di paragrafo e intrusione grafica.
+- `-l1`: rimuove le parentesi graffe mantenendo il contenuto.
+- `-u0`: conserva le letture alternative, così la politica di esclusione delle parentesi quadre rimane esplicita nel normalizzatore comparativo e non viene decisa implicitamente da IVTT.
+- `-w1`: ricongiunge le continuazioni fisiche.
+
+Le opzioni vanno registrate esattamente nell'ordine sopra. Prima del run principale si deve acquisire la versione mostrata da IVTT e conservare stdout, stderr, comando e hash dell'eseguibile.
+
+## Normalizzazione comune
+
+Il confronto non è tra stringhe grezze. Per ciascun locus P, entrambi gli output vengono normalizzati con la stessa regola analitica del parser RC1.2:
+
+1. conservare l'identificatore completo del locus e il tag;
+2. rimuovere commenti inline e marcatori strutturali secondo la specifica;
+3. conservare il testo interno alle graffe rimuovendo i delimitatori;
+4. escludere l'intero gruppo tra parentesi quadre, senza selezionare una lettura;
+5. estrarre sequenze ASCII alfabetiche e convertirle in minuscolo;
+6. confrontare sequenza dei token per locus, non soltanto conteggi globali.
+
+Questo endpoint verifica la parità della normalizzazione scelta, non l'adeguatezza filologica della scelta di escludere le alternative.
+
+## Criteri di accettazione
+
+- SHA-256 del corpus e del parser coincidono con quelli congelati.
+- IVTT dichiara versione 2.4; exit code 0 e nessun errore fatale.
+- Stesso insieme ordinato di identificatori/tag P, includendo loci vuoti.
+- Zero differenze per-locus nella sequenza normalizzata dei token.
+- Conteggi aggregati (loci, token, tipi) coerenti con il confronto per-locus.
+- Ogni differenza residua è registrata con ID locus, riga sorgente, output IVTT, output locale e causa classificata; nessuna esclusione post hoc.
+- Continuazioni sintetiche testate separatamente; se il corpus non contiene continuazioni reali, questo non viene riportato come test empirico di continuazioni.
+
+## Stato fail-closed
+
+Qualsiasi differenza non spiegata, versione IVTT non verificata, output mancante o errore di allineamento blocca la chiusura dell'audit. La collazione codicologica rimane bloccata fino al superamento del confronto e della validazione indipendente dell'ordine ufficiale delle pagine.
