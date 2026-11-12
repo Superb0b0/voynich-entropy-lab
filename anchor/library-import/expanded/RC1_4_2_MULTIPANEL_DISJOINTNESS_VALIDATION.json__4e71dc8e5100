@@ -1,0 +1,587 @@
+{
+  "crosswalk": {
+    "bytes": 13269,
+    "filename": "folio_ivtff_crosswalk.csv",
+    "rows": 227,
+    "sha256": "769fcd2c94f93c232cc4828cd98e9ff16ff42d50baf051886d0dada00b4b3041"
+  },
+  "disjointness": {
+    "all_component_units_included": true,
+    "all_pairwise_intersections_empty": true,
+    "all_token_occurrences_traceable": true,
+    "cross_unit_partial_segment_overlap_count": 0,
+    "cross_unit_partial_segment_overlap_examples": [],
+    "no_P_sibling_units_included_with_empty_occurrence_sets": true,
+    "pairwise_intersection_count": 0
+  },
+  "folios": [
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f102r",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 1,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f102r1": {
+          "loci": 13,
+          "occurrences": 103,
+          "tokens": 103,
+          "untraceable": 0
+        },
+        "f102r2": {
+          "loci": 15,
+          "occurrences": 140,
+          "tokens": 140,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f102r1",
+        "f102r2"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f102v",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 1,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f102v1": {
+          "loci": 14,
+          "occurrences": 120,
+          "tokens": 120,
+          "untraceable": 0
+        },
+        "f102v2": {
+          "loci": 17,
+          "occurrences": 171,
+          "tokens": 171,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f102v2",
+        "f102v1"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f67r",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 1,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f67r1": {
+          "loci": 4,
+          "occurrences": 41,
+          "tokens": 41,
+          "untraceable": 0
+        },
+        "f67r2": {
+          "loci": 35,
+          "occurrences": 127,
+          "tokens": 127,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f67r1",
+        "f67r2"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f67v",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 1,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f67v1": {
+          "loci": 0,
+          "occurrences": 0,
+          "tokens": 0,
+          "untraceable": 0
+        },
+        "f67v2": {
+          "loci": 8,
+          "occurrences": 35,
+          "tokens": 35,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f67v2",
+        "f67v1"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f68r",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 3,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f68r1": {
+          "loci": 7,
+          "occurrences": 31,
+          "tokens": 31,
+          "untraceable": 0
+        },
+        "f68r2": {
+          "loci": 5,
+          "occurrences": 38,
+          "tokens": 38,
+          "untraceable": 0
+        },
+        "f68r3": {
+          "loci": 0,
+          "occurrences": 0,
+          "tokens": 0,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f68r1",
+        "f68r2",
+        "f68r3"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f68v",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 3,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f68v1": {
+          "loci": 0,
+          "occurrences": 0,
+          "tokens": 0,
+          "untraceable": 0
+        },
+        "f68v2": {
+          "loci": 5,
+          "occurrences": 44,
+          "tokens": 44,
+          "untraceable": 0
+        },
+        "f68v3": {
+          "loci": 7,
+          "occurrences": 55,
+          "tokens": 55,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f68v3",
+        "f68v2",
+        "f68v1"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f70r",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 1,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f70r1": {
+          "loci": 0,
+          "occurrences": 0,
+          "tokens": 0,
+          "untraceable": 0
+        },
+        "f70r2": {
+          "loci": 14,
+          "occurrences": 103,
+          "tokens": 103,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f70r1",
+        "f70r2"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f70v",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 1,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f70v1": {
+          "loci": 0,
+          "occurrences": 0,
+          "tokens": 0,
+          "untraceable": 0
+        },
+        "f70v2": {
+          "loci": 0,
+          "occurrences": 0,
+          "tokens": 0,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f70v2",
+        "f70v1"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f72r",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 3,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f72r1": {
+          "loci": 0,
+          "occurrences": 0,
+          "tokens": 0,
+          "untraceable": 0
+        },
+        "f72r2": {
+          "loci": 0,
+          "occurrences": 0,
+          "tokens": 0,
+          "untraceable": 0
+        },
+        "f72r3": {
+          "loci": 0,
+          "occurrences": 0,
+          "tokens": 0,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f72r1",
+        "f72r2",
+        "f72r3"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f72v",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 3,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f72v1": {
+          "loci": 0,
+          "occurrences": 0,
+          "tokens": 0,
+          "untraceable": 0
+        },
+        "f72v2": {
+          "loci": 0,
+          "occurrences": 0,
+          "tokens": 0,
+          "untraceable": 0
+        },
+        "f72v3": {
+          "loci": 0,
+          "occurrences": 0,
+          "tokens": 0,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f72v3",
+        "f72v2",
+        "f72v1"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f85r",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 1,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f85r1": {
+          "loci": 35,
+          "occurrences": 350,
+          "tokens": 350,
+          "untraceable": 0
+        },
+        "f85r2": {
+          "loci": 22,
+          "occurrences": 109,
+          "tokens": 109,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f85r1",
+        "f85r2"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f86v",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 6,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f86v3": {
+          "loci": 36,
+          "occurrences": 287,
+          "tokens": 287,
+          "untraceable": 0
+        },
+        "f86v4": {
+          "loci": 5,
+          "occurrences": 49,
+          "tokens": 49,
+          "untraceable": 0
+        },
+        "f86v5": {
+          "loci": 39,
+          "occurrences": 390,
+          "tokens": 390,
+          "untraceable": 0
+        },
+        "f86v6": {
+          "loci": 45,
+          "occurrences": 496,
+          "tokens": 496,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f86v4",
+        "f86v6",
+        "f86v5",
+        "f86v3"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f89r",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 1,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f89r1": {
+          "loci": 14,
+          "occurrences": 126,
+          "tokens": 126,
+          "untraceable": 0
+        },
+        "f89r2": {
+          "loci": 14,
+          "occurrences": 213,
+          "tokens": 213,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f89r1",
+        "f89r2"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f89v",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 1,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f89v1": {
+          "loci": 16,
+          "occurrences": 145,
+          "tokens": 145,
+          "untraceable": 0
+        },
+        "f89v2": {
+          "loci": 12,
+          "occurrences": 168,
+          "tokens": 168,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f89v2",
+        "f89v1"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f90r",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 1,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f90r1": {
+          "loci": 9,
+          "occurrences": 68,
+          "tokens": 68,
+          "untraceable": 0
+        },
+        "f90r2": {
+          "loci": 6,
+          "occurrences": 47,
+          "tokens": 47,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f90r1",
+        "f90r2"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f90v",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 1,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f90v1": {
+          "loci": 11,
+          "occurrences": 99,
+          "tokens": 99,
+          "untraceable": 0
+        },
+        "f90v2": {
+          "loci": 8,
+          "occurrences": 71,
+          "tokens": 71,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f90v2",
+        "f90v1"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f95r",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 1,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f95r1": {
+          "loci": 11,
+          "occurrences": 103,
+          "tokens": 103,
+          "untraceable": 0
+        },
+        "f95r2": {
+          "loci": 9,
+          "occurrences": 79,
+          "tokens": 79,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f95r1",
+        "f95r2"
+      ]
+    },
+    {
+      "all_component_units_resolved": true,
+      "all_tokens_have_source_identity": true,
+      "folio_key": "f95v",
+      "intersection_count": 0,
+      "intersections": [],
+      "pairwise_comparisons": 1,
+      "pairwise_disjoint": true,
+      "unit_stats": {
+        "f95v1": {
+          "loci": 13,
+          "occurrences": 120,
+          "tokens": 120,
+          "untraceable": 0
+        },
+        "f95v2": {
+          "loci": 7,
+          "occurrences": 61,
+          "tokens": 61,
+          "untraceable": 0
+        }
+      },
+      "units": [
+        "f95v2",
+        "f95v1"
+      ]
+    }
+  ],
+  "gate": "CLOSED_PENDING_VALIDATION",
+  "interpretation": "The component-unit token-occurrence sets are pairwise disjoint at the immutable source-byte segment level for all multipanel folios in the crosswalk. This is a technical validation of source occurrence separation only; it is not a semantic or statistical result and does not authorize analytical execution.",
+  "lexical_authority": {
+    "expected_sha256": "075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d",
+    "filename": "ivtff_parser_rc1_4.py",
+    "sha256": "075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d"
+  },
+  "mapping": {
+    "mapped_loci": 4130,
+    "parser_loci": 4130,
+    "unit_locus_token_count_mismatches": 0,
+    "unmapped_loci": 0
+  },
+  "prohibited_actions": {
+    "V1_4_2_artifacts_generated": false,
+    "analytical_builder_executed": false,
+    "clustering_executed": false,
+    "conditional_coupling_executed": false,
+    "pca_executed": false,
+    "profile_promotion_executed": false
+  },
+  "provenance_mapper": {
+    "filename": "ivtff_parser_rc1_4_offset_aware.py",
+    "role": "provenance_only",
+    "sha256": "ccce4b8514bbd60b9be5d0122ac2cb40353827d43b12d9709782550b60646565"
+  },
+  "scope": {
+    "component_units_checked": 42,
+    "multipanel_folios_checked": 18,
+    "multipanel_folios_with_P": 15,
+    "multipanel_no_P_folios": 3,
+    "pairwise_unit_comparisons": 31
+  },
+  "source": {
+    "expected_sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    "filename": "ZL3b-n.txt",
+    "sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc"
+  },
+  "status": "PASS_DISJOINTNESS_TECHNICAL_ONLY",
+  "validation_id": "RC1.4.2-MULTIPANEL-DISJOINTNESS-01"
+}
