@@ -1,0 +1,308 @@
+#!/usr/bin/env python3
+"""Reproducible out-of-sample benchmark for IVTFF Voynich transcriptions.
+
+This script does NOT infer semantic sections from IVTFF $Q metadata. Supply an
+explicit UTF-8 TSV mapping with columns `folio<TAB>section` before running CV.
+All vocabularies, slot inventories and probability tables are learned on train
+folios only. No corpus file is modified.
+
+Primary tokenizer choices are explicit. Default: select locus tags containing a
+P-type, split on IVTFF word separators '.' and ',', strip inline IVTFF comments,
+and exclude tokens containing uncertainty/transcription markup. Validate these
+choices against the exact protocol before interpreting results.
+"""
+from __future__ import annotations
+import argparse, collections, hashlib, json, math, random, re, sys
+from pathlib import Path
+from typing import Counter, DefaultDict, Dict, List, Tuple
+
+LOCUS_RE = re.compile(r'^<(?P<locus>f[^>]+?)>\s+(?P<body>.*)$')
+FOLIO_RE = re.compile(r'^(f\d+[rv](?:\d+)?)', re.I)
+P_TYPE_RE = re.compile(r'(?<![A-Za-z])P(?:[0-9A-Za-z]+)?(?![A-Za-z])')
+INLINE_RE = re.compile(r'<[^>]*>')
+UNCERTAIN_RE = re.compile(r'\[[^]]*\]|\{[^}]*\}|\([^)]*\)')
+WORD_SPLIT_RE = re.compile(r'[.,]+')
+NON_ALPHA_RE = re.compile(r'[^a-zA-Z]')
+
+
+def sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open('rb') as f:
+        for block in iter(lambda: f.read(1 << 20), b''):
+            h.update(block)
+    return h.hexdigest()
+
+
+def parse_corpus(path: Path, ambiguity: str = 'exclude') -> Tuple[dict, list]:
+    """Return corpus metadata and P-locus records. Each record is one source line."""
+    raw = path.read_bytes()
+    records = []
+    skipped_nonlocus = skipped_nonp = skipped_ambiguous = 0
+    for lineno, line in enumerate(raw.decode('utf-8').splitlines(), 1):
+        m = LOCUS_RE.match(line)
+        if not m:
+            continue
+        locus, body = m.group('locus'), m.group('body')
+        # A text locus must have a locus identifier and a comma-separated type field.
+        if ',' not in locus:
+            skipped_nonlocus += 1
+            continue
+        ident, tags = locus.split(',', 1)
+        if not P_TYPE_RE.search(tags):
+            skipped_nonp += 1
+            continue
+        fm = FOLIO_RE.match(ident)
+        if not fm:
+            continue
+        folio = fm.group(1).lower()
+        body = INLINE_RE.sub(' ', body)
+        # <...> annotations are removed; uncertainty markup is handled separately.
+        if ambiguity == 'exclude':
+            if UNCERTAIN_RE.search(body):
+                # Exclude only affected token(s), not the entire line.
+                parts = WORD_SPLIT_RE.split(body)
+                words = []
+                for part in parts:
+                    if UNCERTAIN_RE.search(part):
+                        skipped_ambiguous += 1
+                        continue
+                    w = NON_ALPHA_RE.sub('', part).lower()
+                    if w:
+                        words.append(w)
+            else:
+                words = [NON_ALPHA_RE.sub('', x).lower() for x in WORD_SPLIT_RE.split(body)]
+                words = [w for w in words if w]
+        elif ambiguity == 'literal':
+            body = re.sub(r'[\[\]{}()]', '', body)
+            words = [NON_ALPHA_RE.sub('', x).lower() for x in WORD_SPLIT_RE.split(body)]
+            words = [w for w in words if w]
+        else:
+            raise ValueError(ambiguity)
+        if words:
+            records.append({'folio': folio, 'locus': ident, 'line': lineno, 'tokens': words})
+    meta = {
+        'path_name': path.name, 'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
+        'ambiguity_policy': ambiguity, 'p_locus_lines': len(records),
+        'tokens': sum(len(r['tokens']) for r in records),
+        'types': len({w for r in records for w in r['tokens']}),
+        'folios': len({r['folio'] for r in records}),
+        'skipped_nonlocus_lines': skipped_nonlocus,
+        'skipped_nonp_locus_lines': skipped_nonp,
+        'ambiguous_token_parts_excluded': skipped_ambiguous,
+        'tokenization': 'split on . and ,; strip inline <...>; lowercase ASCII letters',
+    }
+    return meta, records
+
+
+def read_section_map(path: Path) -> Dict[str, str]:
+    mapping = {}
+    for line_no, line in enumerate(path.read_text(encoding='utf-8-sig').splitlines(), 1):
+        if not line.strip() or line.lstrip().startswith('#'):
+            continue
+        parts = line.split('\t')
+        if len(parts) != 2:
+            raise ValueError(f'{path}:{line_no}: expected folio<TAB>section')
+        folio, section = parts[0].strip().lower(), parts[1].strip()
+        if folio.lower() == 'folio' and section.lower() == 'section':
+            continue
+        if not folio or not section:
+            raise ValueError(f'{path}:{line_no}: empty folio or section')
+        if folio in mapping and mapping[folio] != section:
+            raise ValueError(f'{path}:{line_no}: conflicting section for {folio}')
+        mapping[folio] = section
+    return mapping
+
+
+def flatten(records, allowed_folios=None):
+    out = []
+    for r in records:
+        if allowed_folios is None or r['folio'] in allowed_folios:
+            out.extend(r['tokens'])
+    return out
+
+
+def split_folios(records, section_map, train_fraction, seed):
+    by_section: DefaultDict[str, set] = collections.defaultdict(set)
+    for r in records:
+        if r['folio'] not in section_map:
+            continue
+        by_section[section_map[r['folio']]].add(r['folio'])
+    rng = random.Random(seed)
+    train, test = set(), set()
+    for section in sorted(by_section):
+        folios = sorted(by_section[section])
+        rng.shuffle(folios)
+        if len(folios) < 2:
+            raise ValueError(f'Section {section!r} has fewer than 2 folios; cannot split')
+        n_train = min(len(folios)-1, max(1, round(len(folios)*train_fraction)))
+        train.update(folios[:n_train]); test.update(folios[n_train:])
+    return train, test
+
+
+def log2p(p):
+    return math.log2(p) if p > 0 else float('-inf')
+
+
+def safe_log_prob(count, total, vocab, alpha):
+    return log2p((count + alpha) / (total + alpha * max(1, vocab)))
+
+
+def eval_iid(train, test, alpha=0.1, uniform=False):
+    c = collections.Counter(train); V = max(1, len(c)); N = len(train)
+    if not test: return {'bits_per_token': None, 'perplexity': None, 'n_test': 0}
+    vals=[]
+    for w in test:
+        if uniform:
+            p = 1.0 / V
+        else:
+            p = (c[w] + alpha) / (N + alpha * (V + 1)) if w in c else alpha / (N + alpha * (V + 1))
+        vals.append(log2p(p))
+    h = -sum(vals)/len(vals)
+    return {'bits_per_token': h, 'perplexity': 2**h, 'n_test': len(test), 'train_vocab': V,
+            'train_tokens': N, 'unknown_test_tokens': sum(w not in c for w in test)}
+
+
+def eval_word_markov(train, test, order=1, alpha=0.1):
+    # Sequence boundaries are preserved within each record by using an explicit start context.
+    contexts: DefaultDict[tuple, Counter] = collections.defaultdict(collections.Counter)
+    vocab=set(train); V=max(1,len(vocab)); ntrain=0
+    for r in train:
+        seq=['<s>']*order + r
+        for i in range(order, len(seq)):
+            contexts[tuple(seq[i-order:i])][seq[i]] += 1; ntrain += 1
+    # Add a single unknown outcome to the output alphabet for unseen words.
+    denom_vocab=V+1
+    logps=[]; unknown=0; nt=0
+    for r in test:
+        seq=['<s>']*order + r
+        for i in range(order, len(seq)):
+            ctx=tuple(seq[i-order:i]); w=seq[i]; c=contexts.get(ctx, Counter())
+            total=sum(c.values()); key=w if w in vocab else '<UNK>'
+            if key == '<UNK>': unknown += 1
+            p=(c.get(key,0)+alpha)/(total+alpha*denom_vocab)
+            logps.append(log2p(p)); nt += 1
+    h=-sum(logps)/nt if nt else None
+    return {'bits_per_token':h,'perplexity':2**h if h is not None else None,'n_test':nt,
+            'train_vocab':V,'train_tokens':ntrain,'unknown_test_tokens':unknown,'order':order,'alpha':alpha}
+
+
+def eval_char_markov(train_records, test_records, order=1, alpha=0.1):
+    # Character model uses token boundaries as spaces, not line/folio metadata.
+    train_text=' '.join(' '.join(r) for r in train_records)
+    test_text=' '.join(' '.join(r) for r in test_records)
+    vocab=set(train_text); V=len(vocab)+1
+    contexts=collections.defaultdict(collections.Counter)
+    seq='^'*order + train_text
+    for i in range(order,len(seq)):
+        contexts[seq[i-order:i]][seq[i]] += 1
+    logps=[]; unknown=0
+    seq='^'*order + test_text
+    for i in range(order,len(seq)):
+        ctx=seq[i-order:i]; ch=seq[i]; key=ch if ch in vocab else '\ufffd'
+        unknown += key=='\ufffd'; c=contexts.get(ctx,Counter()); total=sum(c.values())
+        logps.append(log2p((c.get(key,0)+alpha)/(total+alpha*V)))
+    h=-sum(logps)/len(logps) if logps else None
+    return {'bits_per_character':h,'perplexity':2**h if h is not None else None,'n_test_chars':len(logps),
+            'train_chars':len(train_text),'unknown_test_chars':unknown,'order':order,'alpha':alpha}
+
+
+def split_records(records, folios):
+    return [r['tokens'] for r in records if r['folio'] in folios]
+
+
+def eval_slot_model(train, test, prefix_len=2, suffix_len=2, alpha=0.1, whitelist=False):
+    """Factorized fixed-width slot model. Widths must be preregistered.
+
+    If whitelist=True, whitelist is TRAIN-ONLY, so unseen test combinations are
+    not leaked into the model. The whitelist variant is a support-restricted model;
+    it will assign zero probability to unseen combinations and is reported separately.
+    """
+    def split(w):
+        if len(w) <= prefix_len + suffix_len: return (w, '', '')
+        return (w[:prefix_len], w[prefix_len:len(w)-suffix_len], w[-suffix_len:])
+    pc=Counter(); nc=Counter(); sc=Counter(); wc=Counter(); total=len(train)
+    for w in train:
+        p,n,s=split(w); pc[p]+=1; nc[n]+=1; sc[s]+=1; wc[(p,n,s)]+=1
+    Pv,Nv,Sv=max(1,len(pc)),max(1,len(nc)),max(1,len(sc))
+    seen=set(wc); logps=[]; zero=0
+    for w in test:
+        p,n,s=split(w)
+        if whitelist and (p,n,s) not in seen:
+            zero += 1; logps.append(float('-inf')); continue
+        lp=safe_log_prob(pc[p],total,Pv,alpha)+safe_log_prob(nc[n],total,Nv,alpha)+safe_log_prob(sc[s],total,Sv,alpha)
+        logps.append(lp)
+    # If support-restricted model assigns any zero probability, finite perplexity is infinite.
+    h=-sum(logps)/len(logps) if logps and all(math.isfinite(x) for x in logps) else (float('inf') if logps else None)
+    return {'bits_per_token':h if h is None or math.isfinite(h) else 'inf','perplexity':2**h if h is not None and math.isfinite(h) else ('inf' if h==float('inf') else None),
+            'n_test':len(test),'train_vocab':len(seen),'train_tokens':total,'unseen_slot_combinations':zero,
+            'prefix_len':prefix_len,'suffix_len':suffix_len,'alpha':alpha,'train_only_whitelist':whitelist}
+
+
+def main():
+    ap=argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--corpus',type=Path,required=True)
+    ap.add_argument('--sections',type=Path,help='TSV folio<TAB>section mapping, independently defined')
+    ap.add_argument('--out',type=Path,default=Path('voynich_cv_report.json'))
+    ap.add_argument('--ambiguity',choices=['exclude','literal'],default='exclude')
+    ap.add_argument('--train-fraction',type=float,default=.70)
+    ap.add_argument('--seed',type=int,default=408)
+    ap.add_argument('--alpha',type=float,default=.1)
+    ap.add_argument('--prefix-len',type=int,default=2)
+    ap.add_argument('--suffix-len',type=int,default=2)
+    ap.add_argument('--audit-only',action='store_true',help='parse and report counts only; do not fit models')
+    args=ap.parse_args()
+    if not 0.1 <= args.train_fraction <= .9: ap.error('--train-fraction must be between 0.1 and 0.9')
+    meta, records=parse_corpus(args.corpus,args.ambiguity)
+    report={'schema':'voynich-cv-report-1.0','input':meta,'protocol':{
+        'split_unit':'folio, stratified by supplied section map','train_fraction':args.train_fraction,
+        'seed':args.seed,'smoothing':'Lidstone alpha','alpha':args.alpha,
+        'slot_model':'fixed character widths; diagnostic operational baseline, not asserted historical mechanism',
+        'leakage_control':'all vocabularies/parameters learned from train folios only',
+        'section_map_source':str(args.sections) if args.sections else None}}
+    if not args.audit_only:
+        if not args.sections:
+            ap.error('--sections is required for cross-validation; IVTFF $Q values are not semantic sections')
+        section_map=read_section_map(args.sections)
+        observed={r['folio'] for r in records}
+        missing=sorted(observed-set(section_map))
+        if missing: raise SystemExit('Section map missing folios: '+', '.join(missing[:30])+(' ...' if len(missing)>30 else ''))
+        train_folios,test_folios=split_folios(records,section_map,args.train_fraction,args.seed)
+        train_recs=split_records(records,train_folios); test_recs=split_records(records,test_folios)
+        train= [w for r in train_recs for w in r]; test=[w for r in test_recs for w in r]
+        # Baselines / candidate models. Results use bits per token except character Markov.
+        report['split']={'train_folios':sorted(train_folios),'test_folios':sorted(test_folios),
+                         'train_tokens':len(train),'test_tokens':len(test),
+                         'train_sections':dict(collections.Counter(section_map[f] for f in train_folios)),
+                         'test_sections':dict(collections.Counter(section_map[f] for f in test_folios))}
+        report['models']={
+          'uniform_global_token_baseline':eval_iid(train,test,args.alpha,uniform=True),
+          'smoothed_global_iid':eval_iid(train,test,args.alpha),
+          'word_markov_order1':eval_word_markov(train_recs,test_recs,1,args.alpha),
+          'word_markov_order2':eval_word_markov(train_recs,test_recs,2,args.alpha),
+          'character_markov_order1':eval_char_markov(train_recs,test_recs,1,args.alpha),
+          'slot_global_factorized':eval_slot_model(train,test,args.prefix_len,args.suffix_len,args.alpha,False),
+          'slot_global_train_whitelist':eval_slot_model(train,test,args.prefix_len,args.suffix_len,args.alpha,True),
+        }
+        # Sectional slot model: fit independent slot distributions per section and score each test folio.
+        sectional_results={}; total_lp=0.0; total_n=0; unseen=0
+        for sec in sorted(set(section_map.values())):
+            sec_train_f={f for f in train_folios if section_map[f]==sec}
+            sec_test_f={f for f in test_folios if section_map[f]==sec}
+            tr=[w for r in records if r['folio'] in sec_train_f for w in r['tokens']]
+            te=[w for r in records if r['folio'] in sec_test_f for w in r['tokens']]
+            if not tr or not te:
+                sectional_results[sec]={'status':'not_scored','train_tokens':len(tr),'test_tokens':len(te)}; continue
+            res=eval_slot_model(tr,te,args.prefix_len,args.suffix_len,args.alpha,False)
+            sectional_results[sec]=res
+            if isinstance(res['bits_per_token'],(float,int)):
+                total_lp += res['bits_per_token']*len(te); total_n += len(te)
+        report['models']['slot_sectional_factorized']={'per_section':sectional_results,
+            'pooled_bits_per_token':total_lp/total_n if total_n else None,
+            'pooled_perplexity':2**(total_lp/total_n) if total_n else None,
+            'note':'section identity supplied externally; slot widths fixed before test scoring'}
+    args.out.parent.mkdir(parents=True,exist_ok=True)
+    args.out.write_text(json.dumps(report,indent=2,ensure_ascii=False,allow_nan=False,default=str)+'\n',encoding='utf-8')
+    print(json.dumps({'report_path':str(args.out),'input':meta,'models_run':not args.audit_only},indent=2,ensure_ascii=False))
+
+if __name__=='__main__':
+    main()
