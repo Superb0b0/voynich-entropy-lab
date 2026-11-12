@@ -1,0 +1,92 @@
+# RC1.4.2 V7.1 | Revisione statica della specifica DRAFT 03_CODE rev. 02.1
+
+**Data:** 10 novembre 2026.  
+**Perimetro:** ispezione testuale del contratto e confronto con la rev. 02 e il rapporto rev. 02/02. Nessun import o esecuzione del generatore, dei parser o del builder. Nessuna modifica agli originali o ai documenti precedenti.  
+**Esito:** `SPECIFICATION_INADEQUATE` **come contratto di accettazione statica completo**, con qualifica `R01_PARTIAL_R02_ADEQUATE_NORMATIVELY`.  
+**Valore dell'esito:** revisione tecnica della specifica, non prova di efficacia runtime, non attestazione esterna e non chiusura di RP-01.
+
+## 1. Identità del documento letto
+
+- File: `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_1.md`.
+- Dimensione del file esaminato: **30.496 byte**; **200 righe**.
+- SHA-256 ricalcolato sui byte locali: `4271b2351ddc8fac147fca120220b932dabe2aafaa9b9ae6964cad81cbf0b6a3`.
+- Riferimenti di confronto letti in sola lettura: rev. 02 (**23.479 byte**, SHA-256 `cb9e0098baf0eb29ea0e798e84ac834cce1c60a5a6e27d956443968794351a6b`) e rapporto 02 (**8.098 byte**, SHA-256 `341aca883be16dca6630e6b6bb7b78aac67401266c174a3841859439f29e960f`).
+- Metodo: lettura diretta, `diff -u` e `sha256sum` locali, non una verifica effettuata da un attestante esterno.
+
+## 2. Accertamento delle rettifiche R-01/R-02
+
+| Requisito | Esito della revisione | Evidenza | Condizione ancora aperta |
+|---|---|---|---|
+| **R-01**: snapshot verificato e backend Linux obbligatorio | `PARTIAL_AS_STATIC_ACCEPTANCE_CONTRACT` | §3 r. 56–63, in particolare r. 59: snapshot da buffer, rilettura, mount namespace, bind read-only, confine di fiducia e `BLOCKED` | Mancano una tecnica nominata per restringere l'intera vista filesystem del **processo parser** e una politica chiusa di privilegi/capability verificabile staticamente |
+| **R-02**: percorsi ancorati e pubblicazione no-replace | `ADEQUATE_AS_NORMATIVE_REQUIREMENT` | §4.2 r. 77–85; `openat2`, `dirfd`, tre flag RESOLVE obbligatori, `renameat2(RENAME_NOREPLACE)`, esclusione di check-then-rename e fallback | L'efficacia kernel/filesystem, i parametri `open_how.flags` e la durabilità sono da verificare nell'implementazione e in ambiente autorizzato; non attribuire PASS ora |
+
+**R-01 è effettivamente migliorato rispetto alla rev. 02**: il backend non è più presentato come esempio, e il fail-closed compare prima dell'import del parser. Tuttavia la richiesta «accesso ai soli file verificati» (r. 59, punto v) non nomina la primitiva con cui il processo parser perderebbe accesso agli altri mount e percorsi copiati nella vista del nuovo namespace. Un mount namespace crea un'altra vista dei mount, non impone automaticamente una radice filesystem limitata allo snapshot. Il contratto richiede una restrizione, ma deve indicarne il meccanismo perché l'ispezione futura possa applicare un criterio binario.
+
+Inoltre «`CAP_SYS_ADMIN` e le altre capability o credenziali» (r. 59, punto iv) è un requisito aperto: non identifica una policy a lista chiusa né quali set/identità del processo parser debbano essere negati o verificati. Il risultato non è un difetto empirico, ma un criterio attualmente non decidibile con sola analisi statica.
+
+**R-02 può essere accettato prescrittivamente**, perché §4.2 vincola primitive e risoluzione ancorata e specifica errori e fallback. La revisione statica del futuro codice dovrà anche verificare come vengono aperti e mantenuti i `dirfd` e come sono popolati `open_how.flags`; la loro mancata specificazione al livello di singolo `O_*` qui non è, da sola, prova che il contratto di R-02 sia inadeguato. La protezione dei percorsi usati dal verificatore **non equivale** a confinare tutti i possibili `open()` che il parser potrà effettuare: è il motivo per cui il punto residuo rimane sotto R-01.
+
+## 3. Valutazione S-01–S-05
+
+| Rilievo | Stato della specifica | Evidenza |
+|---|---|---|
+| S-01 | `ADEQUATE_AS_SPECIFICATION` | §2 r. 39–48: `EQUAL`/`DIFFERENT` per diagnostica, `PASS` di audit segregato |
+| S-02 | `PARTIAL_AS_STATIC_ACCEPTANCE_CONTRACT` | §3 r. 56–63: catena byte–digest–snapshot prescritta; residuo sulla restrizione effettiva dell'albero di percorsi e sui privilegi |
+| S-03 | `ADEQUATE_AS_SPECIFICATION` | §4 r. 69–85: verificatore esterno, policy autenticata, anti-replay, `openat2`, `renameat2(RENAME_NOREPLACE)`, fallimento bloccante |
+| S-04 | `ADEQUATE_AS_SPECIFICATION` | §5 r. 89–98: `compare_two_read_only_directories()` è `READ_ONLY_IO`, non funzione pura |
+| S-05 | `ADEQUATE_AS_SPECIFICATION` | §6 r. 102–120: verificabilità statica separata da futura verifica operativa `NOT_RUN` |
+
+## 4. Rilievi residui e formulazione minima necessaria
+
+### A-01 | Isolamento della vista filesystem del parser — bloccante per il contratto
+
+**Criterio da aggiungere:** il contratto deve nominare una tecnica obbligatoria di restrizione della vista del processo parser (per esempio una radice filesystem costruita dal runner con `pivot_root` e distacco della radice precedente, o altra tecnica esplicitamente scelta e sottoposta a review) e definire come le sole dipendenze runtime approvate siano accessibili. La configurazione deve impedire la visibilità di originali e copie mutabili, descrittori ereditati verso tali risorse e accessi non previsti tramite `/proc` o altri mount. Se la restrizione non è configurabile o verificabile, `BLOCKED` **prima dell'import**.
+
+Una semplice aggiunta di `pivot_root` non basta a provare isolamento: va specificata la rimozione/disconnessione della vecchia root, la vista dei mount ammessi, le dipendenze necessarie, i privilegi e i descrittori ereditati. I controlli runtime restano obbligatori in futuro.
+
+### A-02 | Politica di privilegi verificabile — bloccante per il contratto
+
+**Criterio da aggiungere:** fissare una policy a elenco chiuso dei privilegi consentiti al parser. Nel caso più restrittivo, tutti i set di capability del parser devono essere vuoti e il processo deve essere impedito dall'acquisirne di nuove; il runner registra UID/GID, i set di capability pertinenti, `no_new_privs` e il trattamento dei namespace/credenziali. Se una precondizione non è soddisfatta o non può essere attestata, `BLOCKED`. La futura revisione statica deve poter identificare ogni passaggio che fissa/controlla queste precondizioni senza interpretare «altre capability» in modo soggettivo.
+
+Le due integrazioni sono prescrittive, non esecuzioni, non garanzie empiriche di sicurezza.
+
+## 5. Limiti della decisione
+
+1. La validazione di S-02 e R-01 sul **futuro codice** non è avvenuta; non è appropriato affermare che siano già state implementate o superate.
+2. La presenza delle syscall nel futuro sorgente non proverà di per sé sicurezza effettiva, assenza di race o corrispondenza dei byte effettivamente letti.
+3. La risoluzione ancorata con `openat2` protegge il percorso del verificatore; non autorizza l'assunzione che i parser siano limitati agli stessi percorsi.
+4. Nessun confronto diagnostico `EQUAL` costituisce `AUDIT_VALIDATED_REPEATABILITY` o ricostruzione storica per RP-01.
+5. L'SHA-256 di questo rapporto, se registrato successivamente, identifica soltanto i byte del rapporto; non è un attestato di approvazione metodologica.
+
+## 6. Registro di stato invariato
+
+```text
+specification_review_result: SPECIFICATION_INADEQUATE
+specification_review_qualification: R01_PARTIAL_R02_ADEQUATE_NORMATIVELY
+new_acceptance_residuals: A-01,A-02
+S-01: ADEQUATE_AS_SPECIFICATION; NOT_IMPLEMENTED
+S-02: PARTIAL_AS_STATIC_ACCEPTANCE_CONTRACT; NOT_IMPLEMENTED
+S-03: ADEQUATE_AS_SPECIFICATION; NOT_IMPLEMENTED
+S-04: ADEQUATE_AS_SPECIFICATION; NOT_IMPLEMENTED
+S-05: ADEQUATE_AS_SPECIFICATION; NOT_IMPLEMENTED
+R-01: PARTIAL_AS_STATIC_ACCEPTANCE_CONTRACT
+R-02: ADEQUATE_AS_NORMATIVE_REQUIREMENT
+F-01: OPEN
+F-02: OPEN
+F-03: OPEN
+code_remediation_required: true
+DOC-01_to_DOC-03: RESOLVED_DOCUMENTALLY
+DOC-04: PENDING_EXTERNAL_ATTESTATION
+RP-01: OPEN
+f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data: false
+gate: CLOSED_PENDING_VALIDATION
+STATIC_SOURCE_ACCEPTANCE: NOT_EVALUATED_FUTURE_SOURCE
+FUTURE_OPERATIONAL_VALIDATION: NOT_RUN
+parser_generator_builder_execution: NOT_RUN
+five_validation_artifacts: NOT_GENERATED
+new_empirical_PASS: NONE
+preexisting_files_modified: false
+```
+
+**Decisione:** non implementare ancora il generatore né aprire il gate; integrare A-01/A-02 con una **appendice spec-only puntuale**, senza riscrivere R-02 e senza toccare gli originali. Poi sottoporre il testo integrato a revisione statica di accettabilità. Il presente documento è un rapporto di revisione, non un nuovo codice eseguibile.
