@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+"""Exploratory sensitivity grid for generator C. Does not read or decode Voynich data."""
+import importlib.util, json, math, statistics, hashlib, itertools, time
+from pathlib import Path
+from collections import Counter
+p=Path('/mnt/data/voynich_synth_bench.py')
+spec=importlib.util.spec_from_file_location('bench',p); bench=importlib.util.module_from_spec(spec); spec.loader.exec_module(bench)
+TARGET={'entropy':2.12,'ttr':0.216,'hapax_type_share':0.70,'mean_length':5.10,'zipf_slope':-0.94}
+# Broad exploratory ranges; not inferred from or fitted to the manuscript beyond the summary stats supplied by user.
+copy_grid=[0.05,0.40,0.80]
+mutation_grid=[0.05,0.30]
+length_grids=[(1,6,8,4,1,0.2),(1,4,7,6,3,1),(1,3,5,7,4,1)]
+rows=[]; t0=time.time(); seed=41000
+for cp,mp,lw in itertools.product(copy_grid,mutation_grid,length_grids):
+    seed+=1
+    lines=bench.generate_c(seed=seed,target_tokens=27755,tokens_per_line=9,lines_per_folio=20,copy_probability=cp,mutation_probability=mp,length_weights=lw)
+    tokens=[t for line in lines for t in line['tokens']]
+    c=Counter(tokens); vocab=len(c); hapax=sum(v==1 for v in c.values())
+    entropy=bench.conditional_character_entropy(tokens)
+    zipf=bench.zipf_summary(tokens)
+    lengths=bench.length_summary(tokens)
+    row={'seed':seed,'copy_probability':cp,'mutation_probability':mp,'length_weights':list(lw),
+         'tokens':len(tokens),'lines':len(lines),'entropy':entropy,
+         'ttr':vocab/len(tokens),'vocabulary':vocab,'hapax_type_share':hapax/vocab if vocab else 0,
+         'hapax_types':hapax,'mean_length':lengths['mean'],
+         'zipf_slope':zipf['zipf_loglog_slope_top_80pct']}
+    # Dimensionless distance using deliberately broad scales; ranking is exploratory only.
+    scales={'entropy':0.30,'ttr':0.10,'hapax_type_share':0.15,'mean_length':0.50,'zipf_slope':0.30}
+    row['scaled_rmse']=math.sqrt(sum(((row[k]-TARGET[k])/scales[k])**2 for k in TARGET)/len(TARGET))
+    rows.append(row)
+rows.sort(key=lambda x:x['scaled_rmse'])
+out={'status':'executed_exploratory_sensitivity_grid','generator':'C_variant_of_prior_script','target_stats_supplied_by_user':TARGET,
+     'n_configurations':len(rows),'tokens_per_corpus':27755,'seeds_used':[r['seed'] for r in rows],
+     'parameter_grid':{'copy_probability':copy_grid,'mutation_probability':mutation_grid,'length_weights': [list(x) for x in length_grids]},
+     'warning':'Not a calibrated scientific comparison: entropy and Zipf definitions may differ from the user’s pipeline; chain order is still first-order only; the target stats are summary values supplied by user, not recomputed from ZL3b-n.txt. Hyperparameter ranking on these targets is exploratory and must not be treated as validation.',
+     'best_10_by_scaled_rmse':rows[:10], 'all_results':rows, 'elapsed_seconds':time.time()-t0}
+Path('/mnt/data/voynich_C_sensitivity_results.json').write_text(json.dumps(out,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+print(json.dumps({'n_configurations':len(rows),'elapsed_seconds':out['elapsed_seconds'],'best_10':rows[:10]},indent=2,ensure_ascii=False))
