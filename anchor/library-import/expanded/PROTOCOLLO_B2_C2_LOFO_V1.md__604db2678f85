@@ -1,0 +1,25 @@
+# Protocollo B2/C2 LOFO V1
+
+## Obiettivo
+Valutare se feature posizionali non sovrapposte aggiungano predittività fuori campione oltre all'identità lessicale.
+
+## Dati e split congelati
+Corpus autorizzato ZL3b-n.txt con SHA-256 bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc; parser report RC1.2; SECTION_MAPPING_V1; LOFO per gruppo di foglio fisico, recto/verso insieme e f85/f86/Rosettes insieme. La Baseline 1.0 non viene modificata.
+
+## Modelli
+A: modello multinomiale lessicale per sezione con add-alpha 0.1 e bucket UNK definito dal training.
+B2: Naive Bayes con sole due feature non sovrapposte p3 e s3; add-alpha 0.1. Nessuna p1/p2/s1/s2.
+C2: pool logaritmico dei posteriori A e B2: log p_C(y|x) proporzionale a lambda log p_A(y|x) + (1-lambda) log p_B2(y|x), rinormalizzato.
+Null: prior di sezione del training.
+
+## Calibrazione interna
+Per ogni fold esterno, lambda viene scelto esclusivamente tramite CV interna a 5 fold raggruppata per foglio fisico all'interno del training esterno. La partizione interna è deterministica e bilanciata per indice ordinato dei gruppi. Griglia preregistrata lambda = 0.0, 0.1, ..., 1.0; minimizzare cross-entropy aggregata interna. Pareggi: scegliere lambda più vicino a 0.5; ulteriore pareggio: lambda minore. Alpha fisso 0.1, non ottimizzato.
+
+## Metriche e inferenza
+Cross-entropy in bit/token sullo stesso test esterno; differenze appaiate C2-A e B2-Null. IC bootstrap percentile 95%, 10.000 repliche per gruppi fisici, seed 20261025. Nessuna selezione di feature basata sui test. Si registrano tutte le lambda scelte per fold.
+
+## Criteri di chiusura
+B2 supera il null solo se CE(B2) < CE(null) e l'IC bootstrap della differenza CE(B2)-CE(null) è interamente sotto zero. C2 dimostra contributo incrementale solo se CE(C2) < CE(A) e l'IC bootstrap di CE(C2)-CE(A) è interamente sotto zero. Altrimenti l'ipotesi resta non supportata da questo protocollo; non si effettuano ulteriori aggiustamenti post hoc.
+
+## Limiti
+Un esito riguarda questi modelli e questa tassonomia operativa; non prova morfemi, grammatica, decifrazione o significato semantico.
