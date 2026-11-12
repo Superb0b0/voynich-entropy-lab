@@ -1,0 +1,23 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: ANCHOR02_TEXT_REGION_TRIAGE_V2.csv>
+index,region_id,previous_head_inside_box,visual_review,token_eligible,reason
+0,T01,NO,SCRIPT_WITH_GRAPHIC_OVERLAP,NO,"Script visible, intersected by illustration strokes"
+1,T02,NO,PARTIAL_SCRIPT,NO,Slanted script fragment; region cuts the sequence
+2,T03,NO,MULTIPLE_SCRIPT_GROUPS,NO,Contains multiple adjacent script groups
+3,T04,YES,MIXED_FIGURE_AND_SCRIPT,NO,Box intersects illustration and script
+4,T05,NO,SCRIPT_WITH_GRAPHIC_OVERLAP,NO,Script intersects thin figurative strokes
+5,T06,NO,SCRIPT_WITH_GRAPHIC_OVERLAP,NO,Script near star and figure strokes; box not word-tight
+6,T07,YES,HEAD_AND_SCRIPT,NO,Human head clearly inside box
+7,T08,NO,SCRIPT_WITH_GRAPHIC_OVERLAP,NO,Vertical script adjacent to linework
+8,T09,NO,SCRIPT_NOT_TOKEN_SEGMENTED,NO,Script present; boundaries not isolated
+9,T10,NO,SCRIPT_WITH_STAR_OVERLAP,NO,Star/line art crosses candidate text box
+10,T11,NO,MULTIPLE_SCRIPT_GROUPS,NO,At least two neighboring script groups in box
+11,T12,NO,PARTIAL_SCRIPT,NO,Narrow crop intersects only part of script sequence
+12,T13,NO,MULTIPLE_SCRIPT_GROUPS,NO,More than one script group inside region
+13,T14,NO,DECORATIVE_PATTERN,NO,Dominant content is decorative band rather than discrete word
+14,T15,NO,SCRIPT_WITH_GRAPHIC_OVERLAP,NO,Script crosses drawn radial line
+15,T16,YES,SCRIPT_PRESENT_BOUNDS_UNSUITABLE,NO,Script strokes visible but box does not isolate token
+16,T17,NO,SCRIPT_NOT_TOKEN_SEGMENTED,NO,Visible script but box not a verified word boundary
+17,T18,YES,HEAD_AND_SCRIPT,NO,Human head clearly inside box
+18,T19,NO,SCRIPT_WITH_GRAPHIC_OVERLAP,NO,Script and radial graphic line within same region
+19,T20,NO,ILLUSTRATION_DOMINANT,NO,Mostly illustration strokes; no reliably bounded word
