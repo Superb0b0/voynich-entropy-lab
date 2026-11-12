@@ -1,0 +1,13 @@
+ANCHOR-02 v1.1 | f70v2 | PRE-REGISTRAZIONE | 2026-11-12
+H0: glifi iniziali EVA scambiabili fra posizioni ammesse entro ciascun anello.
+H1 bilaterale: concordanze di glifo fra figure consecutive diverse dalla baseline.
+Input: corpus ZL3b-n SHA-256 bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc; etichette.csv con colonne folio,id_etichetta,id_figura,x_fig,y_fig,x_etic,y_etic,certezza,note; figure_inventario.csv con id_figura,anello,pos_anello. Ogni anello deve essere etichettato A o B; un solo anello A e' consentito. L'inventario deve comprendere TUTTE le figure. Ordine orario 1..n per ciascun anello, verificato visivamente senza usare il testo. Coordinate opzionali e non usate nel test.
+Certezza: alta se etichetta a contatto con una sola figura, nel suo contorno o collegata da tratto; media se adiacente a due figure o contorno incerto; bassa altrimenti. Nel campo note scrivere testo_visibile=si oppure testo_visibile=no per ciascuna riga compilata. La classificazione non usa il risultato del test.
+Glifo iniziale: prima parola EVA del locus, dopo rimozione dei marcatori IVTFF; riconoscimento greedy di cth,ckh,cph,cfh,ch,sh, altrimenti un carattere alfabetico EVA. Escludere l'intero locus se contiene alternative [a:b], ?, o primo glifo non determinabile. Il parsing e' definito operativamente nello script congelato.
+Esclusione f70v2.33 (stella centrale): riga mantenuta con note='stella centrale', certezza e coordinate vuote, esclusa dal test.
+Ammesse: certezza=alta, figura inventariata e univoca, iniziale determinabile; una sola etichetta ammessa per figura. Coppie: consecutive in inventario completo, chiusura circolare per anello; entrambe ammesse. Soglie: >=20 unita' e >=15 coppie valide; altrimenti INCONCLUSIVO senza p.
+Statistica primaria S: numero di coppie valide con glifo iniziale uguale. Baseline: 20.000 permutazioni indipendenti dei glifi fra posizioni ammesse dentro ciascun anello, RNG Python random.Random(20261113); struttura coppie fissa.
+p=(1+numero permutazioni con abs(Sperm-media_perm)>=abs(Soss-media_perm))/(20001). Bilaterale; POSITIVO se p<0.05, altrimenti NULLO se soglie raggiunte.
+Sensibilita' descrittiva: ripetere con alta+media, riportare S, media e intervallo centrale percentile 2.5-97.5% della distribuzione di permutazione; non influenza il verdetto.
+Qualsiasi duplicazione o inconsistenza identificativa e' errore bloccante; nessuna correzione automatica. Nessuna modifica a dati o script dopo il run. Output una tabella e hash input, protocollo, script; stop.
+Un positivo riguarda solo dipendenza locale delle iniziali EVA, non contenuto semantico. Un nullo non esclude effetti moderati.
