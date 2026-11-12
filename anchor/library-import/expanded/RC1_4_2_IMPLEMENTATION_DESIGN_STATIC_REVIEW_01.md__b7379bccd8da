@@ -1,0 +1,105 @@
+# RC1.4.2 V7.1 | Revisione statica della specifica implementativa, rapporto 01
+
+**Data della revisione:** 10 novembre 2026.  
+**Tipo:** `INTERNAL_STATIC_IMPLEMENTATION_DESIGN_REVIEW_ONLY`; ispezione in sola lettura del documento progettuale e delle definizioni del sorgente DRAFT 02, senza import, invocazioni o esecuzioni dei componenti Voynich.  
+**Verdetto circoscritto:** `IMPLEMENTATION_DESIGN_ADEQUATE`.  
+**Oggetto del verdetto:** qualità e coerenza del piano di implementazione **non eseguibile**, non accettazione di codice, approvazione del deployment, test operativo, prova di sicurezza, attestazione esterna o ricostruzione di RP-01.  
+**Base:** contratto spec-only rev. 02.2 già accettato come *specifica*; design DRAFT 03_CODE già valutato adeguato con revisione interna. Non è stato creato un sorgente DRAFT 03_CODE.
+
+## 1. Identificazione materiale e separazione delle epoche probatorie
+
+| Oggetto | Byte | SHA-256 / attestazione | Metodo, significato e limite |
+|---|---:|---|---|
+| `RC1_4_2_DRAFT_03_CODE_IMPLEMENTATION_DESIGN_SPEC.md` | 36.312 | `82cec25351e97d10fa90d5d9c0f287d87097f6262ad110df4a362293b2829dbe` | Ricalcolo dei byte locali; documento originale **non modificato** |
+| `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_2.md` | 43.792 | `c3f57f4cacd8b17c2d7a452020db3479cd7518415e02cf194adbd6634cfde58e` | Ricalcolo locale sul contratto congelato |
+| `RC1_4_2_DRAFT_03_CODE_DESIGN_SPEC.md` | 31.692 | `7d7bd37fa1adf926ae698b3ba288469e6dc3d790c6d13fc719a99dbdbf78b777` | Ricalcolo locale sul design precedente |
+| `rc1_4_2_generator_clean_DRAFT_02.py` | 41.856 | `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325` | Identità del sorgente originale, ispezionato come testo; **non eseguito** |
+| `ZL3b-n.txt` | 411.671 | `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc` | Recuperato da Library in `/mnt/data/ZL3b-n.txt`; SHA-256 ricalcolato localmente in questa revisione |
+| `corpus_metadata.csv` | 38.578 | `19b3e0885a467df849c352c650eeee864e987da3b2eaf295322345cf4e798625` | Verificato nel turno precedente sui contenuti integrali ottenuti dal connettore GitHub, commit `d4b31a245ba8133b727dc4255278b5e8349bbe39`; blob `eb05cb69d4847f6acb34a9d095e05c38369010d2`. **Non presente come file nella directory locale di questa revisione** |
+
+**Metodo locale:** `wc -c`, `sha256sum`, `grep`/`nl` di sorgenti **senza import, esecuzione o importazione dei parser e del generatore**. Gli altri cinque file del manifest frozen presenti localmente sono stati ricalcolati e confrontati con i pin, come da §2. Il recupero dei due input è **successivo** alla redazione della specifica: i suoi §3, righe 59 e 61, descrivono fedelmente lo stato *di allora*. Non modificarli retroattivamente. Questo rapporto costituisce l'aggiornamento documentale separato, **non una nuova versione della specifica**.
+
+## 2. D-01, E-01 e manifest pinned
+
+| File | Byte attesi | SHA-256 pinned | Riscontro |
+|---|---:|---|---|
+| `RC1_4_2_CONFIG_v7_1.json` | 28.255 | `abed55bd3d44be25e751cafa0a2f3279f857175232ec8d884610e810e850e3f0` | Pin coincidente sui byte locali |
+| `voynich_profiles.json` | 4.758.062 | `7ec540723dffa59a06e6c4f4f971bdf2d3e69bf0e5760fae43300ab4e73b7546` | Pin coincidente sui byte locali |
+| `corpus_metadata.csv` | 38.578 | `19b3e0885a467df849c352c650eeee864e987da3b2eaf295322345cf4e798625` | Pin coincidente sui byte ottenuti via GitHub nella verifica precedente; blob Git coincidente |
+| `folio_ivtff_crosswalk.csv` | 13.269 | `769fcd2c94f93c232cc4828cd98e9ff16ff42d50baf051886d0dada00b4b3041` | Pin coincidente sui byte locali |
+| `ZL3b-n.txt` | 411.671 | `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc` | Pin coincidente sui byte locali recuperati dalla Library |
+| `ivtff_parser_rc1_4.py` | 14.100 | `075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d` | Pin coincidente sui byte locali; nessun import |
+| `ivtff_parser_rc1_4_offset_aware.py` | 12.095 | `ccce4b8514bbd60b9be5d0122ac2cb40353827d43b12d9709782550b60646565` | Pin coincidente sui byte locali; nessun import |
+
+- **D-01:** `RESOLVED_FOR_SEVEN_PINNED_FILES` come identificazione e integrità documentata; il manifest presenta già i sette valori concreti (§3, righe 55–65). Non equivale a un controllo session-bound dentro il futuro supervisor.
+- **E-01:** `RESOLVED_FOR_TWO_RECOVERED_INPUTS`, limitatamente a reperibilità e digest. Non implica un nuovo PASS analitico.
+- **Manifest runtime:** `PENDING_RUNTIME_INVENTORY`: interprete Python, loader, librerie, moduli, estensioni, configurazioni, script e risorse della futura root confinata non hanno ancora un inventario con byte/sha/permessi/versione approvato (§3, riga 67). Rimane una precondizione di **deployment**, non un difetto di consistenza del piano testuale.
+
+## 3. Esame della coerenza implementativa: F-01, F-02, F-03
+
+| Rilievo | Evidenze testuali del design | Giudizio limitato al design | Prova necessaria sul sorgente futuro |
+|---|---|---|---|
+| F-01, API richiamabili dopo import | §1, righe 27–39; §7, righe 126–150: `diagnostics_core`, `request_frontend`, verifier, serializer/publisher separati; `RequestId` informativo; rimozione del percorso qualificante di `prepare_audit_from_verified_inputs` e di `serialize_validation_artifacts` | `ADEQUATE_AS_IMPLEMENTATION_DESIGN` | Inventario API, import e call graph: nessuna funzione **supportata** può produrre report `PASS` o bundle qualificato senza sessione autenticata e controlli. Nessun divieto impossibile sulle serializzazioni generiche caller-side |
+| F-02, PASS e hash dal caller | §3–§4, righe 51–79; §6, righe 102–120; §7, righe 129–141: input pinned → buffer → digest → snapshot → runner → osservazioni IPC non fidate → `VerifiedEvidenceRef` verificato dal supervisor → assessment individuali | `ADEQUATE_AS_IMPLEMENTATION_DESIGN` | Nel codice futuro, riscontrare traiettoria dei medesimi byte e associazione per sessione/controllo; niente 15 PASS predefiniti né affidamento su digest o dict del figlio. Verifica del consumo *reale* resta runtime |
+| F-03, bool caller e race | §1–§2 e §8, righe 27–49, 152–158: autorizzazione autenticata esterna, nonce/revoca/scope, destinazione da policy, `openat2` con `dirfd`, `renameat2(RENAME_NOREPLACE)` e fallimento `BLOCKED` | `ADEQUATE_AS_IMPLEMENTATION_DESIGN` | Traccia statica degli entrypoint e delle syscall; comportamento kernel/filesystem, atomicità e permessi da collaudare separatamente con autorizzazione |
+
+**Confine IPC:** il §6 attribuisce la sorgente di fiducia al supervisore e non al parser figlio; `UntrustedParserMessage` non si promuove in blocco a `PASS`. Occorrono campi/limiti di trasporto, binding di sessione, peer identity, controlli dell'acquirer e assessment per controllo. Nessuna integrità di messaggio autocertificata dal figlio prova la verità del suo contenuto.
+
+## 4. D-02–D-05, B-01/B-02 e limiti di fiducia
+
+| ID | Stato prescrittivo nel design implementativo | Pendente reale, da non tacitare |
+|---|---|---|
+| D-02 | `TRUST_MODEL_SPECIFIED; PENDING_DEPLOYMENT_APPROVAL` (§2, 41–49) | Identità e approvazione concreta di issuer, trust anchor, algoritmo/firma, gestione chiavi, revoca, freshness e anti-replay; nessuna credenziale emessa ora |
+| D-03 | `CALL_GRAPH_PROPOSED; FUTURE_SOURCE_NOT_REVIEWED` (§1, §7) | Sorgente reale e API da ispezionare: serializzazioni generiche possono restare, ma non qualificare bundle audit senza supervisore |
+| D-04 | `REQUEST_ID_INFORMATIONAL_ONLY` (§1–§2) | Il `RequestId` è solo identificativo, non token, capability o permesso; futuro sorgente deve preservarlo |
+| D-05 | `PRIVILEGE_SEQUENCE_SPECIFIED; IMPLEMENTATION_NOT_REVIEWED` (§5, 85–95) | Verifica nel sorgente dell'ordine `PR_CAPBSET_DROP`, `PR_CAP_AMBIENT_CLEAR_ALL`, `setgroups`, `setresgid`, `setresuid`, `capset`, `no_new_privs`, `dumpable=0`, controlli di tutti i set prima di import/exec; fattibilità reale `NOT_RUN` |
+| B-01 | `DESIGN_CHOICE_RECORDED; DEPLOYMENT_APPROVAL_PENDING` (§5, 83) | Setup supervisor privilegiato nel dominio fidato Linux, senza user namespace richiesto al caller; non approvato per deployment |
+| B-02 | `DESIGN_CHOICE_RECORDED; RUNTIME_FEASIBILITY_NOT_RUN` (§5, 100) | Device allowlist `[]`; nessuna deroga automatica per `/dev/null`, `/dev/urandom` o `/proc`; se runtime non funziona => `BLOCKED` e revisione della policy |
+
+La policy dei cinque capability set vuoti è **requisito futuro**, non osservazione; un'incompatibilità operativa comporta `BLOCKED`, non indebolimento tacito. `pivot_root` e bind mount read-only non garantiscono sicurezza assoluta contro amministratori privilegiati dell'host. Restano separati il contratto statico, la verifica delle primitive in codice e la verifica ambientale sotto autorizzazione.
+
+## 5. Matrice T-01–T-10: risultato della revisione testuale, non del sorgente futuro
+
+| ID | Riscontro nel design implementativo | Stato sul sorgente futuro |
+|---|---|---|
+| T-01 | API, moduli e call graph leciti/vietati: §1, §7 | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-02 | Acquisizione/snapshot/parsing/evidence refs: §3–§4, §6 | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-03 | Trust verifier, scope, anti-replay e no-replace: §2, §8 | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-04 | Solo `EQUAL`/`DIFFERENT` diagnostici: §7 | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-05 | Root confinata, `pivot_root`, dipendenze chiuse, fd: §5 | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-06 | Sequenza privilegi, cinque set vuoti e verifiche: §5 | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-07 | Bootstrap supervisore, issuer e ancoraggio reale: §2, §5 | `PENDING_DEPLOYMENT_APPROVAL` |
+| T-08 | Device allowlist vuota e `BLOCKED`: §5 | `RUNTIME_FEASIBILITY_NOT_RUN` |
+| T-09 | Provenienza storica distinta dalla ripetibilità: §0, §7, §11 | `NOT_EVALUATED_FUTURE_SOURCE` |
+| T-10 | Conservazione dei pin e future verifiche byte del nuovo sorgente: §0, §3, §9–§11 | `NOT_EVALUATED_FUTURE_SOURCE` |
+
+La presenza di questi criteri nel piano **non** supera T-01–T-10 sul codice futuro e non impone di eseguire subito verifiche ambientali: entrambe le attività restano separate.
+
+## 6. Delimitazione dell'esito e condizioni per il seguito
+
+**Esito:** `IMPLEMENTATION_DESIGN_ADEQUATE`, qualificato come `INTERNAL_STATIC_IMPLEMENTATION_DESIGN_REVIEW_ONLY`. Il piano è sufficientemente preciso per una futura, separatamente richiesta produzione di codice sottoposta a ulteriore `STATIC_SOURCE_ACCEPTANCE`. La revisione è interna e dello stesso assistente che ha redatto il documento; **non è una verifica indipendente esterna**.
+
+**Condizioni che restano aperte:** runtime manifest `PENDING_RUNTIME_INVENTORY`; D-02/B-01 `PENDING_DEPLOYMENT_APPROVAL`; B-02 `RUNTIME_FEASIBILITY_NOT_RUN`; F-01/F-02/F-03 `OPEN_IN_DRAFT_02`; DOC-04 `PENDING_EXTERNAL_ATTESTATION`; RP-01 `OPEN`; `f085v UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER`. `manual_intervention_on_historical_data=false`. Il gate resta `CLOSED_PENDING_VALIDATION`. Non esiste un'autorizzazione audit-only utilizzabile ora.
+
+**Nessuna rettifica dei precedenti:** DRAFT 02, parser, mapper, config, input e specifiche/rapporti precedenti sono rimasti in sola lettura; il testo originale della specifica implementativa non è stato sovrascritto. Nessun `PASS` empirico o attestazione indipendente è stato prodotto; nessun parser, generatore, builder, PCA, clustering o conditional coupling è stato importato/eseguito. Questo rapporto è documentazione di controllo, non un nuovo file di validazione della pipeline.
+
+```text
+implementation_design_review: IMPLEMENTATION_DESIGN_ADEQUATE
+review_scope: INTERNAL_STATIC_IMPLEMENTATION_DESIGN_REVIEW_ONLY
+D-01_pinned_seven_files: RESOLVED_FOR_PINNED_FILES
+E-01_two_recovered_inputs: RESOLVED_FOR_TWO_INPUTS
+runtime_inventory: PENDING_RUNTIME_INVENTORY
+D-02_trust_chain: PENDING_DEPLOYMENT_APPROVAL
+D-03_future_source_call_graph: NOT_EVALUATED
+D-04_RequestId: INFORMATIONAL_NOT_AUTHORIZATION
+D-05_future_source_privilege_sequence: NOT_EVALUATED
+new_executable_source: NOT_CREATED
+STATIC_SOURCE_ACCEPTANCE: NOT_EVALUATED_FUTURE_SOURCE
+FUTURE_OPERATIONAL_VALIDATION: NOT_RUN
+F-01_F-02_F-03: OPEN_IN_DRAFT_02
+DOC-01_to_DOC-03: RESOLVED_DOCUMENTALLY
+DOC-04: PENDING_EXTERNAL_ATTESTATION
+RP-01: OPEN
+GATE: CLOSED_PENDING_VALIDATION
+new_empirical_PASS: NONE
+```
