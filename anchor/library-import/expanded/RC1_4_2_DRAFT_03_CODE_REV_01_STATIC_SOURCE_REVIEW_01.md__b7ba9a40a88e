@@ -1,0 +1,133 @@
+# RC1.4.2 V7.1 | Revisione statica DRAFT 03_CODE rev. 01 | Rapporto 01
+
+**Data:** 10 novembre 2026  
+**Esito formale:** `STATIC_SOURCE_ACCEPTANCE_REV_01: NOT_GRANTED`  
+**Qualifica:** `INTERNAL_SOURCE_ONLY_REVIEW; NO_RUNTIME_TEST; NO_EXTERNAL_ATTESTATION`  
+**Valutazione di sicurezza sul perimetro importabile:** `ORIGINAL_ACTIVE_BYPASSES_REMOVED; QUALIFIED_SERVICE_NOT_IMPLEMENTED`.
+
+## 1. Oggetto, metodo e limiti
+
+Revisione **in sola lettura** dei sei file Python contenuti in `RC1_4_2_DRAFT_03_CODE_REV_01_SOURCE_ONLY.zip`, contro il rapporto `RC1_4_2_DRAFT_03_CODE_STATIC_SOURCE_REVIEW_01.md` (SRC-01–SRC-06) e la matrice T-01–T-10 della specifica implementativa. Lettura del testo numerato, enumerazione sintattica AST senza import/exec/compilazione a bytecode, confronto di hash e dimensioni e controllo archivio ZIP. Nessuna invocazione di funzioni dei moduli esaminati; nessun parser, mapper, generatore o builder Voynich importato o eseguito.
+
+Documenti di riferimento verificati localmente tramite SHA-256:
+
+| Documento | SHA-256 |
+|---|---|
+| Sorgente congelato `rc1_4_2_generator_clean_DRAFT_02.py` | `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325` |
+| Sorgente originale DRAFT 03 ZIP | `4e03c4f52288ffe0288973acadfe0fee9d754d0b0c82b8ce25891b044b5cbab4` |
+| Rapporto statico del DRAFT 03 originale | `20885162404f3911270e042e51977367f1f6462d48c7016ec598f6fe26bc7055` |
+| Contratto rev. 02.2 | `c3f57f4cacd8b17c2d7a452020db3479cd7518415e02cf194adbd6634cfde58e` |
+| Design implementativo | `82cec25351e97d10fa90d5d9c0f287d87097f6262ad110df4a362293b2829dbe` |
+| ZIP rev. 01 oggetto del rapporto | `29239803c4677c0445fbf26e79fbc201bd0bc0a50fddab66a8ce1c2ed859c4db` |
+
+**Precisione del verdetto:** la rimozione dei bypass dal codice importabile è un riscontro **statico**. La mancanza di un servizio OS fidato operativo rende impossibile concedere l'accettazione della **implementazione qualificata completa**, anche quando gli stub si bloccano correttamente. Il rapporto non è una revisione indipendente di terza parte e non risolve DOC-04.
+
+## 2. Inventario verificato della rev. 01
+
+| File | Byte | SHA-256 sui byte presenti |
+|---|---:|---|
+| `rc1_4_2_generator_clean_DRAFT_03_CODE_REV_01.py` | 3965 | `c0f8c71b28b2e1f44e9a6ceec9e82d8357d3df0ee963ef92582fd259987fe357` |
+| `rc1_4_2_draft03_rev01_contracts.py` | 4032 | `41722715a95c9597512fd8de6d536888d12faeab04a1e935c7ae4dc1de34c0c8` |
+| `rc1_4_2_draft03_rev01_computations.py` | 26861 | `d80a57ffcdd5255b34e7aaa752756ef372902277611b13ab431543dfaf7f504d` |
+| `rc1_4_2_draft03_rev01_linux.py` | 4793 | `3eabfe664530d5b1ebce8c92a45d6912a6a90afde61458623f0dcc09ee2f97ff` |
+| `rc1_4_2_draft03_rev01_isolated_parser.py` | 1482 | `f656086845d3d3d6dea5b0b60408715316ce826d6cf22c66d8e3b1ca7a24e94f` |
+| `rc1_4_2_draft03_rev01_trusted_supervisor.py` | 6536 | `b9e781b9545eccf0b71e9e9ca0d5df5b41e4559a7fbd5ab40a77c1d10b38cec4` |
+
+**Controllo integrità:** per tutti e sei i moduli e il README, hash e byte coincidono con `MANIFEST_REV_01_SOURCE_ONLY.json`. Archivio ZIP leggibile, otto membri (sei moduli, README e manifest), controllo CRC senza errori; contenuti dei sette membri descritti nel manifest identici ai file della cartella. Gli AST dei sei moduli sono sintatticamente validi. Il manifest è un inventario locale, non un'attestazione esterna, un token di autorizzazione o un risultato di esecuzione.
+
+## 3. Revisione mirata SRC-01–SRC-06
+
+### SRC-01 | `ACTIVE_UNSAFE_LOADER_REMOVED`; implementazione del worker ancora assente
+
+- **Evidenza:** `rc1_4_2_draft03_rev01_isolated_parser.py:20-31`. `_assert_kernel_unprivileged`, `_load_frozen_module_after_kernel_checks` e il worker rispondono esclusivamente con `Blocked`.
+- **Confronto con originale:** la funzione rev. 01 non contiene più `importlib`, `spec.loader.exec_module()` né il caricamento di un parser da percorso non confinato. La lettura statica dei sei moduli non mostra chiamate attive equivalenti.
+- **Esito:** bypass individuato nel DRAFT 03 originale **eliminato dalla superficie corrente**, non dimostrato un worker che carichi i parser dopo confinamento. **Non** classificare `F-02` o `T-02` come soddisfatti.
+- **Condizione futura:** implementare loader esclusivamente nel child avviato dal servizio OS con prova vincolante di root, namespace, snapshot, identità degli input e drop dei privilegi prima del caricamento.
+
+### SRC-02 | `ACTIVE_IMPORTABLE_PRIVILEGED_IO_REMOVED`; servizio OS assente
+
+- **Evidenza:** `rc1_4_2_draft03_rev01_linux.py:64-117` sostituisce lettura, snapshot, mount, FD, privilegi, rename e staging con funzioni che chiamano `_blocked_undeployed_kernel_action`, sempre `Blocked`. `rc1_4_2_draft03_rev01_trusted_supervisor.py:117-162` blocca acquisizione, snapshot, verifica fidata, assessment, serializzazione, pubblicazione e request handler.
+- **Esito:** nessun percorso di I/O privilegiato attivo **implementato in questi sei moduli**. Il prefisso `_`, i nomi `trusted_*` e le costanti di policy non sono dispositivi di sicurezza autonomi. Il vero servizio separato è inesistente, perciò **nessun percorso ufficiale di generazione è disponibile**.
+- **Condizione futura:** verificatore esterno e supervisore in un dominio OS separato, con autorizzazione interna al servizio prima di qualsiasi acquisizione, staging e pubblicazione.
+
+### SRC-03 | `PYTHON_AUTHORITY_TYPE_BYPASS_REMOVED`; prova server-side mancante
+
+- **Evidenza:** `rc1_4_2_draft03_rev01_trusted_supervisor.py:28-45` contiene soltanto `UntrustedRequest`, `RequestId` e `UntrustedObservationShape`, esplicitamente non fiduciari. `:55-114` controlla la **forma** del messaggio IPC; `:110-114` avverte che i digest dichiarati possono essere copiati da un attaccante. `:117-162` blocca l'emissione di riferimenti di prova o assessment.
+- **Esito:** rimosso il vecchio affidamento a `ParserPeerReceipt`/`VerifiedEvidenceRef` costruibili dal chiamante. Nessun `VerifiedEvidenceRef` viene creato qui. **Non** è implementata la convalida OS/server-side della sessione, delle credenziali del peer, dell'exit code e del consumo effettivo dei sette file.
+- **Condizione futura:** ledger/sessione e riferimenti di evidenza emessi esclusivamente dal supervisore fidato; ogni assessment per controllo basato su osservazioni indipendentemente verificate.
+
+### SRC-04 | `BLOCKING_INCOMPLETE_SAFE_BLOCKED` invariato
+
+- **Evidenza:** `rc1_4_2_draft03_rev01_trusted_supervisor.py:121-162`, `rc1_4_2_draft03_rev01_isolated_parser.py:20-31` e `rc1_4_2_draft03_rev01_linux.py:64-117` non implementano verificatore esterno, policy/deployment, launcher, osservazione autenticata, produzione di bundle qualificati o publisher.
+- **Esito:** assenza di una via attiva verso `PASS` qualificati o cinque artefatti ufficiali. **Questo è fail-closed corretto, ma resta bloccante per la completezza funzionale.** Nessuna dichiarazione di sorgente accettato.
+- **Condizione futura:** codice reale e separato, manifest runtime approvato, trust anchor, issuer, policy firmata, revoca/anti-replay, addendum audit-only e nuova revisione statica. Nessun bootstrap fittizio.
+
+### SRC-05 | `CALLER_MAX_FD_ALGORITHM_REMOVED`; chiusura completa non implementata
+
+- **Evidenza:** `rc1_4_2_draft03_rev01_linux.py:36-44` richiede testualmente `close_range(4, UINT_MAX, CLOSE_RANGE_UNSHARE)` e fd 3 con identità controllata; `:103-105` blocca `_sanitize_descriptors`.
+- **Esito:** non esiste più una funzione di sanificazione limitata dal `max_fd` del chiamante. Tuttavia la primitiva kernel è **una stringa descrittiva**, non una syscall chiamata. Non si può certificare che fd 0–3 siano sicuri, né che tutto il dominio FD sia stato chiuso.
+- **Condizione futura:** launcher esterno con FD allowlist, `close_range`, sanificazione stdio e verifiche del kernel prima di import/exec.
+
+### SRC-06 | `UNTRUSTED_IPC_SCHEMA_ENHANCED`; IPC qualificato non implementato
+
+- **Evidenza:** `rc1_4_2_draft03_rev01_contracts.py:79-84` richiede schema, session/invocation/nonce/snapshot hint, `sequence`, `input_sha256`, `parser_sha256` e `oa`. `rc1_4_2_draft03_rev01_trusted_supervisor.py:55-114` controlla tipo e dimensione, JSON senza chiavi duplicate/NaN, sette ruoli e due hash parser, formato dei digest e uguaglianza delle **dichiarazioni** con i pin.
+- **Esito:** contratto sintattico più ricco. Mancano canale effettivo, framing e identità peer osservati dal kernel, prova dell'exit status, ledger anti-replay e binding di nonce/sequence/invocation con una sessione autorizzata. I campi chiamati `*_hint` restano dichiarazioni non fidate. `oa` è verificato solo come dizionario non vuoto, non come evidenza OA validata. **Nessun PASS deducibile dal parsing del JSON.**
+- **Osservazione tecnica secondaria:** un payload entro il limite di byte può contenere JSON annidato o tipologie OA non ammissibili; la futura interfaccia di trasporto deve stabilire limiti strutturali e gestione totale degli errori. Non è un nuovo rilievo bloccante sull'attuale servizio, che non esiste.
+
+## 4. Matrice T-01–T-10 e F-01–F-03
+
+| Controllo | Esito rev. 01, soltanto statico | Riscontro e confine |
+|---|---|---|
+| **T-01 / F-01** | `SATISFIED_FOR_UNQUALIFIED_IMPORTABLE_SURFACE_ONLY` | Le vecchie quattro API qualificate bloccano (`generator:79-100`), nessun I/O qualificante attivo nei moduli; servizio fidato non implementato |
+| **T-02 / F-02** | `BLOCKING_INCOMPLETE` | Pinned manifest e computazioni disponibili; acquisizione session-bound, snapshot, loader confinato e `VerifiedEvidenceRef` solo contrattuali/assenti |
+| **T-03 / F-03** | `SAFE_BLOCKED_NOT_IMPLEMENTED` | Verificatore, `openat2` e `renameat2` sono nomi/contratti; nessuna autorizzazione esterna o pubblicazione implementata |
+| **T-04 / S-01** | `SATISFIED_AS_STATIC_DIAGNOSTIC_BOUNDARY` | `generator:31-33, 50-69, 103-105`: confronto di byte con soli `EQUAL`/`DIFFERENT`; nessuna promozione in `PASS` |
+| **T-05 / A-01** | `DECLARED_NOT_ENFORCED` | `linux:23-33` richiede namespace e `pivot_root`, ma tutte le funzioni kernel sono bloccate; nessun isolamento avviato |
+| **T-06 / A-02 + D-05** | `DECLARED_NOT_ENFORCED` | `linux:29-30` prescrive UID/GID non root e set capability vuoti, ma nessun controllo operativo, drop o ordine eseguito |
+| **T-07 / B-01 + D-02** | `PENDING_DEPLOYMENT_APPROVAL` | `contracts:65-72` mantiene trust anchor, issuer, addendum e runtime inventory non approvati |
+| **T-08 / B-02** | `DECLARED_NOT_ENFORCED; RUNTIME_FEASIBILITY_NOT_RUN` | Allowlist dispositivi vuota (`contracts:68`, `linux:31-33`); non esiste worker che ne dimostri l'applicazione |
+| **T-09 / RP-01** | `SATISFIED_AS_STATIC_STATUS_SEPARATION` | `generator:22-24`, `contracts:11-13,75-78`: RP-01 OPEN e gate chiuso, nessuna inferenza dall'uguaglianza dei byte |
+| **T-10 / INVARIANZA** | `DOCUMENTARY_MATCH_FOR_AVAILABLE_ORIGINALS` | Digest verificati degli originali disponibili; CSV Yale verificato in precedente passaggio tramite Git blob, ma non acquisito nel runtime qualificato |
+
+**Conclusione F-01–F-03:** `F-01: IMPORTABLE_BYPASSES_REMOVED; QUALIFIED_PATH_NOT_IMPLEMENTED`; `F-02: OPEN_AS_FULL_IMPLEMENTATION`; `F-03: SAFE_BLOCKED_NOT_IMPLEMENTED`. Il `code_remediation_required` resta `true`. Un'API sempre bloccata non soddisfa per costruzione un requisito che richiede un servizio autorizzato effettivamente implementato.
+
+## 5. Evidenza di invarianza e perimetro documentale
+
+La revisione ha ricalcolato SHA-256 su configurazione V7.1, profili JSON, crosswalk IVTFF, corpus ZL3b, parser lessicale, mapper offset-aware e DRAFT 02; ogni valore coincide con il pin dichiarato. `corpus_metadata.csv`, non presente come file nella cartella locale utilizzata in questa revisione, era già stato recuperato al commit `d4b31a245ba8133b727dc4255278b5e8349bbe39` e verificato sui byte nel passaggio precedente; non si afferma un nuovo controllo locale o session-bound del CSV. Nessun originale è stato modificato, importato o eseguito. La rev. 01 ha cartella, nomi e archivio distinti dagli artefatti precedenti.
+
+L'assenza di side effect attivi è stata verificata **per il codice sorgente di questi sei moduli e per i loro ingressi supportati**, non come impossibilità assoluta per un interprete Python controllato dal chiamante di produrre file arbitrari. Il nucleo computazionale può calcolare dati in memoria; non conferisce qualifiche di audit, firma, provenienza o autorità di pubblicazione.
+
+## 6. Decisione, obblighi residui e prossima fase
+
+**Verdetto:** `STATIC_SOURCE_ACCEPTANCE_REV_01: NOT_GRANTED`; qualifica `SAFE_BLOCKED_SOURCE_ONLY_REVISION; NO_QUALIFIED_IMPLEMENTATION`. SRC-01/SRC-02 sono corretti come eliminazione dei bypass; SRC-03/SRC-05/SRC-06 sono corretti parzialmente sul confine importabile e sulle prescrizioni, ma mancano le verifiche fidate e le primitive effettive; SRC-04 è intenzionalmente `BLOCKING_INCOMPLETE_SAFE_BLOCKED`.
+
+Per una futura accettazione del codice occorrono, in un dominio separato e con nuova revisione: (a) verificatore con autorità reale e policy approvata, (b) servizio OS che acquisisca i sette file e faccia snapshot dai buffer verificati, (c) launcher/worker con isolamento e privilege drop verificabili, (d) IPC e ledger lato server con input consumption/exit receipt realmente osservati, (e) assessments per controllo non precostituiti, (f) serializer qualificato e publisher con primitive no-replace. Il manifest runtime resta `PENDING_RUNTIME_INVENTORY` e DOC-04 resta indipendente da tale lavoro. **Non** viene concessa un'autorizzazione a implementare o eseguire tali servizi tramite questo rapporto.
+
+```text
+SPECIFICATION_REV_02_2: SPECIFICATION_ADEQUATE_AS_ACCEPTANCE_CONTRACT
+DESIGN: DESIGN_SPEC_ADEQUATE (INTERNAL_ONLY)
+IMPLEMENTATION_DESIGN: IMPLEMENTATION_DESIGN_ADEQUATE (INTERNAL_ONLY)
+DRAFT_03_REV_01_SOURCE: CREATED_AND_STATICALLY_REVIEWED
+STATIC_SOURCE_ACCEPTANCE_REV_01: NOT_GRANTED
+SRC_01: ACTIVE_BYPASS_REMOVED_WORKER_ABSENT
+SRC_02: ACTIVE_BYPASS_REMOVED_TRUSTED_OS_SERVICE_ABSENT
+SRC_03: AUTHORITY_DATACLASS_BYPASS_REMOVED_VERIFIER_ABSENT
+SRC_04: BLOCKING_INCOMPLETE_SAFE_BLOCKED
+SRC_05: UNSAFE_MAX_FD_REMOVED_KERNEL_CLOSURE_NOT_IMPLEMENTED
+SRC_06: IPC_SCHEMA_EXPANDED_SESSION_BOUND_VALIDATION_ABSENT
+F_01_F_02_F_03: OPEN_FOR_QUALIFIED_IMPLEMENTATION
+RUNTIME_INVENTORY: PENDING_RUNTIME_INVENTORY
+DEPLOYMENT: PENDING_DEPLOYMENT_APPROVAL
+DOC_01_DOC_02_DOC_03: RESOLVED_DOCUMENTALLY
+DOC_04: PENDING_EXTERNAL_ATTESTATION
+RP_01: OPEN
+f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data: false
+GATE: CLOSED_PENDING_VALIDATION
+FUTURE_OPERATIONAL_VALIDATION: NOT_RUN
+QUALIFIED_ARTIFACTS_GENERATED: NONE
+NEW_EMPIRICAL_PASS: NONE
+PARSER_GENERATOR_BUILDER_EXECUTION: NONE
+```
+
+**Metodologia conclusiva:** lettura e parsing AST del testo Python sono strumenti di analisi del sorgente, non esecuzione dei moduli analizzati. Questo documento è una **revisione statica interna** e non sostituisce l'attestazione esterna DOC-04. Nessun test operativo o empirico viene attestato.
