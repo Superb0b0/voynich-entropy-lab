@@ -1,0 +1,801 @@
+#!/usr/bin/env python3
+"""RC1.4.2 V7.1 clean audit generator, REVIEW DRAFT 02.
+
+NOT EXECUTED / NOT AUTHORIZED.  The entry point is permanently blocked.
+Importing defines pure functions but never reads inputs, invokes parsers, or writes
+validation artifacts. The frozen inputs and parent scripts are READ-ONLY.
+This source is prospective: it is NOT the unidentified historical RP-01 generator.
+"""
+from __future__ import annotations
+
+import bisect
+import csv
+import hashlib
+import importlib.util
+import io
+import json
+import math
+import os
+import platform
+import shutil
+import tempfile
+import re
+import sys
+from collections import Counter, defaultdict
+from pathlib import Path
+from typing import Any
+
+CONFIG_SHA256 = "abed55bd3d44be25e751cafa0a2f3279f857175232ec8d884610e810e850e3f0"
+CORPUS_SHA256 = "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc"
+CORPUS_BYTES = 411671
+PARSER_SHA256 = "075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d"
+MAPPER_SHA256 = "ccce4b8514bbd60b9be5d0122ac2cb40353827d43b12d9709782550b60646565"
+GATE = "CLOSED_PENDING_VALIDATION"
+THRESHOLD = 75
+FOLIO_RE = re.compile(r"[fF]0*(\d+)([rRvV])\Z")
+CANVAS_RE = re.compile(r"https://collections\.library\.yale\.edu/iiif/2/(\d+)/?\Z")
+MANIFEST_CANVAS_RE = re.compile(
+    r"https://collections\.library\.yale\.edu/manifests/oid/2002046/canvas/(\d+)/?\Z"
+)
+ARCHETYPES = frozenset((
+    "herbal_botanical", "pharmaceutical_healing", "natural_organic",
+    "celestial_astronomical", "cosmological_mapping", "cyclical_seasonal",
+    "luminous_radiant", "alchemical_transformation", "ritualistic_ceremonial",
+    "encoded_hidden", "supernatural_mystical", "anatomical_biological",
+    "aquatic_fluid", "fertility_reproduction", "geometric_mathematical",
+    "interconnected_networked",
+))
+EMOTIONS = frozenset((
+    "amusement", "awe", "contentment", "excitement", "anger",
+    "disgust", "fear", "sadness", "something_else",
+))
+SECTIONS = (
+    "input_hashes_and_sizes", "configuration_version", "json_csv_parse",
+    "profile_cardinalities", "identifier_integrity", "vector_dimensions_and_finite_values",
+    "archetype_categories_16", "emotional_categories_9", "yale_metadata",
+    "ivtff_reconciliation", "inclusive_threshold", "multipanel_token_disjointness",
+    "primary_sensitivity_partitions", "profile_partition_206", "anomalies",
+    "overall_result",
+)
+ARTIFACT_TYPES = (
+    "candidate_register", "exclusion_register", "unresolved_register",
+    "validation_report", "manifest",
+)
+
+
+class Blocked(RuntimeError):
+    """Fail-closed: one unverified assertion invalidates the complete run."""
+
+
+def require(condition: bool, reason: str) -> None:
+    if not condition:
+        raise Blocked(reason)
+
+
+def sha256(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def checked_bytes(path: Path, expected_sha: str, expected_size: int | None = None) -> bytes:
+    """Read exact bytes, with no fallback to generated or substituted sources."""
+    require(path.is_file() and not path.is_symlink(), f"INPUT_MISSING_OR_LINK:{path.name}")
+    data = path.read_bytes()
+    require(sha256(data) == expected_sha, f"INPUT_HASH_MISMATCH:{path.name}")
+    require(expected_size is None or len(data) == expected_size,
+            f"INPUT_SIZE_MISMATCH:{path.name}")
+    return data
+
+
+def norm(value: str) -> tuple[str, list[str]]:
+    """Normalize folio IDs, preserve non-folio identifiers and flag anomalies."""
+    require(isinstance(value, str) and bool(value.strip()), "EMPTY_IDENTIFIER")
+    clean = value.strip()
+    m = FOLIO_RE.fullmatch(clean)
+    if m:
+        num = int(m.group(1))
+        flags = ["ZERO_FOLIO_NUMBER"] if num == 0 else []
+        return f"f{num}{m.group(2).lower()}", flags
+    if clean.startswith("_"):
+        return clean, []
+    return clean, ["NONSTANDARD_NONFOLIO_IDENTIFIER"]
+
+
+def parse_csv(data: bytes, expected_fields: set[str]) -> list[dict[str, str]]:
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise Blocked("CSV_NOT_UTF8") from exc
+    reader = csv.DictReader(io.StringIO(text, newline=""))
+    require(reader.fieldnames is not None and len(set(reader.fieldnames)) == len(reader.fieldnames),
+            "CSV_HEADER_DUPLICATE_OR_MISSING")
+    require(expected_fields <= set(reader.fieldnames), "CSV_REQUIRED_FIELD_MISSING")
+    rows = list(reader)
+    require(all(None not in row and all(v is not None for v in row.values()) for row in rows),
+            "CSV_ROW_RAGGED")
+    return rows
+
+
+def canonical_json(value: Any) -> bytes:
+    return (json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2,
+                       allow_nan=False) + "\n").encode("utf-8")
+
+
+def canonical_csv(rows: list[dict], fields: list[str]) -> bytes:
+    stream = io.StringIO(newline="")
+    writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n",
+                            extrasaction="raise")
+    writer.writeheader()
+    def ordering(row: dict) -> tuple[str, str, str]:
+        return (norm(row["image_id"])[0], row.get("folio_key", ""), row["image_id"])
+    for row in sorted(rows, key=ordering):
+        require(set(row) == set(fields), "CSV_OUTPUT_SCHEMA_MISMATCH")
+        writer.writerow(row)
+    return stream.getvalue().encode("utf-8")
+
+
+def verify_contract(config_raw: bytes, config: dict) -> None:
+    require(sha256(config_raw) == CONFIG_SHA256, "CONFIG_HASH")
+    require(config.get("revision") == "RC1.4.2-V7.1", "CONFIG_VERSION")
+    require(config["gate"]["status"] == GATE, "GATE_CHANGED")
+    require(config["gate"]["validation_artifact_generation_allowed"] is False,
+            "FROZEN_GATE_UNEXPECTEDLY_OPEN")
+    require(config["aggregation"]["primary_key"] == "normalized_folio_key",
+            "AGGREGATION_KEY")
+    require(config["aggregation"]["derived_fields"]["token_count"]["operation"] ==
+            "COUNT_UNION_AFTER_DISJOINTNESS_PROOF", "BLIND_SUM_PROHIBITED")
+    require(config["eligibility"]["threshold"] == THRESHOLD and
+            config["eligibility"]["operator"] == ">=", "THRESHOLD_CONTRACT")
+    require(tuple(config["validation_report_contract"]["required_sections"]) == SECTIONS,
+            "REPORT_SECTIONS_CONTRACT")
+    require(set(config["validation_report_contract"]["required_control_status_values"]) ==
+            {"PASS", "FAIL", "NOT_RUN"}, "CONTROL_STATUS_CONTRACT")
+    tok = config["aggregation"]["multipanel_token_disjointness"]["tokenization"]
+    require(tok["parser_sha256"] == PARSER_SHA256 and
+            tok["provenance_mapper_sha256"] == MAPPER_SHA256, "PINNED_PARSER_CONTRACT")
+    require(config["exceptions"]["f085v"]["status"] == "unresolved" and
+            config["exceptions"]["f085v"]["manual_association_allowed"] is False,
+            "F085V_CONTRACT")
+    require(config["manifest_contract"]["gate_status"] == GATE,
+            "MANIFEST_GATE_CONTRACT")
+
+
+def verify_input_integrity(root: Path, config_path: Path) -> dict:
+    """Only raw read operations. Historical 'verified' flags are not evidence."""
+    raw_config = checked_bytes(config_path, CONFIG_SHA256)
+    config = json.loads(raw_config.decode("utf-8"))
+    verify_contract(raw_config, config)
+    items, hashes = {}, {"configuration": sha256(raw_config)}
+    for name, spec in sorted(config["inputs"].items()):
+        data = checked_bytes(root / spec["filename"], spec["expected_sha256"],
+                             spec["expected_bytes"])
+        if name == "corpus_metadata":
+            git_blob = hashlib.sha1(b"blob " + str(len(data)).encode("ascii") +
+                                    b"\x00" + data).hexdigest()
+            require(git_blob == spec["git_blob_sha"], "YALE_GIT_BLOB_MISMATCH")
+        items[name] = data
+        hashes[spec["filename"]] = sha256(data)
+    raw_source = checked_bytes(root / "ZL3b-n.txt", CORPUS_SHA256, CORPUS_BYTES)
+    hashes["ZL3b-n.txt"] = sha256(raw_source)
+    for name, expected_sha in (("ivtff_parser_rc1_4.py", PARSER_SHA256),
+                               ("ivtff_parser_rc1_4_offset_aware.py", MAPPER_SHA256)):
+        hashes[name] = sha256(checked_bytes(root / name, expected_sha))
+    return {"config": config, "raw": items, "source": raw_source,
+            "hashes": hashes, "root": root}
+
+
+def validate_profiles(profiles: Any) -> tuple[dict[str, dict], list[str]]:
+    """No dimensionality reduction, semantic transformation, or scoring."""
+    require(isinstance(profiles, list) and len(profiles) == 206, "PROFILE_COUNT")
+    by_id, anomalies = {}, []
+    for entry in profiles:
+        require(isinstance(entry, dict), "PROFILE_NOT_OBJECT")
+        original = entry.get("image_id")
+        key, flags = norm(original)
+        require(key not in by_id, f"NORMALIZED_PROFILE_COLLISION:{key}")
+        if not original.startswith("_"):
+            require(FOLIO_RE.fullmatch(original.strip()) is not None,
+                    f"PROFILE_NONFOLIO_ID:{original}")
+        anomalies += [f"PROFILE:{original}:{flag}" for flag in flags]
+        vec = entry.get("archetype_vector")
+        require(isinstance(vec, list) and len(vec) == 768,
+                f"VECTOR_768:{original}")
+        require(all(type(v) in (int, float) and math.isfinite(v) for v in vec),
+                f"VECTOR_NONFINITE:{original}")
+        scores = entry.get("archetype_scores")
+        require(isinstance(scores, dict) and set(scores) == ARCHETYPES,
+                f"ARCHETYPE_16_CATEGORIES:{original}")
+        require(all(type(v) in (int, float) and math.isfinite(v) for v in scores.values()),
+                f"ARCHETYPE_NONFINITE:{original}")
+        emotions = entry.get("emotion_distribution")
+        require(isinstance(emotions, dict) and set(emotions) == EMOTIONS,
+                f"EMOTION_9_CATEGORIES:{original}")
+        require(all(type(v) in (int, float) and math.isfinite(v) for v in emotions.values()),
+                f"EMOTION_NONFINITE:{original}")
+        require(entry.get("dominant_emotion") in EMOTIONS,
+                f"DOMINANT_EMOTION_NOT_IN_CATEGORIES:{original}")
+        require(type(entry.get("archetype_magnitude")) in (int, float) and
+                math.isfinite(entry["archetype_magnitude"]),
+                f"ARCHETYPE_MAGNITUDE_NONFINITE:{original}")
+        require(entry.get("mode") == "voynich", f"PROFILE_MODE:{original}")
+        require(isinstance(entry.get("metadata"), dict) and
+                isinstance(entry.get("source_path"), str), f"PROFILE_SCHEMA:{original}")
+        by_id[key] = entry
+    require(sum(x.startswith("_") for x in by_id) == 9, "COVER_BINDING_COUNT")
+    return by_id, sorted(anomalies)
+
+
+def validate_yale_metadata(rows: list[dict], profile_keys: set[str]) -> tuple[dict, list[str]]:
+    """213 canvas rows; repeated image_id != duplicated Yale canvas."""
+    require(len(rows) == 213, "YALE_METADATA_213_ROWS")
+    by_image: dict[str, set[str]] = defaultdict(set)
+    canvas_ids, anomalies = set(), []
+    for item in rows:
+        original = item["image_id"]
+        key, flags = norm(original)
+        if not original.startswith("_"):
+            require(FOLIO_RE.fullmatch(original.strip()) is not None,
+                    f"METADATA_NONFOLIO_ID:{original}")
+        anomalies += [f"YALE:{original}:{flag}" for flag in flags]
+        service = CANVAS_RE.fullmatch(item["image_service_url"].strip())
+        manifest = MANIFEST_CANVAS_RE.fullmatch(item["canvas_id"].strip())
+        require(service is not None and manifest is not None and
+                service.group(1) == manifest.group(1), f"YALE_CANVAS_REFERENCE:{original}")
+        canvas = service.group(1)
+        require(canvas not in canvas_ids, f"YALE_DUPLICATE_CANVAS:{canvas}")
+        canvas_ids.add(canvas)
+        require(canvas not in by_image[key], f"IMAGE_CANVAS_DUPLICATE:{key}")
+        by_image[key].add(canvas)
+    require(set(by_image) == profile_keys and len(by_image) == 206,
+            "PROFILE_METADATA_NORMALIZED_SET_MISMATCH")
+    repeat = {k: sorted(v) for k, v in by_image.items() if len(v) > 1}
+    require(len(repeat) == 7 and all(len(v) == 2 for v in repeat.values()),
+            "YALE_REPEATED_IMAGE_GROUPS")
+    require(len(canvas_ids) == 213, "YALE_CANVAS_CARDINALITY")
+    return {"image_to_canvases": dict(by_image), "double_canvases": repeat,
+            "canvas_count": len(canvas_ids), "image_count": len(by_image)}, sorted(anomalies)
+
+
+def _load_verified_module(path: Path, expected_hash: str, module_name: str) -> Any:
+    """Called ONLY by an explicitly authorized future validation invocation."""
+    checked_bytes(path, expected_hash)
+    module_spec = importlib.util.spec_from_file_location(module_name, path)
+    require(module_spec is not None and module_spec.loader is not None,
+            f"MODULE_LOAD_SPEC:{module_name}")
+    module = importlib.util.module_from_spec(module_spec)
+    module_spec.loader.exec_module(module)
+    return module
+
+
+def acquire_frozen_lexical_and_provenance(root: Path) -> dict:
+    """On future authorization: recompute with original lexical RC1.4 + OA mapper.
+
+    No preexisting validation report's PASS or count is accepted as validation.
+    This function is NEVER invoked by the module entry point.
+    """
+    parent_path = root / "ivtff_parser_rc1_4.py"
+    mapper_path = root / "ivtff_parser_rc1_4_offset_aware.py"
+    corpus_path = root / "ZL3b-n.txt"
+    checked_bytes(corpus_path, CORPUS_SHA256, CORPUS_BYTES)
+    parent = _load_verified_module(parent_path, PARSER_SHA256, "rc142_lexical_frozen")
+    mapper = _load_verified_module(mapper_path, MAPPER_SHA256, "rc142_oa_frozen")
+    lexical = parent.parse_corpus(corpus_path, verify_source=True)
+    oa = mapper.parse_offset_aware(corpus_path, parent_path)
+    require(lexical["records"] == oa["records"], "FROZEN_LEXICAL_OA_NON_EQUIVALENCE")
+    require(oa["lexical_equivalence"]["difference_count"] == 0,
+            "MAPPER_LEXICAL_DIFFERENCES")
+    require(lexical["counts"]["canonical_loci"] == 4130 and
+            lexical["counts"]["token_count"] == 35492 and
+            len(oa["provenance_records"]) == 35492, "CANONICAL_LOCI_TOKENS")
+    return oa
+
+
+def _line_ranges(source: bytes) -> tuple[list[int], list[tuple[int, int]]]:
+    chunks = source.splitlines(keepends=True)
+    offsets, ranges, cursor = [], [], 0
+    for chunk in chunks:
+        offsets.append(cursor)
+        ranges.append((cursor, cursor + len(chunk)))
+        cursor += len(chunk)
+    require(cursor == len(source) and len(chunks) == 8510, "CORPUS_PHYSICAL_LINES")
+    return offsets, ranges
+
+
+def _as_int(value: Any, code: str) -> int:
+    try:
+        require(isinstance(value, str) and value.strip().isdigit(), code)
+        return int(value)
+    except (ValueError, TypeError) as exc:
+        raise Blocked(code) from exc
+
+
+def _crosswalk_rows(rows: list[dict]) -> tuple[list[dict], list[str]]:
+    """Treat rows as source intervals; do not assume unit_id uniqueness."""
+    require(len(rows) == 227, "CROSSWALK_227_ROWS")
+    out, flags = [], []
+    for ordinal, row in enumerate(rows):
+        unit_id = row["unit_id"].strip()
+        source_id = row["source_page_id"].strip()
+        folio_key, aflags = norm(row["folio_key"])
+        require(bool(unit_id) and bool(source_id), "CROSSWALK_EMPTY_SOURCE_ID")
+        require(FOLIO_RE.fullmatch(row["folio_key"].strip()) is not None or
+                row["folio_key"].strip() == "fRos", "CROSSWALK_NONFOLIO")
+        flags += [f"CROSSWALK:{row['folio_key']}:{f}" for f in aflags]
+        entry = {"record_id": ordinal, "unit_id": unit_id, "source_page_id": source_id,
+                 "folio_key": folio_key, "source_line": _as_int(row["source_line"], "SOURCE_LINE"),
+                 "expected_loci": _as_int(row["unit_p_locus_count"], "LOCUS_COUNT"),
+                 "expected_tokens": _as_int(row["unit_token_count"], "TOKEN_COUNT"),
+                 "has_P": row["unit_has_P"].strip().lower(),
+                 "folio_unit_count": _as_int(row["folio_unit_count"], "FOLIO_UNIT_COUNT"),
+                 "source_row": row}
+        require(entry["has_P"] in ("true", "false"), "UNIT_HAS_P_SCHEMA")
+        out.append(entry)
+    ordered = sorted(out, key=lambda x: (x["source_line"], x["record_id"]))
+    starts = [row["source_line"] for row in ordered]
+    require(all(1 <= s <= 8510 for s in starts) and len(starts) == len(set(starts)),
+            "AMBIGUOUS_CROSSWALK_SOURCE_LINES")
+    return ordered, sorted(flags)
+
+
+def validate_token_occurrences(oa: dict, source: bytes,
+                               crosswalk_rows: list[dict]) -> tuple[dict, dict]:
+    """Exact source segments and token attribution, with independent cross-checks.
+
+    Raw OA uses physical_line/source_segments; V7.1 calls these conceptual
+    fields physical_line_number/source_byte_segments. No enclosing spans.
+    """
+    require(sha256(source) == CORPUS_SHA256, "TOKEN_SOURCE_SHA")
+    ordered, anomalies = _crosswalk_rows(crosswalk_rows)
+    starts = [r["source_line"] for r in ordered]
+    line_starts, line_ranges = _line_ranges(source)
+    records, provenance = oa["records"], oa["provenance_records"]
+    require(isinstance(records, list) and isinstance(provenance, list),
+            "OA_RECORD_SCHEMA")
+    require(len(records) == 4130 and sum(len(r["tokens"]) for r in records) == 35492,
+            "OA_COUNT_NOT_CANONICAL")
+    require(len(provenance) == 35492, "OA_PROVENANCE_MISSING")
+    row_loci: dict[int, set[str]] = defaultdict(set)
+    row_tokens: dict[int, set[tuple]] = defaultdict(set)
+    token_owner: dict[str, int] = {}
+    expected_sequence = []
+    for record in records:
+        locus = record["locus_id"]
+        physical_line = record["physical_line"]
+        require(type(physical_line) is int and 1 <= physical_line <= 8510,
+                "P_LOCUS_PHYSICAL_LINE")
+        p = bisect.bisect_right(starts, physical_line) - 1
+        require(p >= 0, f"LOCUS_BEFORE_CROSSWALK:{locus}")
+        owner = ordered[p]
+        require(owner["source_page_id"] == record["folio"],
+                f"LOCUS_SOURCE_PAGE_OWNERSHIP:{locus}:{owner['source_page_id']}")
+        require(locus not in token_owner, f"DUPLICATE_P_LOCUS:{locus}")
+        rid = owner["record_id"]
+        token_owner[locus] = rid
+        row_loci[rid].add(locus)
+        for index, token in enumerate(record["tokens"], 1):
+            expected_sequence.append((locus, index, token, physical_line))
+    require(len(expected_sequence) == len(provenance), "TOKEN_PROVENANCE_CARDINALITY")
+    observed_status = Counter()
+    used_segments, used_identities = [], set()
+    for expected, occurrence in zip(expected_sequence, provenance):
+        locus, index, token, line = expected
+        require((occurrence.get("locus_id"), occurrence.get("token_index"),
+                 occurrence.get("token_value"), occurrence.get("physical_line")) == expected,
+                f"LEXICAL_PROVENANCE_TOKEN_MISMATCH:{locus}:{index}")
+        require(occurrence.get("source_sha256") == CORPUS_SHA256,
+                "TOKEN_SOURCE_IDENTITY")
+        segments = occurrence.get("source_segments")
+        require(isinstance(segments, list) and len(segments) > 0,
+                f"EMPTY_SOURCE_SEGMENTS:{locus}:{index}")
+        previous_end, raw_fragments, signature, used_lines = -1, [], [], set()
+        for segment in segments:
+            require(isinstance(segment, dict), "SEGMENT_SCHEMA")
+            a, b = segment.get("source_byte_start"), segment.get("source_byte_end")
+            require(type(a) is int and type(b) is int and 0 <= a < b <= len(source) and
+                    a >= previous_end, f"SEGMENT_ORDER_OR_BOUNDS:{locus}:{index}")
+            previous_end = b
+            line_index = bisect.bisect_right(line_starts, a) - 1
+            require(line_index >= 0 and b <= line_ranges[line_index][1],
+                    f"SEGMENT_STRADDLES_PHYSICAL_LINE:{locus}:{index}")
+            fragment = source[a:b]
+            require(fragment.isascii() and fragment.isalpha(),
+                    f"SEGMENT_NOT_ASCII_LETTERS:{locus}:{index}")
+            used_lines.add(line_index + 1)
+            raw_fragments.append(fragment)
+            signature.append((a, b))
+            used_segments.append((a, b, locus, index))
+        reconstructed = b"".join(raw_fragments).decode("ascii").lower()
+        require(reconstructed == token, f"TOKEN_SEGMENT_RECONSTRUCTION:{locus}:{index}")
+        require(sorted(used_lines) == occurrence.get("source_physical_lines"),
+                f"SOURCE_PHYSICAL_LINE_MAPPING:{locus}:{index}")
+        require(line in used_lines, f"TOKEN_FIRST_PHYSICAL_LINE:{locus}:{index}")
+        status = "TRACEABLE_CONTIGUOUS" if len(signature) == 1 else "TRACEABLE_MULTISEGMENT"
+        require(occurrence.get("provenance_status") == status,
+                f"WRONG_SEGMENT_STATUS:{locus}:{index}")
+        if status == "TRACEABLE_MULTISEGMENT":
+            require(occurrence.get("source_byte_start") is None and
+                    occurrence.get("source_byte_end") is None,
+                    f"MULTISEGMENT_SYNTHETIC_SPAN:{locus}:{index}")
+        else:
+            require(occurrence.get("source_byte_start") == signature[0][0] and
+                    occurrence.get("source_byte_end") == signature[0][1],
+                    f"CONTIGUOUS_LEGACY_RANGE:{locus}:{index}")
+        observed_status[status] += 1
+        identity = (CORPUS_SHA256, line, tuple(signature))
+        require(identity not in used_identities, f"DUPLICATE_SOURCE_OCCURRENCE:{locus}:{index}")
+        used_identities.add(identity)
+        rid = token_owner[locus]
+        require(identity not in row_tokens[rid], "DUPLICATE_ROW_OCCURRENCE")
+        row_tokens[rid].add(identity)
+    used_segments.sort(key=lambda p: (p[0], p[1], p[2], p[3]))
+    for previous, current in zip(used_segments, used_segments[1:]):
+        require(previous[1] <= current[0],
+                f"SOURCE_BYTES_SHARED_BY_TOKENS:{previous[2]}:{current[2]}")
+    require(observed_status == {"TRACEABLE_CONTIGUOUS": 35154,
+                                "TRACEABLE_MULTISEGMENT": 338},
+            "EXPECTED_SOURCE_PROVENANCE_COUNTS")
+    folios: dict[str, dict] = defaultdict(lambda: {
+        "units": defaultdict(lambda: {"loci": set(), "tokens": set()}),
+        "loci": set(), "tokens": set()})
+    for entry in ordered:
+        rid = entry["record_id"]
+        loci, tokens = row_loci[rid], row_tokens[rid]
+        require(len(loci) == entry["expected_loci"] and
+                len(tokens) == entry["expected_tokens"],
+                f"CROSSWALK_ROW_COUNTS:{rid}:{entry['source_page_id']}")
+        require((entry["has_P"] == "true") == bool(loci),
+                f"UNIT_HAS_P_INCONSISTENT:{rid}")
+        group = folios[entry["folio_key"]]
+        component = group["units"][entry["unit_id"]]
+        require(not component["tokens"].intersection(tokens),
+                f"REPEATED_UNIT_ID_SOURCE_COLLISION:{entry['unit_id']}")
+        component["loci"].update(loci)
+        component["tokens"].update(tokens)
+        group["loci"].update(loci)
+    disjointness = {"component_units": 0, "multipanel_folios": 0,
+                    "pairwise_comparisons": 0, "intersections": 0}
+    for folio, group in folios.items():
+        unit_map = group["units"]
+        unit_ids = sorted(unit_map)
+        n = len(unit_ids)
+        require(n > 0, f"FOLIO_HAS_NO_COMPONENTS:{folio}")
+        for row in ordered:
+            if row["folio_key"] == folio:
+                require(row["folio_unit_count"] == n, f"FOLIO_UNIT_COUNT:{folio}")
+        disjointness["component_units"] += n if n > 1 else 0
+        if n > 1:
+            disjointness["multipanel_folios"] += 1
+        for i, left in enumerate(unit_ids):
+            for right in unit_ids[i + 1:]:
+                disjointness["pairwise_comparisons"] += 1
+                intersection = unit_map[left]["tokens"] & unit_map[right]["tokens"]
+                require(not intersection, f"MULTIPANEL_TOKEN_OVERLAP:{folio}:{left}:{right}")
+        union = set().union(*(unit_map[u]["tokens"] for u in unit_ids))
+        require(len(union) == sum(len(unit_map[u]["tokens"]) for u in unit_ids),
+                f"TOKEN_UNION_NOT_DISJOINT:{folio}")
+        group["tokens"] = union
+    require(disjointness["multipanel_folios"] == 18 and
+            disjointness["component_units"] == 42 and
+            disjointness["pairwise_comparisons"] == 31,
+            "MULTIPANEL_EXPECTED_SCOPE_MISMATCH")
+    require(sum(len(g["tokens"]) for g in folios.values()) == 35492,
+            "TOTAL_FOLIO_TOKEN_UNION")
+    require(sum(len(g["loci"]) for g in folios.values()) == 4130,
+            "TOTAL_FOLIO_P_LOCI")
+    return dict(folios), {"disjointness": disjointness,
+                          "statuses": dict(observed_status),
+                          "crosswalk_anomalies": anomalies}
+
+
+def reconcile_and_classify(config: dict, profiles: dict[str, dict],
+                           metadata: dict, folios: dict) -> tuple[list, list, list, dict]:
+    """Formula: manuscript = matched_ivtff + unresolved_ivtff.
+
+    Yale-associable contains f85v; it is NOT an additional disjoint population.
+    Expected counts are compared after derivation, never used to create records.
+    """
+    require(set(metadata["image_to_canvases"]) == set(profiles),
+            "METADATA_PROFILE_ASSOCIATION")
+    threshold = config["eligibility"]["threshold"]
+    candidates, exclusions, unresolved = [], [], []
+    for key in sorted(profiles):
+        p = profiles[key]
+        original = p["image_id"]
+        if original.startswith("_"):
+            exclusions.append({"image_id": original, "folio_key": "",
+                               "exclusion_class": "cover_or_binding",
+                               "exclusion_reason": "COVER_OR_BINDING",
+                               "token_count": "", "threshold": threshold,
+                               "source_reference": "voynich_profiles.json:" + original})
+            continue
+        if key not in folios:
+            unresolved.append({"image_id": original, "normalized_image_id": key,
+                               "issue_type": "no_ivtff_folio_match",
+                               "source_profile_present": True,
+                               "crosswalk_match_present": False,
+                               "resolution_status": "UNRESOLVED_NO_IVTFF_MATCH",
+                               "manual_intervention": False})
+            continue
+        require(key != "f85v", "F085V_FORBIDDEN_INFERRED_MATCH")
+        group = folios[key]
+        unit_ids = sorted(group["units"])
+        unit_count, loci, tokens = len(unit_ids), len(group["loci"]), len(group["tokens"])
+        klass = ("primary_candidate" if unit_count == 1 else "multipanel_sensitivity") if loci else (
+            "single_no_P" if unit_count == 1 else "multipanel_no_P")
+        eligible = loci > 0 and tokens >= threshold
+        if not loci:
+            reason = "NO_P"
+        elif tokens < threshold:
+            reason = "BELOW_THRESHOLD"
+        elif tokens == threshold:
+            reason = "THRESHOLD_BOUNDARY_INCLUDED"
+        else:
+            reason = "THRESHOLD_MET"
+        population = "excluded"
+        if eligible:
+            population = "primary" if unit_count == 1 else "sensitivity"
+        candidates.append({"image_id": original, "normalized_image_id": key,
+                           "folio_key": key, "unit_ids": json.dumps(unit_ids, separators=(",", ":")),
+                           "unit_count": unit_count, "p_locus_count": loci,
+                           "token_count": tokens, "candidate_class": klass,
+                           "threshold": threshold, "threshold_operator": ">=",
+                           "threshold_result": eligible, "population_assignment": population,
+                           "decision_reason": reason})
+        if not eligible:
+            exclusions.append({"image_id": original, "folio_key": key,
+                               "exclusion_class": klass, "exclusion_reason": reason,
+                               "token_count": tokens, "threshold": threshold,
+                               "source_reference": "folio_ivtff_crosswalk.csv:" + key})
+    assert_counts(config, profiles, candidates, exclusions, unresolved)
+    return candidates, exclusions, unresolved, {
+        "profiles": len(profiles), "candidate_count": len(candidates),
+        "excluded_records": len(exclusions), "unresolved_count": len(unresolved),
+        "primary_eligible": sum(r["population_assignment"] == "primary" for r in candidates),
+        "sensitivity_eligible": sum(r["population_assignment"] == "sensitivity" for r in candidates),
+    }
+
+
+def assert_counts(config: dict, profiles: dict, candidates: list,
+                  exclusions: list, unresolved: list) -> None:
+    klass = Counter(x["candidate_class"] for x in candidates)
+    population = Counter(x["population_assignment"] for x in candidates)
+    require(klass == Counter({"primary_candidate": 175, "multipanel_sensitivity": 11,
+                              "single_no_P": 8, "multipanel_no_P": 2}),
+            "CANDIDATE_CLASS_PARTITION")
+    require(population == Counter({"primary": 146, "sensitivity": 9, "excluded": 41}),
+            "CANDIDATE_THRESHOLD_PARTITION")
+    require(len(profiles) == 206 and len(candidates) == 196 and
+            len(exclusions) == 50 and len(unresolved) == 1,
+            "PROFILE_RECONCILIATION_196_9_1")
+    require(unresolved[0]["normalized_image_id"] == "f85v" and
+            unresolved[0]["manual_intervention"] is False,
+            "F085V_NOT_ISOLATED")
+    cover_count = sum(k.startswith("_") for k in profiles)
+    matched = {x["normalized_image_id"] for x in candidates}
+    unresolved_ids = {x["normalized_image_id"] for x in unresolved}
+    manuscript = {k for k in profiles if not k.startswith("_")}
+    require(len(matched) == 196 and len(manuscript) == 197 and cover_count == 9,
+            "MANUSCRIPT_PROFILE_SET_CARDINALITY")
+    require(not (matched & unresolved_ids) and manuscript == matched | unresolved_ids,
+            "RECONCILIATION_SET_UNION")
+    require(len(exclusions) == 29 + 2 + 10 + 9,
+            "EXCLUSION_PARTITION")
+    require(sum(c["candidate_class"] == "primary_candidate" and
+                c["population_assignment"] == "excluded" for c in candidates) == 29,
+            "PRIMARY_BELOW_THRESHOLD_29")
+    require(sum(c["candidate_class"] == "multipanel_sensitivity" and
+                c["population_assignment"] == "excluded" for c in candidates) == 2,
+            "SENSITIVITY_BELOW_THRESHOLD_2")
+    reasons = Counter(x["exclusion_reason"] for x in exclusions)
+    require(reasons["COVER_OR_BINDING"] == 9 and reasons["NO_P"] == 10 and
+            reasons["BELOW_THRESHOLD"] == 31, "EXCLUSION_REASONS")
+    for key in config["eligibility"]["boundary_cases"]:
+        selected = [c for c in candidates if c["normalized_image_id"] == key]
+        require(len(selected) == 1 and selected[0]["token_count"] == 75 and
+                selected[0]["candidate_class"] == "primary_candidate" and
+                selected[0]["population_assignment"] == "primary" and
+                selected[0]["decision_reason"] == "THRESHOLD_BOUNDARY_INCLUDED",
+                f"THRESHOLD_BOUNDARY:{key}")
+    require(len({x["normalized_image_id"] for x in candidates}) == len(candidates),
+            "CANDIDATE_UNIQUENESS")
+
+
+def build_validation_report(config: dict, hashes: dict,
+                            counts: dict, provenance: dict,
+                            anomalies: list[str]) -> dict:
+    """Mark runtime checks only when performed; NEVER close RP-01 here.
+
+    The overall result intentionally remains NOT_RUN while independent provenance,
+    the historical RP-01 generator, and the two-run external attestation are open.
+    This is NOT a PASS certificate and keeps V7.1 operationally closed.
+    """
+    verified = {
+        "input_hashes_and_sizes", "configuration_version", "json_csv_parse",
+        "profile_cardinalities", "identifier_integrity", "vector_dimensions_and_finite_values",
+        "archetype_categories_16", "emotional_categories_9", "yale_metadata",
+        "ivtff_reconciliation", "inclusive_threshold", "multipanel_token_disjointness",
+        "primary_sensitivity_partitions", "profile_partition_206", "anomalies",
+    }
+    sections = {s: {"status": "PASS" if s in verified else "NOT_RUN"} for s in SECTIONS}
+    return {"revision": "RC1.4.2-V7.1", "gate": GATE,
+            "status": "PRELIMINARY_TECHNICAL_ONLY_PENDING_INDEPENDENT_ATTESTATION",
+            "RP-01": "OPEN", "sections": sections,
+            "input_sha256": dict(sorted(hashes.items())),
+            "derived_counts": counts, "provenance": provenance,
+            "anomalies": anomalies,
+            "manual_intervention": False,
+            "validation_artifact_generation_not_authorized_by_frozen_config": True,
+            "independent_second_generation": "NOT_RUN",
+            "historical_generator_identified": False,
+            "overall_result": "NOT_RUN"}
+
+
+def serialize_validation_artifacts(config: dict, registers: tuple,
+                                   report: dict, hashes: dict) -> dict[str, bytes]:
+    """Deterministic in-memory serialization only; no write side effect.
+
+    Manifest contains SHA-256 of its four peers. Its own digest MUST be kept in
+    an external SHA256SUMS file to avoid circular/self-referential hashing.
+    """
+    result = {}
+    for kind, rows in zip(ARTIFACT_TYPES[:3], registers):
+        filename = config["outputs"][kind]
+        require(filename not in result, "DUPLICATE_OUTPUT_FILENAME")
+        result[filename] = canonical_csv(rows,
+                                         config["outputs"][kind + "_required_fields"])
+    report_name = config["outputs"]["validation_report"]
+    result[report_name] = canonical_json(report)
+    manifest = {"revision": "RC1.4.2-V7.1", "status": "VALIDATION_PENDING",
+                "gate_status": GATE, "RP-01": "OPEN",
+                "builder_executed": False, "pca_executed": False,
+                "clustering_executed": False, "profile_promotion_executed": False,
+                "conditional_coupling_executed": False,
+                "validation_artifact_bytes_generated": True,
+                "validation_artifacts_published": "NOT_RUN",
+                "input_sha256": dict(sorted(hashes.items())),
+                "peer_artifacts_sha256": {k: sha256(v) for k, v in sorted(result.items())},
+                "independent_second_generation": "NOT_RUN",
+                "note": "In-memory prospective bytes, unpublished; no RP-01 provenance attestation."}
+    result[config["outputs"]["manifest"]] = canonical_json(manifest)
+    require(len(result) == 5, "FIVE_ARTIFACTS_SCHEMA")
+    return result
+
+
+def compare_generation_bytes(run_a: dict[str, bytes],
+                             run_b: dict[str, bytes]) -> dict:
+    """Prospective comparison; does NOT certify independent implementations.
+
+    The reproducibility record and command/logs must be stored outside the five
+    compared artifacts. Comparing one program twice proves repeatability only.
+    """
+    require(len(run_a) == len(run_b) == 5 and set(run_a) == set(run_b),
+            "TWO_RUN_ARTIFACT_SET_MISMATCH")
+    comparisons = {}
+    for name in sorted(run_a):
+        raw_a, raw_b = run_a[name], run_b[name]
+        require(type(raw_a) is bytes and type(raw_b) is bytes, "OUTPUT_NOT_RAW_BYTES")
+        require(raw_a == raw_b, f"TWO_RUN_BYTES_DIFFER:{name}")
+        comparisons[name] = {"sha256": sha256(raw_a), "bytes": len(raw_a),
+                             "byte_identical": True}
+    return {"technical_repeatability": "PASS", "files": comparisons,
+            "independent_validation_of_implementation": "NOT_RUN",
+            "historical_RP_01": "OPEN", "gate": GATE}
+
+
+def prepare_audit_from_verified_inputs(inputs: dict) -> dict:
+    """PROSPECTIVE FUNCTION, NOT INVOKED OR TESTED IN THIS PACKAGE.
+
+    Every validation section labelled PASS by build_validation_report requires
+    reaching the end of all checks. No artifacts are materialized or published.
+    """
+    config = inputs["config"]
+    profiles = json.loads(inputs["raw"]["semantic_profiles"].decode("utf-8"))
+    metadata_rows = parse_csv(inputs["raw"]["corpus_metadata"], {
+        "image_id", "canvas_id", "image_service_url"})
+    crosswalk_rows = parse_csv(inputs["raw"]["ivtff_crosswalk"], {
+        "source_page_id", "source_line", "folio_key", "unit_id",
+        "unit_p_locus_count", "unit_token_count", "unit_has_P", "folio_unit_count"})
+    profiles_by_key, profile_anomalies = validate_profiles(profiles)
+    yale, yale_anomalies = validate_yale_metadata(metadata_rows, set(profiles_by_key))
+    oa = acquire_frozen_lexical_and_provenance(inputs["root"])
+    aggregated, provenance = validate_token_occurrences(
+        oa, inputs["source"], crosswalk_rows)
+    candidates, exclusions, unresolved, counts = reconcile_and_classify(
+        config, profiles_by_key, yale, aggregated)
+    anomalies = sorted(profile_anomalies + yale_anomalies +
+                       provenance["crosswalk_anomalies"])
+    report = build_validation_report(config, inputs["hashes"], counts,
+                                     provenance, anomalies)
+    artifacts = serialize_validation_artifacts(
+        config, (candidates, exclusions, unresolved), report, inputs["hashes"])
+    return {"artifacts_in_memory_only": artifacts, "counts": counts,
+            "report": report, "gate": GATE, "RP-01": "OPEN"}
+
+
+def build_external_execution_record(source_bytes: bytes, hashes: dict,
+                                    command: list[str], log_files: list[str]) -> dict:
+    """PROSPECTIVE external log. No timestamp in five compared artifacts.
+
+    This does not magically identify the unknown historical generator.
+    """
+    require(bool(command) and all(isinstance(x, str) and x for x in command),
+            "EXECUTION_COMMAND_REQUIRED")
+    return {"source_sha256": sha256(source_bytes),
+            "command": command, "logs": log_files,
+            "python": sys.version.split()[0], "platform": platform.platform(),
+            "input_hashes": dict(sorted(hashes.items())),
+            "gate": GATE, "historical_RP_01": "OPEN"}
+
+
+def sha256sums_external(artifacts: dict[str, bytes]) -> bytes:
+    """External non-self-referential digest list of all five prospective files."""
+    require(len(artifacts) == 5, "EXPECTED_FIVE_ARTIFACTS")
+    return ("".join(f"{sha256(data)}  {name}\n" for name, data in
+                    sorted(artifacts.items()))).encode("ascii")
+
+
+
+def compare_two_read_only_directories(path_a: Path, path_b: Path,
+                                      expected_names: set[str]) -> dict:
+    """Future on-disk byte comparison; no writes and no state change."""
+    require(len(expected_names) == 5 and all("/" not in n and "\\" not in n
+                                             for n in expected_names), "ARTIFACT_NAME_SCHEMA")
+    bundles = []
+    for folder in (path_a, path_b):
+        require(folder.is_dir() and not folder.is_symlink(), "BUNDLE_DIRECTORY_MISSING")
+        require({p.name for p in folder.iterdir() if p.is_file()} == expected_names,
+                "ARTIFACT_DIRECTORY_CONTENTS_MISMATCH")
+        bundle = {}
+        for name in expected_names:
+            file = folder / name
+            require(file.is_file() and not file.is_symlink(), "ARTIFACT_MISSING_OR_LINK")
+            bundle[name] = file.read_bytes()
+        bundles.append(bundle)
+    return compare_generation_bytes(*bundles)
+
+
+def stage_new_audit_bundle(artifacts: dict[str, bytes], destination: Path,
+                           authorization: dict | None = None) -> None:
+    """Implementation blueprint for future, separately authorized AUDIT-ONLY writes.
+
+    This function is not called. The existing V7.1 config forbids generation;
+    future authorization must be documented in a separate signed/approved
+    addendum, with the audit scope explicitly isolated from all analytical work.
+    A new output directory is mandatory; frozen inputs are never destinations.
+    """
+    require(authorization is not None and
+            authorization.get("signed_addendum_verified_externally") is True and
+            authorization.get("explicit_audit_artifact_generation_approved") is True and
+            authorization.get("scope") == "validation_artifacts_only" and
+            authorization.get("gate_remains_closed") is True and
+            authorization.get("original_inputs_immutable") is True,
+            "NO_VERIFIED_AUDIT_PUBLICATION_AUTHORIZATION")
+    require(len(artifacts) == 5, "ARTIFACT_COUNT_NOT_FIVE")
+    names = list(artifacts)
+    require(all(name and Path(name).name == name and not name.startswith(".")
+                for name in names), "OUTPUT_FILENAME_NOT_SAFE")
+    require(all(type(b) is bytes for b in artifacts.values()), "ARTIFACT_NOT_BYTES")
+    target = destination.resolve(strict=False)
+    parent = target.parent
+    require(parent.is_dir() and not parent.is_symlink() and not target.exists(),
+            "OUTPUT_TARGET_MUST_BE_NEW_DIRECTORY")
+    require(not any(parent.samefile(Path(i).resolve()) for i in
+                    authorization.get("frozen_input_directories", [])),
+            "OUTPUT_IS_FROZEN_INPUT_DIRECTORY")
+    staging = Path(tempfile.mkdtemp(prefix=".rc142_staging_", dir=parent))
+    try:
+        for name, content in sorted(artifacts.items()):
+            with (staging / name).open("xb") as output:
+                output.write(content)
+                output.flush()
+                os.fsync(output.fileno())
+        require(not target.exists(), "OUTPUT_TARGET_COLLISION")
+        # Atomic directory rename. Non-replacement in a concurrent filesystem
+        # race must still be guaranteed by the operational execution wrapper.
+        staging.rename(target)
+    finally:
+        if staging.exists():
+            shutil.rmtree(staging)
+
+
+if __name__ == "__main__":
+    raise SystemExit("BLOCKED_REVIEW_DRAFT_02: NO_GENERATOR_EXECUTION_OR_PUBLICATION_AUTHORIZED")
