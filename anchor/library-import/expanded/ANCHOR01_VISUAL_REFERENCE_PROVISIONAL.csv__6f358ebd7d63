@@ -1,0 +1,18 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: ANCHOR01_VISUAL_REFERENCE_PROVISIONAL.csv>
+index,id,ring_provisional,x_pixel_approx,y_pixel_approx,x_normalized_approx,y_normalized_approx,status,notes
+0,O01,outer,318,78,505,128,visual_provisional_not_blind,center approximate; no label association
+1,O02,outer,471,139,748,229,visual_provisional_not_blind,center approximate; no label association
+2,O03,outer,548,271,870,446,visual_provisional_not_blind,center approximate; no label association
+3,O04,outer,526,390,835,641,visual_provisional_not_blind,center approximate; no label association
+4,O05,outer,470,477,746,785,visual_provisional_not_blind,center approximate; no label association
+5,O06,outer,356,519,565,854,visual_provisional_not_blind,center approximate; no label association
+6,O07,outer,227,504,360,829,visual_provisional_not_blind,center approximate; no label association
+7,O08,outer,127,426,202,701,visual_provisional_not_blind,center approximate; no label association
+8,O09,outer,91,314,144,516,visual_provisional_not_blind,center approximate; no label association
+9,O10,outer,160,144,254,237,visual_provisional_not_blind,center approximate; no label association
+10,I01,inner,314,185,498,304,visual_provisional_not_blind,center approximate; no label association
+11,I02,inner,430,261,683,429,visual_provisional_not_blind,center approximate; no label association
+12,I03,inner,379,393,602,646,visual_provisional_not_blind,center approximate; no label association
+13,I04,inner,224,359,356,590,visual_provisional_not_blind,center approximate; no label association
+14,I05,inner,226,225,359,370,visual_provisional_not_blind,center approximate; no label association
