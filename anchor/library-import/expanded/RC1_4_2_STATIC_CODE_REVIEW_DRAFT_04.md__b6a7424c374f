@@ -1,0 +1,149 @@
+# RC1.4.2 V7.1 | Revisione statica del generatore: verbale DRAFT 04
+
+**Tipo:** rettifica esclusivamente documentale del verbale DRAFT 03.  
+**Data del documento:** 10 novembre 2026.  
+**Esito della revisione statica del sorgente:** `STATIC_REVIEW_WITH_BLOCKING_FINDINGS`.  
+**Esito della rettifica documentale:** `PROVISIONAL_PENDING_EXTERNAL_ATTESTATION`.  
+**Gate:** `CLOSED_PENDING_VALIDATION`. **RP-01:** `OPEN`.  
+**Esecuzioni del generatore, parser, builder, PCA, clustering, coupling o promozione:** `NOT_RUN` nel presente intervento.  
+**Produzione e confronto dei cinque artefatti RC1.4.2:** `NOT_RUN`.  
+**Intervento sui dati storici di f085v:** `manual_intervention=false` (nessuna associazione imposta).  
+**Correzione del sorgente DRAFT 02 necessaria:** `code_remediation_required=true` (F-01, F-02, F-03).  
+**Stato delle versioni:** DRAFT 02 e DRAFT 03 conservati senza sovrascrittura; codice DRAFT 02 e input congelati non modificati.
+
+## 1. Scopo, perimetro e fonti
+
+DRAFT 04 **rettifica il solo testo del verbale** `RC1_4_2_STATIC_CODE_REVIEW_DRAFT_03.md`, identificato da 16.864 byte e SHA-256 `29bb1da4ccedb045c69a99075976870173d98bb2552a9117c736da0b75b0f0c2`. Non costituisce una versione nuova del generatore Python, non corregge i difetti tecnici del sorgente, non autorizza la generazione di registri e non modifica i cinque artefatti di audit precedenti.
+
+La documentazione consultata è costituita dai verbali DRAFT 02 e DRAFT 03, dal file sorgente `rc1_4_2_generator_clean_DRAFT_02.py` e dal pacchetto ZIP DRAFT 02. I riferimenti a numeri di riga del codice riprendono il file DRAFT 02 immutato. I conteggi Voynich sono **partizioni metodologiche registrate in documenti precedenti**, non risultati ricomputati in questa rettifica.
+
+### 1.1 Registro locale di integrità dei documenti di riferimento (DOC-01)
+
+**Operazione effettuata:** lettura di file locali per determinare la dimensione in byte (`wc -c`) e ricalcolo dei digest (`sha256sum`), alle **2026-11-10T10:26:41Z UTC**. Algoritmo per tutte le righe: **SHA-256**. L'orario è riferito all'inizio della rilevazione locale; non è un timestamp di firma, di creazione originaria o di attestazione da parte di un soggetto esterno.
+
+| File esatto esaminato (in `/mnt/data/`) | Byte | SHA-256 ricalcolato localmente | Scopo |
+|---|---:|---|---|
+| `RC1_4_2_STATIC_CODE_REVIEW_DRAFT_02.md` | 8.071 | `f7fd82e856698f2cec94da73549ec6c712a5a079d905ffab5c2bdab8f35254c2` | Identificare il verbale di confronto |
+| `RC1_4_2_STATIC_CODE_REVIEW_DRAFT_03.md` | 16.864 | `29bb1da4ccedb045c69a99075976870173d98bb2552a9117c736da0b75b0f0c2` | Identificare la versione rettificata |
+| `rc1_4_2_generator_clean_DRAFT_02.py` | 41.856 | `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325` | Identificare il testo del codice sottoposto a revisione |
+| `RC1_4_2_CLEAN_GENERATOR_DRAFT_02.zip` | 24.982 | `d8087da33352363eda45f7bc3cd36df6ec307d0ccda462a38f1cbec42420a8ed` | Identificare il pacchetto di lavoro |
+
+**Metodo:** comandi locali `wc -c` e `sha256sum` sui percorsi esatti, senza importare o eseguire il sorgente Python. L'identità dei byte rispetto ai digest precedentemente dichiarati è una prova limitata di **integrità della copia locale**; non attesta accuratezza del testo, completezza delle prove, provenienza storica, esecuzione della pipeline, indipendenza della verifica o approvazione formale. Qualunque altra impronta menzionata nei documenti storici, ma non ricalcolata qui, conserva lo status della propria fonte e non acquisisce un nuovo `PASS`.
+
+**Identificatore della DRAFT 04:** da registrare **dopo** la finalizzazione del presente file in un documento sidecar separato. Non si incorpora nel documento un hash autoreferenziale. Una firma o attestazione di soggetto indipendente, se prevista, rimane non acquisita.
+
+### 1.2 Quattro concetti probatori distinti
+
+| Concetto | Che cosa può dimostrare | Che cosa non può dimostrare da solo |
+|---|---|---|
+| Integrità dei byte | Coincidenza del contenuto binario con un digest di riferimento | Correttezza metodologica o approvazione |
+| Correttezza del contenuto | Coerenza documentale, logica e tecnica entro il perimetro effettivamente esaminato | Esecuzione o riproduzione empirica |
+| Validazione empirica | Risultati di verifiche eseguite su input identificati e tracciati | Provenienza degli artefatti storici non documentata |
+| Approvazione formale | Decisione attribuibile a un'autorità identificata e a un perimetro delimitato | Integrità o validità scientifica senza le verifiche sottostanti |
+
+Un controllo locale eseguito nel medesimo ambiente in cui il verbale è stato prodotto **non viene qualificato come attestazione esterna indipendente o firmata**. DOC-04 resta pendente finché non venga acquisita un'attestazione separata con identità, ambito, data e metodo verificabili.
+
+## 2. Partizione dei profili e trattamento di f085v
+
+```text
+206 profili = 9 copertine/legatura + 196 match IVTFF + 1 f085v non associato a IVTFF
+197 profili del manoscritto = 196 matched_ivtff + 1 unresolved_ivtff
+```
+
+Il valore `f085v: UNRESOLVED / NO_IVTFF_MATCH_IN_CURRENT_PERIMETER` indica che il profilo è presente nel perimetro dei metadati Yale, ma non dispone di un match IVTFF nel crosswalk corrente. **Non è per sé una prova di guasto del generatore.** La partizione non deve aggiungere `f085v` due volte sommando insiemi sovrapposti. Il campo `manual_intervention=false` significa esclusivamente nessun abbinamento fittizio imposto ai dati; **non** implica che il codice non richieda correzioni. Questo è un riscontro di coerenza documentale, non un nuovo controllo dei 206 profili su file raw.
+
+## 3. Rilievi al sorgente DRAFT 02, invariati
+
+| ID | Priorità | Stato | Riferimento nel sorgente DRAFT 02 | Condizione necessaria, non ancora soddisfatta |
+|---|---|---|---|---|
+| F-01 | BLOCCANTE | `OPEN` | 632–660, 684–711, 800–801 | Autorizzazione verificabile presso ogni punto di accesso di generazione e serializzazione; `__main__` da solo non protegge chiamate dopo import |
+| F-02 | BLOCCANTE | `OPEN` | 162–183, 602–629, 684–711 | Digest e `PASS` collegati ai **byte raw consumati** nella stessa sessione autorizzata, non a dizionari forniti dal chiamante |
+| F-03 | BLOCCANTE | `OPEN` | 756–797 | Vietare staging sulla base di autodichiarazioni; attivazione futura soltanto mediante autorizzazione esterna autenticata e percorsi vincolati; no-clobber reale |
+| F-04 | ALTO | `OPEN` | 663–681, 714–726 | Reperimento della catena documentale **storica** delle generazioni e della loro verifica indipendente per RP-01 |
+| F-05 | MEDIO | `OPEN` | 339–435, 602–629 | Distinguere anomalie ammissibili e bloccanti; confermare vincoli di ragione e linee sorgente per i 338 multisegmenti |
+| F-06 | MEDIO | `OPEN` | 167–176 | Distinguere SHA-256 raw, identificativo Git blob e attestazione di provenienza, anche per il file profili |
+
+Il verbale DRAFT 03 non aveva modificato tali rilievi nel codice e il presente verbale **non li chiude**.
+
+## 4. RP-01 e futura validazione: indipendenza reciproca
+
+Per una eventuale chiusura documentale di RP-01 occorre recuperare e identificare il **generatore storico**, i suoi byte e SHA-256, gli input effettivi con relativi hash, il comando e la configurazione, l'ambiente, i run ID, i log originali con digest, gli exit code, i cinque output di ciascuna generazione con byte count e SHA-256, il confronto indipendente byte-per-byte e l'approvazione/provenienza di tutte le prove. La reperibilità di ogni elemento deve essere distinta dalla mera sua previsione nel nuovo codice.
+
+**Doppio divieto di inferenza:**
+
+- La validazione futura, anche con due esecuzioni identiche e controllate del nuovo generatore, **non costituisce prova della provenienza storica** dei cinque artefatti preesistenti.
+- La ricostruzione della provenienza storica, anche se completa, **non costituisce prova dell'idoneità operativa del nuovo generatore**, che richiede una propria verifica autorizzata.
+
+Entrambi gli obiettivi sono separati. RP-01 rimane `OPEN`; non si promuove a `PASS` una voce `NOT_RUN` né si apre il gate in base a questo documento.
+
+## 5. Rettifiche documentali DOC-01–DOC-04
+
+| ID | Esito della rettifica DRAFT 04 | Modifica apportata | Evidenza e limite |
+|---|---|---|---|
+| DOC-01 | `RESOLVED_LOCAL_DOCUMENTATION` | Registro completo con nome esatto, dimensione, algoritmo, data/ora UTC, strumento e scopo | §1.1: quattro file locali ricalcolati; nessuna attestazione esterna |
+| DOC-02 | `RESOLVED_DOCUMENTARY` | Riclassificate C-01–C-10 per natura effettiva del cambiamento | §6; confrontare i verbali DRAFT 02/DRAFT 03 |
+| DOC-03 | `RESOLVED_DOCUMENTARY` | Sezione 7 rinominata e otto inferenze trattate come esplicitazioni, non tesi precedentemente sostenute e poi eliminate | §7; nessuna pretesa di otto errori storici |
+| DOC-04 | `PENDING_EXTERNAL_ATTESTATION` | Il digest DRAFT 03 è registrato con metadati locali, e l'attestazione indipendente è prevista come documento esterno separato | §1.1 e modello di attestazione separato; **nessuna firma o attestazione esterna acquisita** |
+
+`RESOLVED_DOCUMENTARY` attesta una rettifica redazionale tracciabile, non una verifica empirica. Il requisito documentale complessivo non può essere dichiarato `COHERENT_FINAL` finché DOC-04 rimane pendente.
+
+## 6. Classificazione delle modifiche C-01–C-10 rispetto a DRAFT 02
+
+| ID | Classe | Stato del contenuto in DRAFT 02 | Variazione verificabile nel verbale DRAFT 03 / presente chiarimento |
+|---|---|---|---|
+| C-01 | `NEW` | L'intestazione riportava `STATIC_REVIEW_OPEN_FINDINGS`, la conclusione `STATIC_REVIEW_WITH_BLOCKING_FINDINGS` | Unificato l'identificatore di esito in tutto il verbale |
+| C-02 | `NEW` | `manual_intervention=false` senza delimitazione esplicita in conclusione | Separati `manual_intervention_on_historical_data=false` e `code_remediation_required=true` |
+| C-03 | `CLARIFICATION` | `f085v` era già classificato come irrisolto, senza associazioni forzate | Precisato `NO_IVTFF_MATCH_IN_CURRENT_PERIMETER` e l'assenza di prova di un difetto software |
+| C-04 | `REINFORCEMENT` | F-01 già affermava che `__main__` non impedisce chiamate dopo import | Rafforzata l'esigenza di enforcement per funzione/orchestrazione, non introdotta una scoperta |
+| C-05 | `REINFORCEMENT` | F-02 già negava che un dizionario di hash dimostrasse la lettura dei byte effettivi | Specificato il legame fra byte letti, byte consumati e stato `PASS` |
+| C-06 | `REINFORCEMENT` | F-03 già negava autenticità al booleano del chiamante | Resa esplicita l'origine auto-dichiarata e il vincolo di autorizzazione non auto-certificata |
+| C-07 | `EXPANSION` | F-04 conteneva già un elenco sintetico delle prove storiche richieste | Espansi run ID, manifest input/output, digest log, exit code, ambiente, catena di custodia e ruolo del confronto indipendente |
+| C-08 | `CLARIFICATION` | DRAFT 02 proponeva un successivo DRAFT 03 del codice | Chiarito che DRAFT 03 revisionava **solo il verbale**, senza produrre un nuovo sorgente |
+| C-09 | `EXPANSION` | F-05/F-06 già identificavano anomalie/multisegmenti e verifica Git incompleta | Aggiunte tassonomia e condizioni di blocco, ragioni sorgente e distinzione esplicita delle tre forme di identità |
+| C-10 | `CLARIFICATION` | DRAFT 02 già riportava limiti della revisione AST e assenza di esecuzione | Delimitate con maggiore uniformità le affermazioni positive alla sola lettura statica |
+
+Le classi identificano la **natura redazionale** delle modifiche tra i due verbali; non sono verdetti sulla correttezza del generatore.
+
+## 7. Inferenze vietate e limitazioni esplicitate o rafforzate
+
+La sezione 7 del precedente DRAFT 03 usava il linguaggio «rimosse». **DRAFT 02 non sosteneva già, in forma affermativa, le otto tesi qui elencate**. Sono quindi registrate come inferenze vietate, chiarimenti di perimetro o rafforzamenti, e non come otto falsità eliminate dall'audit.
+
+| Voce | Trattamento corretto | Inferenza vietata / delimitazione |
+|---|---|---|
+| L-01 | `REINFORCEMENT` | Disabilitare `__main__` **non** rende inaccessibili le funzioni dopo import; DRAFT 02 già lo riconosceva |
+| L-02 | `REINFORCEMENT` | Un dizionario `hashes` passato come argomento **non** attesta la lettura degli input raw; DRAFT 02 già lo riconosceva |
+| L-03 | `REINFORCEMENT` | Un booleano del chiamante **non** autentica una firma o autorizzazione esterna; DRAFT 02 già lo riconosceva |
+| L-04 | `REINFORCEMENT` | Coincidenza di output di due nuove esecuzioni **non** chiude automaticamente RP-01; il limite era già espresso |
+| L-05 | `CLARIFICATION` | Nessuna associazione manuale di f085v **non** significa assenza di necessità di correzione del codice |
+| L-06 | `CLARIFICATION` | Riscontri statici preesistenti **non** equivalgono a nuovi PASS empirici sul corpus o sui cinque artefatti |
+| L-07 | `CLARIFICATION` | `f085v UNRESOLVED` **non** è un errore del generatore dimostrato; vale il perimetro IVTFF corrente |
+| L-08 | `CLARIFICATION` | La revisione del verbale **non** modifica il codice o garantisce la sua eseguibilità |
+
+**Affermazioni sostanziali effettivamente ritirate da DRAFT 02:** nessuna delle otto sopra elencate risulta essere stata positivamente asserita in DRAFT 02 come fatto poi smentito. Sono state invece corrette l'incongruenza di intestazione C-01 e l'ambiguità del campo C-02; tutto il resto è precisazione, rafforzamento o ampliamento.
+
+## 8. Conservazione, limiti e decisione
+
+```text
+review_document_version: DRAFT_04
+review_document_status: PROVISIONAL_PENDING_EXTERNAL_ATTESTATION
+review_source_version: DRAFT_02_UNCHANGED
+review_status: STATIC_REVIEW_WITH_BLOCKING_FINDINGS
+code_remediation_required: true
+blocking_findings: [F-01, F-02, F-03]
+additional_open_findings: [F-04, F-05, F-06]
+documentary_findings_resolved_locally: [DOC-01, DOC-02, DOC-03]
+documentary_findings_pending_external_evidence: [DOC-04]
+f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data: false
+RP-01: OPEN
+gate: CLOSED_PENDING_VALIDATION
+generator_execution: NOT_RUN
+parser_execution: NOT_RUN
+builder_execution: NOT_RUN
+five_validation_artifacts_generation: NOT_RUN
+five_validation_artifacts_comparison: NOT_RUN
+historical_inputs: UNCHANGED
+previous_review_documents: PRESERVED_UNMODIFIED
+```
+
+**Decisione:** DRAFT 04 è una **rettifica documentale**, non una validazione operativa del generatore e non un'attestazione della provenienza storica. Il rilievo DOC-04 è dichiarato **pendente** e nessun documento presente è impropriamente qualificato come attestazione firmata. Il gate resta chiuso, RP-01 aperto. DRAFT 02 e DRAFT 03 rimangono disponibili come versioni storiche identificate dai rispettivi SHA-256 e non sono sostituite né alterate.
