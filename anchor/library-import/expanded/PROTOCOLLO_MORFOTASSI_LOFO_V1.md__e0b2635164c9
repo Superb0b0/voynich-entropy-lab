@@ -1,0 +1,23 @@
+# Protocollo preregistrato — Morfotassi posizionale LOFO V1
+
+**Stato:** fissato prima dell'esecuzione. **Baseline:** Baseline 1.0 / parser RC1.2; nessuna modifica ai dati congelati.
+
+## Domanda
+Le caratteristiche posizionali interne dei token (prefissi e suffissi di lunghezza 1, 2 e 3) predicono la sezione del folio fuori campione, senza usare l'identità del token intero come feature?
+
+## Disegno
+- Split leave-one-physical-leaf-out: recto/verso insieme; f85/f86 e Rosettes nello stesso gruppo, coerentemente con il benchmark M3 corretto (98 gruppi).
+- Etichette di sezione esclusivamente dalla mappatura esterna congelata `SECTION_MAPPING_V1.json`.
+- Per ogni fold, estrarre dal token le sei feature categoriali: prefisso-1/2/3 e suffisso-1/2/3. Non usare il token completo, la sua frequenza globale, né informazioni del test per definire il vocabolario delle feature.
+- Modello: Naive Bayes multinomiale sulla sezione, con prior di sezione stimato dal training e probabilità condizionate delle sei feature con smoothing add-alpha 0.1. I conteggi sono per occorrenza di token nel training.
+- Baseline nulla: solo prior di sezione del training, senza feature testuali.
+- Valutare ogni occorrenza di token del test mediante cross-entropy della vera etichetta di sezione. Le occorrenze OOV sono incluse perché le feature caratteriali sono ricavabili direttamente dal token.
+- Bootstrap a cluster per foglio fisico, 10.000 repliche, seed 20261025, intervallo percentile 95% della riduzione relativa di cross-entropy rispetto alla baseline nulla.
+
+## Metriche primarie
+1. Cross-entropy della baseline prior-only e del modello prefissi/suffissi.
+2. Riduzione relativa della cross-entropy del modello morfotattico rispetto alla baseline.
+3. Intervallo bootstrap al 95%; copertura in token e gruppi.
+
+## Interpretazione fissata prima dei risultati
+Un miglioramento fuori campione indica che i pattern posizionali dei caratteri contengono informazione predittiva sulla sezione oltre al solo prior di sezione. Non prova che prefissi/suffissi siano morfemi linguistici, che esista una grammatica, né che il manoscritto sia un linguaggio naturale o un nomenclatore. Il test non confronta direttamente la morfotassi con un modello lessicale a parità di capacità: misura il segnale posizionale senza identità atomica.
