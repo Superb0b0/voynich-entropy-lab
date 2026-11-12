@@ -1,0 +1,69 @@
+# Abstract
+
+Il presente studio caratterizza il profilo statistico del manoscritto Voynich attraverso densità lessicale, adiacenza e due metriche di distribuzione (h2 e hapax). I valori osservati sono densità 0,91–0,95, adiacenza 0,04–0,05, h2 1,53–1,83 e hapax 0,66–0,75, con variazione sistematica tra i gruppi del manoscritto. L'analisi della trascrizione IVTFF mostra inoltre un'eterogeneità di formato: le 130 posizioni dei quire botanici e farmaceutici sono interamente classificate come MATCH, mentre i quire astronomici (64,3% non-MATCH) e il gruppo N, O, Q, S (foldout e biologica; 36,1% non-MATCH) concentrano le categorie NON-P, TEXT INCLUDED e PLACEHOLDER. La disomogeneità di formato documentata è un vincolo che i modelli generativi futuri devono considerare, se assumono un testo lineare uniforme. Il confronto con lingue naturali e generatori è riportato separatamente come analisi esplorativa non verificata, non utilizzata per conclusioni primarie.
+
+# Introduzione
+
+Il manoscritto Voynich è oggetto di analisi computazionali da decenni; la maggior parte degli studi confronta il testo con lingue naturali o con generatori; manca una caratterizzazione congiunta di densità lessicale e adiacenza, e manca un'analisi della distribuzione delle categorie di trascrizione tra le sezioni. Questo studio colma queste due lacune con dati verificati dal testbed originale.
+
+La densità lessicale misura la concentrazione del lessico; l'adiacenza misura la dipendenza locale tra righe consecutive. La loro combinazione caratterizza il testo in modo che nessuna delle due metriche cattura da sola. In letteratura manca una caratterizzazione congiunta di queste due metriche, e manca un'analisi quantitativa della distribuzione delle categorie di trascrizione tra le sezioni del manoscritto.
+
+# Risultati primari
+
+## 1.1 Densità e adiacenza
+
+I dati del testbed originale mostrano che i quattro gruppi del manoscritto presentano valori di densità lessicale compresi tra 0,91 e 0,95. In particolare, la densità è pari a 0,91 per la mano 1, 0,94 per la mano 2, 0,94 per la mano 3 e 0,95 per la sezione biologica. L'adiacenza delle righe si colloca nell'intervallo globale 0,04–0,05. Questo intervallo descrive il manoscritto nel suo complesso e non costituisce una misura distinta per ciascun gruppo.
+
+| Gruppo | Densità |
+| :--- | :--- |
+| Mano 1 | 0,91 |
+| Mano 2 | 0,94 |
+| Mano 3 | 0,94 |
+| Sezione biologica | 0,95 |
+
+## 1.2 Eterogeneità statistica
+
+Il confronto tra i quattro gruppi evidenzia differenze anche nelle altre dimensioni statistiche considerate. L'indice h2 varia da 1,53 a 1,83, mentre la quota di hapax varia da 0,66 a 0,75. La densità presenta a sua volta una variazione compresa tra 0,91 e 0,95. Nel loro insieme, queste variazioni mostrano che il manoscritto non è statisticamente uniforme.
+
+| Indicatore | Intervallo osservato |
+| :--- | :--- |
+| h2 | 1,53–1,83 |
+| Quota di hapax | 0,66–0,75 |
+| Densità | 0,91–0,95 |
+
+## 1.3 Eterogeneità di formato
+
+| Gruppo di Quire | Posizioni Totali | MATCH | NON-P | TEXT INCLUDED | PLACEHOLDER | % Non-MATCH |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| A–G, M (botanica/farmaceutica) | 130 | 130 | 0 | 0 | 0 | 0,00% |
+| H–L (astronomica) | 42 | 15 | 19 | 0 | 8 | 64,29% |
+| N, O, Q, S (foldout e biologica) | 61 | 39 | 0 | 10 | 12 | 36,07% |
+| T (testuale) | 24 | 23 | 1 | 0 | 0 | 4,17% |
+
+La trascrizione IVTFF classifica le posizioni astronomiche e dei foldout in modo sistematicamente diverso dalle posizioni botaniche, farmaceutiche e testuali. Il pattern è compatibile con una differenza reale nel layout delle pagine astronomiche, ma la verifica visiva sulle immagini non è stata eseguita e resta un limite dichiarato.
+
+# Analisi esplorative
+
+Nota sulla provenienza dei dati. I valori delle 11 lingue e dei generatori sono indicativi e non ancora verificati. Solo i valori del Voynich provengono dal testbed originale. Questi valori esplorativi non sono utilizzati per trarre conclusioni primarie.
+
+| Famiglia di generatori | Densità | Adiacenza |
+| :--- | :--- | :--- |
+| Ibridi sillabici | n.d. | ≈0,005 |
+| Simon | n.d. | n.d. |
+| Simon a slot | n.d. | n.d. |
+| Mutazione lessicale | n.d. | n.d. |
+| Errori di copia | 0,52–0,78 | n.d. |
+
+La distinzione tra le cinque famiglie è mantenuta perché i generatori non presentano necessariamente lo stesso comportamento. Una rappresentazione aggregata in categorie più ampie costituisce una semplificazione per chiarezza espositiva e non sostituisce i risultati distinti per famiglia.
+
+# Discussione
+
+Il pattern riportato nella sezione 1.3 mostra che l'assunzione di un formato lineare uniforme è falsa per almeno due gruppi di quire (astronomici e foldout). La disomogeneità di formato documentata è quindi un vincolo che eventuali modelli generativi futuri devono considerare, se intendono riprodurre il profilo osservato senza assumere un testo lineare uniforme.
+
+# Limiti
+
+I limiti principali di questo studio sono i seguenti: (a) i valori di densità e h2/hapax sono per gruppo, ma l'adiacenza è un intervallo globale, non per gruppo; (b) la verifica visiva del layout delle pagine astronomiche non è stata eseguita, quindi l'eterogeneità di formato è un risultato sulla trascrizione IVTFF, non sul manoscritto; (c) il confronto con lingue e generatori è indicativo e non verificato, e non è usato per conclusioni primarie; (d) il campione è di quattro gruppi, e l'eterogeneità è descritta, non testata statisticamente.
+
+# Conclusione
+
+Nel perimetro dei dati verificati, il manoscritto non è statisticamente uniforme, e la sua eterogeneità coinvolge sia le metriche lessicali sia il formato della trascrizione. Le conclusioni si fondano su tre risultati: la caratterizzazione densità-adiacenza (0,91–0,95 / 0,04–0,05), l'eterogeneità statistica (h2 1,53–1,83, hapax 0,66–0,75) e l'eterogeneità di formato (64,3% non-MATCH negli astronomici; 36,1% nel gruppo N, O, Q, S, che include foldout e biologica; 0% nei botanici). Per andare oltre, sarebbe necessario: la riesecuzione del confronto con lingue e generatori con pipeline documentata; la verifica visiva del layout; lo sviluppo di un modello generativo che incorpori la disomogeneità di formato invece di assumere un testo lineare uniforme.
