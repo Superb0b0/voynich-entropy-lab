@@ -1,0 +1,32 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: ANCHOR02_CLAUDE_VISUAL_REVIEW.csv>
+index,id,ring,x_normalized,y_normalized,visual_review,review_note,validation_level
+0,O01,outer,387,181,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+1,O02,outer,451,168,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+2,O03,outer,510,159,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+3,O04,outer,563,157,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+4,O05,outer,647,178,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+5,O06,outer,703,238,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+6,O07,outer,739,311,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+7,O08,outer,787,400,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+8,O09,outer,787,519,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+9,O10,outer,739,627,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+10,O11,outer,668,697,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+11,O12,outer,576,735,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+12,O13,outer,449,757,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+13,O14,outer,352,740,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+14,O15,outer,265,632,position_needs_refinement,Marker vicino al bordo della figura ruotata; centro da rifinire,posthoc_visual_review_not_independent_ground_truth
+15,O16,outer,224,524,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+16,O17,outer,212,411,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+17,O18,outer,270,292,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+18,O19,outer,321,227,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+19,I01,inner,428,265,position_needs_refinement,Marker spostato rispetto alla testa; figura presente nella regione,posthoc_visual_review_not_independent_ground_truth
+20,I02,inner,530,254,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+21,I03,inner,632,319,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+22,I04,inner,706,420,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+23,I05,inner,678,555,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+24,I06,inner,596,638,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+25,I07,inner,477,681,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+26,I08,inner,367,589,position_needs_refinement,Marker vicino al bordo dell’anello; centro anatomico non chiaro,posthoc_visual_review_not_independent_ground_truth
+27,I09,inner,311,473,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
+28,I10,inner,336,339,plausible_visible_figure,Figura umana distinguibile nella regione indicata; centro approssimativo,posthoc_visual_review_not_independent_ground_truth
