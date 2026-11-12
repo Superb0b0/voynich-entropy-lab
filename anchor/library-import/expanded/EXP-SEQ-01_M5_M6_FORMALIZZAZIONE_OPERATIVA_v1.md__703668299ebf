@@ -1,0 +1,63 @@
+# EXP-SEQ-01 — Formalizzazione operativa M5/M6 (v1)
+
+## Stato e provenienza
+
+Questo documento colma una lacuna della specifica disponibile: la gerarchia M5/M6 era descritta come «smoothing gerarchico verso M3», ma non erano riportate le equazioni complete. Le equazioni qui sotto sono una **scelta operativa integrativa**, non una trascrizione né una ricostruzione verificata di una formula originariamente preregistrata. La scelta è congelata per rendere l'esperimento eseguibile e deve essere riportata come deviazione/integrativa metodologica.
+
+## Notazione
+
+- `s`: etichetta di sezione della pagina/locus.
+- `w_i`: token al posto i-esimo del locus.
+- `C_s(h,w)`: numero di occorrenze nel training della storia `h` seguita da `w`, nella sezione `s`.
+- `C_s(h) = sum_w C_s(h,w)`.
+- `P3(w|s)`: probabilità del modello M3 già definito nel protocollo, stimata esclusivamente sul training del fold. La sua implementazione e il suo smoothing restano quelli del benchmark M3 congelato; questa formalizzazione non li modifica.
+- `BOS`: simbolo di inizio locus, distinto dal vocabolario lessicale.
+- `alpha5`, `alpha6`: parametri indipendenti, selezionati separatamente per M5 e M6.
+
+## Equazioni
+
+### M5: bigramma condizionato alla sezione, interpolato verso M3
+
+Per una storia di un token `h = w_(i-1)`:
+
+`P5(w_i | w_(i-1), s) = [C_s(w_(i-1), w_i) + alpha5 * P3(w_i | s)] / [C_s(w_(i-1)) + alpha5]`.
+
+Il primo token di ogni locus è valutato direttamente con `P3(w_1 | s)`. Per il secondo token e i successivi si usa M5.
+
+### M6: trigramma condizionato alla sezione, interpolato gerarchicamente verso M5
+
+Per una storia di due token `h = (w_(i-2), w_(i-1))`:
+
+`P6(w_i | w_(i-2), w_(i-1), s) = [C_s(w_(i-2), w_(i-1), w_i) + alpha6 * P5(w_i | w_(i-1), s)] / [C_s(w_(i-2), w_(i-1)) + alpha6]`.
+
+Il primo token di ogni locus è valutato con M3. Dal secondo token si usa M6 con storia iniziale `(BOS, w_1)`; dal terzo token in poi si usa la storia ordinaria `(w_(i-2), w_(i-1))`. Nel termine di interpolazione M5, per il secondo token, la storia di ordine uno è `w_1`.
+
+## Normalizzazione e casi non osservati
+
+Per ogni storia, la somma dei conteggi dei token successivi è il denominatore di conteggio. Poiché `P3` e `P5` sono distribuzioni normalizzate, le formule producono distribuzioni condizionate normalizzate. Se una storia non compare nel training, il modello coincide esattamente con il livello inferiore. I token OOV sono ricondotti a `UNK` secondo la regola LOFO; `BOS` non è un token predetto e non appartiene al vocabolario.
+
+## Selezione degli iperparametri
+
+Per ciascun fold esterno LOFO, e separatamente per M5 e M6:
+
+- griglia: `{0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30, 100}`;
+- selezione tramite cross-entropy ponderata per token sulle inner validation folds, interamente contenute nel training esterno;
+- in caso di differenza entro `1e-6` bit/token, selezionare l'alpha maggiore;
+- non riutilizzare l'alpha osservato per le repliche M2: la selezione va ripetuta per ogni replica e fold esterno.
+
+## Vincoli LOFO
+
+- 98 fold esterni per gruppo fisico; f85/f86/Rosettes restano nel gruppo congiunto già definito.
+- Vocabolario costruito soltanto sul training di ciascun fold.
+- Tutti i conteggi n-gramma sono costruiti entro il singolo locus; nessuna transizione tra loci.
+- La sezione è quella assegnata alla pagina dal mapping congelato.
+- Aggregazione della cross-entropy ponderata per il numero di token effettivamente valutati.
+- M3 deve restare invariato sotto M2, entro la tolleranza V-12 già fissata.
+
+## Decisione metodologica e limite
+
+La cascata `M6 -> M5 -> M3` è preferita alla scorciatoia `M6 -> M3` perché rende letterale la gerarchia degli ordini Markoviani e sfrutta il contesto di ordine uno quando il contesto di ordine due è raro. È una formalizzazione standard di interpolazione gerarchica, ma non è dimostrato che fosse la formula intesa nel testo originario. Il rapporto finale deve quindi riportare risultati sotto la dicitura **M5/M6 formalizzati operativamente v1** e non attribuire le equazioni alla preregistrazione originaria.
+
+## Controllo di compatibilità con le regole documentate
+
+La scelta rispetta: M5 primo token da M3; M6 primo token da M3; M6 secondo token con storia `(BOS, w1)`; alpha indipendenti per M5/M6; smoothing gerarchico verso M3; nested inner validation; griglia e tie-break documentati. L'unico elemento integrativo è l'esplicitazione che M6 interpola verso M5, e quindi indirettamente verso M3.
