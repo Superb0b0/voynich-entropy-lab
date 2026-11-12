@@ -1,0 +1,173 @@
+#!/usr/bin/env python3
+"""Exploratory tokenization sensitivity audit for ZL3b-n.txt / IVTFF parser RC1.2.
+
+This script DOES NOT infer or endorse the historical testbed pipeline. It measures
+the effect of explicitly named alternative cleaning/tokenization rules on the
+same P-tagged loci. Some variants are intentionally diagnostic and may be
+philologically unjustified (especially comma joining, first-alternative choice,
+and joining across <->). They must not be used as canonical data without an
+independent IVTFF justification.
+"""
+from __future__ import annotations
+import argparse, csv, hashlib, importlib.util, itertools, json, re
+from pathlib import Path
+
+EXPECTED_SHA256 = "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc"
+HEADER_RE = re.compile(r"^<(?P<header>[^>]+)>[ \t]*(?P<body>.*)$")
+TOKEN_RE = re.compile(r"[A-Za-z]+")
+COMMENT_RE = re.compile(r"<![^>]*>")
+BRACE_RE = re.compile(r"\{([^{}]*)\}")
+SQUARE_RE = re.compile(r"\[[^\[\]]*\]")
+
+def load_parser(path: Path):
+    spec = importlib.util.spec_from_file_location("rc12_parser", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Cannot load parser: {path}")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+def read_p_bodies(corpus: Path, parser):
+    raw = corpus.read_bytes()
+    sha = hashlib.sha256(raw).hexdigest()
+    if sha != EXPECTED_SHA256:
+        raise SystemExit(f"BLOCKED: corpus SHA-256 mismatch: {sha}")
+    text = raw.decode("utf-8", errors="strict")
+    records = []
+    for line_no, line in enumerate(text.splitlines(), 1):
+        m = parser.HEADER_RE.match(line)
+        if not m or "," not in m.group("header"):
+            continue
+        locus_id, tag = m.group("header").split(",", 1)
+        if tag not in parser.ALLOWED_P_TAGS:
+            continue
+        if not (parser.NUMERIC_LOCUS_RE.fullmatch(locus_id) or parser.ROSETTES_LOCUS_RE.fullmatch(locus_id)):
+            continue
+        records.append({"line": line_no, "locus_id": locus_id, "tag": tag, "body": m.group("body")})
+    return sha, len(raw), len(text.splitlines()), records
+
+def tokenize(body: str, p, mode: dict):
+    b = COMMENT_RE.sub(" ", body)
+    # Preserve the RC1.2 default: all standard markers create a boundary.
+    for marker in p.STANDARD_MARKERS:
+        if marker == "<->":
+            b = b.replace(marker, " " if mode["foldout"] == "space" else "")
+        elif marker in ("<$>", "<%>", "<~>", "<d>"):
+            b = b.replace(marker, " " if mode["boundary"] == "space" else "")
+        else:
+            b = b.replace(marker, " ")
+    for marker in p.LOCAL_NONSTANDARD_MARKERS:
+        b = b.replace(marker, " ")
+
+    if mode["braces"] == "drop":
+        b = BRACE_RE.sub(" ", b)
+    elif mode["braces"] == "space":
+        b = BRACE_RE.sub(lambda m: " " + m.group(1) + " ", b)
+    else:
+        b = BRACE_RE.sub(lambda m: m.group(1), b)
+
+    p.validate_balanced(b, "[", "]", "square")
+    sq = mode["squares"]
+    if sq == "exclude":
+        b = SQUARE_RE.sub(" ", b)
+    elif sq == "preserve_join":
+        b = SQUARE_RE.sub(lambda m: m.group(0)[1:-1], b)
+    elif sq == "preserve_space":
+        b = SQUARE_RE.sub(lambda m: " " + m.group(0)[1:-1] + " ", b)
+    elif sq == "first_alt":
+        # Deliberately naive diagnostic: NOT a recommended reading-selection rule.
+        def first(m):
+            return m.group(0)[1:-1].split(":")[0].split("|")[0].replace("@", " ")
+        b = SQUARE_RE.sub(first, b)
+
+    if mode["apostrophe"] == "join":
+        b = b.replace("'", "").replace("’", "")
+    if mode["comma"] == "join":
+        b = b.replace(",", "")
+    return [x.lower() for x in TOKEN_RE.findall(b)]
+
+def summarize(records, p, mode):
+    toks = []
+    for rec in records:
+        toks.extend(tokenize(rec["body"], p, mode))
+    return {"tokens": len(toks), "types": len(set(toks)), "TTR": len(set(toks))/len(toks) if toks else None}
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--corpus", type=Path, required=True)
+    ap.add_argument("--parser", type=Path, required=True)
+    ap.add_argument("--out-prefix", type=Path, default=Path("voynich_tokenization_sensitivity"))
+    args = ap.parse_args()
+    p = load_parser(args.parser)
+    sha, size, lines, records = read_p_bodies(args.corpus, p)
+    baseline = {"braces":"preserve", "squares":"exclude", "apostrophe":"split",
+                "comma":"split", "foldout":"space", "boundary":"space"}
+    base = summarize(records, p, baseline)
+    assert base["tokens"] == 35492 and base["types"] == 6980, (
+        "Baseline differs from locked RC1.2 expected counts: " + repr(base))
+
+    variants = [
+        ("RC1.2 baseline", {}),
+        ("braces: drop whole block (RC1.1-like)", {"braces":"drop"}),
+        ("braces: preserve inner with spaces", {"braces":"space"}),
+        ("square brackets: preserve inner, join", {"squares":"preserve_join"}),
+        ("square brackets: preserve inner, add spaces", {"squares":"preserve_space"}),
+        ("square brackets: choose first alternative (diagnostic only)", {"squares":"first_alt"}),
+        ("apostrophes: join adjacent letters", {"apostrophe":"join"}),
+        ("commas: join adjacent letters (diagnostic only)", {"comma":"join"}),
+        ("<->: remove marker without a boundary (diagnostic only)", {"foldout":"join"}),
+        ("<$>, <%>, <~>, <d>: remove without boundary (diagnostic only)", {"boundary":"join"}),
+    ]
+    isolated = []
+    for name, override in variants:
+        mode = baseline | override
+        s = summarize(records, p, mode)
+        isolated.append({"variant":name, **mode, **s,
+                         "delta_tokens":s["tokens"]-base["tokens"],
+                         "delta_types":s["types"]-base["types"]})
+
+    # Small factorial grid for the five dimensions most likely to affect counts.
+    grid = []
+    for braces, squares, apostrophe, comma, foldout in itertools.product(
+        ["preserve","drop"], ["exclude","first_alt","preserve_join"],
+        ["split","join"], ["split","join"], ["space","join"]):
+        mode = baseline | {"braces":braces,"squares":squares,"apostrophe":apostrophe,
+                           "comma":comma,"foldout":foldout}
+        s = summarize(records, p, mode)
+        row = {"braces":braces,"squares":squares,"apostrophe":apostrophe,
+               "comma":comma,"foldout":foldout, **s,
+               "delta_vs_historical_tokens":s["tokens"]-34139,
+               "delta_vs_estimated_types":s["types"]-7271,
+               "normalized_gap_score":abs(s["tokens"]-34139)/1353 + abs(s["types"]-7271)/291}
+        grid.append(row)
+    grid.sort(key=lambda r:r["normalized_gap_score"])
+
+    prefix = args.out_prefix
+    prefix.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "status":"EXPLORATORY_SENSITIVITY_ONLY_NOT_CANONICAL",
+        "source":{"path":str(args.corpus),"sha256":sha,"size_bytes":size,"physical_lines":lines,
+                  "p_tagged_loci":len(records)},
+        "baseline":{"rule":"RC1.2 rules reimplemented and checked against parser totals",**base},
+        "historical_target":{"tokens":34139,"types_estimate":7271,
+            "type_estimate_status":"derived from rounded historical TTR 0.213; not an observed count",
+            "warning":"Do not optimize canonical rules against this target; rule plausibility must be decided independently."},
+        "isolated_variants":isolated,
+        "factorial_grid":grid,
+        "interpretation":{
+            "subset_theorem":"Any token/locus filter applied to RC1.2 without transforming tokens has vocabulary size <= 6980.",
+            "warning":"Nearness to historical counts does not identify the historical pipeline. Several variants are deliberately naive or lack IVTFF justification.",
+            "canonical_decision":"BLOCKED_PENDING_PHILOLOGICAL_RULES_AND_HISTORICAL_PIPELINE_EVIDENCE"
+        }
+    }
+    (prefix.with_suffix(".json")).write_text(json.dumps(payload,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
+    with (prefix.with_suffix(".csv")).open("w",newline="",encoding="utf-8") as f:
+        fields=list(grid[0].keys())
+        w=csv.DictWriter(f,fieldnames=fields); w.writeheader(); w.writerows(grid)
+    print(json.dumps({"baseline":base,"isolated_variants":isolated,
+                      "best_10_grid_rows":grid[:10],
+                      "json":str(prefix.with_suffix(".json")),"csv":str(prefix.with_suffix(".csv"))},
+                     indent=2,ensure_ascii=False))
+
+if __name__ == "__main__":
+    main()
