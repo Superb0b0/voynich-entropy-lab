@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""Reproducible IVTFF/EVA corpus audit. No network access; input must be supplied locally."""
+import argparse, csv, hashlib, json, re, sys
+from collections import Counter
+from pathlib import Path
+
+PAGE_RE = re.compile(r'^<([^>]+)>\s*(.*)$')
+FOLIO_RE = re.compile(r'^(f\d+[rv](?:\d+)?)')
+
+def sha256(path):
+    h=hashlib.sha256()
+    with open(path,'rb') as f:
+        for b in iter(lambda:f.read(1024*1024), b''): h.update(b)
+    return h.hexdigest()
+
+def main():
+    ap=argparse.ArgumentParser()
+    ap.add_argument('--input', required=True, help='path to original IVTFF file')
+    ap.add_argument('--outdir', default='audit_out')
+    a=ap.parse_args(); p=Path(a.input)
+    if not p.is_file():
+        print(json.dumps({'status':'BLOCKED_INPUT_MISSING','input':str(p.resolve()),'returncode':2}, indent=2))
+        return 2
+    raw=p.read_bytes(); digest=hashlib.sha256(raw).hexdigest()
+    # Keep original bytes/lines untouched for reversibility; decode strict UTF-8.
+    text=raw.decode('utf-8')
+    lines=text.splitlines(keepends=True)
+    records=[]; folios=set(); quire_counts=Counter(); rows=0
+    seg_a=Counter(); seg_b=Counter(); types_a=set(); types_b=set()
+    separators=Counter(); text_line_count=0; nonempty_tokens_a=0; nonempty_tokens_b=0
+    for lineno,line in enumerate(lines,1):
+        s=line.rstrip('\r\n')
+        m=PAGE_RE.match(s)
+        if not m or s.startswith('#=') or s.startswith('#'):
+            continue
+        locus, body=m.groups()
+        # IVTFF page headers are metadata, not text loci.
+        if re.fullmatch(r'f\d+[rv]\d?', locus):
+            folios.add(locus)
+            q=re.search(r'\$Q=([^ ]+)', body)
+            if q: quire_counts[q.group(1)] += 1
+            continue
+        rows += 1
+        text_line_count += 1
+        # Preserve source payload exactly; remove no punctuation/markup.
+        # The two analyses split only at the specified separators and retain empty fields.
+        ta=body.split('.')
+        tb=re.split(r'[.,]', body)
+        seg_a.update(ta); seg_b.update(tb)
+        types_a.update(ta); types_b.update(tb)
+        nonempty_tokens_a += sum(x != '' for x in ta)
+        nonempty_tokens_b += sum(x != '' for x in tb)
+        separators['periods'] += body.count('.')
+        separators['commas'] += body.count(',')
+        records.append((lineno,locus,body, json.dumps(ta,ensure_ascii=False),json.dumps(tb,ensure_ascii=False)))
+    out=Path(a.outdir); out.mkdir(parents=True,exist_ok=True)
+    # QUOTE_ALL as requested. Reconstructed payload is byte-for-byte at decoded line payload level.
+    with open(out/'segments.tsv','w',encoding='utf-8',newline='') as f:
+        w=csv.writer(f,delimiter='\t',quoting=csv.QUOTE_ALL,lineterminator='\n')
+        w.writerow(['source_line','locus','raw_payload','split_dot_only_json','split_dot_comma_json'])
+        w.writerows(records)
+    reversible=True
+    # Round-trip test of segmentation for every payload: joining the split fields by its delimiters recovers body.
+    for _,_,body,ja,jb in records:
+        if '.'.join(json.loads(ja)) != body or rejoin_dot_comma(json.loads(jb),body) != body:
+            reversible=False; break
+    report={
+      'status':'AUDIT_COMPLETE','input':str(p.resolve()),'sha256':digest,'bytes':len(raw),
+      'physical_lines':len(lines),'text_locus_rows':rows,'folio_headers':len(folios),
+      'folios_sorted':sorted(folios),'quire_header_counts':dict(sorted(quire_counts.items())),
+      'separator_counts':dict(separators),
+      'segmentation_A_dot_only':{'token_fields_including_empty':sum(seg_a.values()),'nonempty_token_fields':nonempty_tokens_a,'types_including_empty':len(types_a),'empty_fields':seg_a.get('',0)},
+      'segmentation_B_dot_and_comma':{'token_fields_including_empty':sum(seg_b.values()),'nonempty_token_fields':nonempty_tokens_b,'types_including_empty':len(types_b),'empty_fields':seg_b.get('',0)},
+      'payload_roundtrip_reversible':reversible,'output_tsv':str((out/'segments.tsv').resolve()),
+      'python_version':sys.version,'seed':'not applicable: deterministic audit; no randomness'
+    }
+    (out/'audit_report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    print(json.dumps(report,ensure_ascii=False,indent=2))
+    return 0 if reversible else 3
+
+def rejoin_dot_comma(fields, original):
+    # Rebuild from the split fields plus the exact delimiter sequence in the source.
+    parts=re.split(r'([.,])',original)
+    rebuilt=[]; field_i=0
+    for i,part in enumerate(parts):
+        if i % 2 == 0:
+            if field_i >= len(fields) or fields[field_i] != part: return None
+            rebuilt.append(fields[field_i]); field_i += 1
+        else:
+            rebuilt.append(part)
+    if field_i != len(fields): return None
+    return ''.join(rebuilt)
+
+if __name__=='__main__': raise SystemExit(main())
