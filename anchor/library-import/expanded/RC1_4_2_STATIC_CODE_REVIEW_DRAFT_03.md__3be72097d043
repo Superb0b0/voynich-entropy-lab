@@ -1,0 +1,163 @@
+# RC1.4.2 V7.1 | Revisione statica del codice DRAFT 02
+
+**Versione del documento:** DRAFT 03, revisione documentale del verbale DRAFT 02  
+**Data:** 10 novembre 2026  
+**Sorgente sottoposto a revisione:** `rc1_4_2_generator_clean_DRAFT_02.py` (NON modificato)  
+**SHA-256 sorgente DRAFT 02:** `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325`  
+**Pacchetto sorgente:** `RC1_4_2_CLEAN_GENERATOR_DRAFT_02.zip` (NON modificato)  
+**SHA-256 pacchetto DRAFT 02:** `d8087da33352363eda45f7bc3cd36df6ec307d0ccda462a38f1cbec42420a8ed`  
+**Verbale precedente:** `RC1_4_2_STATIC_CODE_REVIEW_DRAFT_02.md` (NON modificato)  
+**SHA-256 verbale precedente:** `f7fd82e856698f2cec94da73549ec6c712a5a079d905ffab5c2bdab8f35254c2`
+
+**ESITO UNICO:** `STATIC_REVIEW_WITH_BLOCKING_FINDINGS`  
+**Gate operativo:** `CLOSED_PENDING_VALIDATION`  
+**RP-01:** `OPEN`  
+**f085v:** `UNRESOLVED / NO_IVTFF_MATCH_IN_CURRENT_PERIMETER`  
+**Generatore / parser / builder / analisi:** `NOT_RUN` in questa revisione  
+**Generazione e confronto dei cinque artefatti:** `NOT_RUN`  
+**Intervento correttivo sul codice richiesto:** `code_remediation_required=true`  
+**Associazioni manuali dei dati / f085v:** `manual_intervention=false`  
+**DRAFT 02 e fonti congelate:** `UNCHANGED`
+
+## 1. Natura, ambito e limiti della revisione
+
+Il presente documento **corregge soltanto il verbale** di revisione statica DRAFT 02, senza creare una DRAFT 03 del codice. Sono stati riletti in sola lettura il verbale precedente e i passaggi pertinenti del sorgente DRAFT 02. Le citazioni di riga si riferiscono esclusivamente al sorgente DRAFT 02 con SHA-256 sopra riportato. Non sono stati importati moduli, invocati parser o generatori, calcolate statistiche Voynich, creati registri di audit, ricostruiti i cinque artefatti o modificati gli input congelati.
+
+Il precedente verbale riferisce un controllo di sintassi AST e di struttura ZIP. Il presente aggiornamento **non ripete né estende empiricamente** quei controlli: li registra come riscontri documentati nella revisione precedente, senza attribuire un nuovo `PASS` di esecuzione.
+
+Il controllo semantico di un codice di audit non equivale alla sua validazione operativa, alla certificazione della provenienza degli artefatti storici o all'autorizzazione di nuove generazioni. Gli attuali controlli sul gate operano come vincoli progettuali, non come prova di enforcement completa.
+
+## 2. Bilanciamento insiemistico: f085v non costituisce un errore del generatore
+
+La partizione prevista è:
+
+```text
+206 profili totali
+= 9 copertine / elementi di legatura
++ 196 profili con match IVTFF
++ 1 profilo non associato a IVTFF nel perimetro corrente (f085v)
+
+197 profili del manoscritto = 196 matched_ivtff + 1 unresolved_ivtff
+```
+
+Gli insiemi `matched_ivtff` e `unresolved_ivtff` sono disgiunti; non si deve invece sommare `associable_to_yale_metadata` e `unresolved_ivtff`, poiché `f085v` è presente nei metadati Yale ma non nel crosswalk IVTFF. La condizione `UNRESOLVED` descrive il **mancato abbinamento nel perimetro corrente**, non un guasto dimostrato del software. Rimangono vietati matching forzato, imputazioni di token, replicazioni di profili o correzioni manuali degli input.
+
+Nel sorgente la partizione è codificata nelle righe 489–518 e 557–579; `manual_intervention: False` per il record `f085v` compare alle righe 510–516. Tale campo riguarda **i dati**. Il presente verbale usa invece `code_remediation_required=true` per indicare che **il codice** necessita di correzioni. Non si altera la semantica del record storico.
+
+## 3. Matrice dei rilievi statici
+
+| ID | Gravità | Stato | Riferimenti al sorgente DRAFT 02 | Correzione richiesta |
+|---|---|---|---|---|
+| **F-01** | **BLOCCANTE** | `OPEN` | 632–660, 684–711, 800–801 | Autorizzazione verificabile applicata al confine di orchestrazione e generazione, non soltanto a `__main__` |
+| **F-02** | **BLOCCANTE** | `OPEN` | 162–183, 602–629, 684–711 | Hash e status di verifica legati ai byte raw effettivamente consumati nella stessa sessione autorizzata |
+| **F-03** | **BLOCCANTE** | `OPEN` | 756–797 | Eliminare l'autorizzazione auto-dichiarata; staging disabilitato fino ad attestazione esterna controllata |
+| **F-04** | **ALTO** | `OPEN` | 663–681, 714–726 | Catena di prova RP-01 con manifest delle esecuzioni, log e confronto indipendente |
+| **F-05** | **MEDIO** | `OPEN` | 339–435, 602–629 | Classificazione delle anomalie e verifica esplicita delle condizioni multisegmento |
+| **F-06** | **MEDIO** | `OPEN` | 167–176 | Verifica di provenienza Git simmetrica per metadati e profili, distinta dallo SHA-256 raw |
+
+### F-01. Gate non applicato a livello di funzione (BLOCCANTE)
+
+Il controllo `if __name__ == "__main__"` alle righe 800–801 blocca l'avvio diretto dello script, **non impedisce chiamate dopo l'import**. In particolare `prepare_audit_from_verified_inputs()` (684–711) può proseguire fino alla preparazione degli artefatti, e `serialize_validation_artifacts()` (632–660) può costruire cinque file in memoria. Il controllo del valore congelato `validation_artifact_generation_allowed=false` in `verify_contract()` (136–159) non protegge direttamente questi punti d'accesso.
+
+**Condizione correttiva:** distinguere operazioni pure di controllo, verifica raw degli input e un solo punto d'orchestrazione autorizzata; rendere impossibile l'emissione/serializzazione degli artefatti attraverso il perimetro pubblico senza verifica esterna e senza una prova non autocertificata dell'integrità degli input. Disabilitare completamente i punti di pubblicazione nella bozza in assenza di un addendum specifico. Un controllo software da solo non sostituisce le autorizzazioni organizzative ed operative.
+
+### F-02. Integrità degli input attestabile mediante valori forniti dal chiamante (BLOCCANTE)
+
+`verify_input_integrity()` (162–183) è presente, ma `prepare_audit_from_verified_inputs(inputs)` (684–711) accetta un normale dizionario, non richiede che esso provenga dalla funzione di verifica e trasferisce `inputs["hashes"]` a `build_validation_report()` (602–629). Così la marcatura `PASS` in `input_hashes_and_sizes` può essere alimentata da un'asserzione non verificata nella stessa catena di chiamata. **Un dizionario di digest non prova la lettura dei byte raw.**
+
+**Condizione correttiva:** l'orchestratore futuro deve leggere e verificare i byte effettivamente consumati nella stessa esecuzione autorizzata; usare valori di integrità derivati esclusivamente dai contenuti letti e attestazioni non costruibili tramite semplici argomenti esterni; escludere la possibilità di restituire `PASS` se un controllo richiesto non è stato completato. Occorre anche minimizzare o eliminare la discrepanza fra byte verificati e byte riaperti successivamente (time-of-check/time-of-use).
+
+### F-03. Staging autorizzato da dichiarazioni auto-fornite (BLOCCANTE)
+
+`stage_new_audit_bundle()` (756–797) accetta un dizionario `authorization` in cui `signed_addendum_verified_externally=True` è un valore imposto dal chiamante (765–771), **non un'attestazione verificata**. Non sono dimostrati firma/approvazione dell'addendum, identità dell'autorità, perimetro concesso, validità temporale o vincolo non eludibile dei percorsi. L'elenco `frozen_input_directories` è anch'esso controllato dal chiamante (781–783) e può risultare vuoto. Il sorgente segnala esplicitamente una possibile race fra verifica dell'assenza della destinazione e `rename()` (791–794).
+
+**Condizione correttiva:** mantenere staging e pubblicazione *disabilitati per default*. In una distinta orchestrazione futura, accettare esclusivamente un'autorizzazione esterna verificata, riferita a un perimetro e a un set di input/output fissati, e utilizzare un'operazione realmente no-clobber. Il mero uso di booleani non è il problema: lo è l'assenza di un'origine autorevole e verificabile dell'autorizzazione.
+
+### F-04. Insufficienza della catena documentale di RP-01 (ALTO)
+
+`build_external_execution_record()` (714–726) registra comando, percorsi dei log, versione Python, piattaforma e hash passati dal chiamante. Non documenta in modo verificabile tutti gli elementi necessari per ricostruire le esecuzioni storiche. `compare_generation_bytes()` (663–681) verifica l'uguaglianza byte-per-byte di due set di output forniti; **non dimostra** che provengano da generazioni indipendenti, da input effettivamente identificati o dal generatore originario.
+
+**Prove da acquisire separatamente prima di una possibile chiusura RP-01:**
+
+1. Identificativo univoco di ciascuna esecuzione storica, identità/provenienza del generatore originario e **SHA-256 dei suoi byte originali**.
+2. Manifest completo degli input effettivamente letti, con byte count, SHA-256 e percorso/provenienza, includendo il contratto/configurazione applicati.
+3. Comando effettivo, parametri, configurazione, ambiente riproducibile (interprete, dipendenze/versioni, piattaforma) e directory di lavoro pertinente.
+4. Log originali acquisiti come byte, **SHA-256 dei log**, exit code e documentazione dell'avvio/esito di ogni esecuzione.
+5. Elenco dei cinque output generati da ciascuna esecuzione, con nomi, dimensioni e SHA-256 calcolati sui byte realmente prodotti.
+6. Dimostrazione della separazione delle due generazioni e **confronto indipendente** byte-per-byte dei rispettivi output, con risultato e responsabile del controllo.
+7. Catena di custodia delle evidenze, approvazione/attestazione e decisione formale che specifichi esattamente quale fatto viene certificato.
+
+**Distinzione tassativa:** (a) una catena documentale storica che attribuisca i cinque artefatti al generatore originario; (b) una nuova verifica di ripetibilità del nuovo generatore; (c) un'eventuale nuova validazione indipendente. (b) e (c) non sostituiscono automaticamente (a). In assenza del materiale storico, RP-01 resta `OPEN` salvo decisione formale che **non** presenti una nuova validazione come recupero della provenienza storica.
+
+### F-05. Anomalie e casi multisegmento (MEDIO)
+
+Il report può etichettare `anomalies` come `PASS` senza una classificazione esplicita di ogni anomalia raccolta (602–629). Le verifiche per segmenti (339–435) non asseriscono completamente, nell'attuale formulazione, la ragione `INTRA_LINE_TRANSFORMATION` e il vincolo documentato sulle linee fisiche dei 338 casi multisegmento. Il mero pareggio dei conteggi non dimostra la conformità di ciascuna occorrenza.
+
+**Condizione correttiva:** definire tassonomia `INFORMATIONAL/ACCEPTED` e `BLOCKING`, associare a ogni segnalazione una regola e motivazione, rendere bloccanti le anomalie non classificate e verificare provenienza dei segmenti, `multisegment_reason` e linee sorgente. I numeri storici devono restare **asserzioni attese**, non prove già rieseguite.
+
+### F-06. Provenienza Git dei profili non simmetrica (MEDIO)
+
+La verifica Git blob per `corpus_metadata.csv` compare alle righe 171–174; non compare un controllo analogo per `voynich_profiles.json` nel medesimo ciclo. Una coincidenza SHA-256 dei byte raw non dimostra automaticamente la coincidenza con l'oggetto Git dichiarato.
+
+**Condizione correttiva:** verificare separatamente l'identità Git blob di ogni file per cui esiste un'identità dichiarata e attendibile, distinguendo **SHA-256 dell'input raw**, **SHA-1 dell'oggetto Git** e **provenienza del repository/commit**; se la prova Git non è reperibile, indicare `NOT_RUN` o `UNVERIFIED`, mai `PASS` per deduzione.
+
+## 4. Riscontri positivi delimitati alla lettura del sorgente
+
+- Il codice rappresenta la partizione `206 = 9 + 196 + 1` mediante insiemi distinti e non forza un match IVTFF di `f085v` (489–579).
+- La soglia è codificata come `token_count >= 75`, e i casi al confine hanno una ragione dedicata `THRESHOLD_BOUNDARY_INCLUDED` (520–542).
+- L'impostazione progettuale aggrega per folio e mantiene le unità multipannello subordinate, senza attribuire loro indipendenza statistica (come descritto nel verbale precedente).
+- La bozza dispone di rappresentazioni a segmenti anziché inventare un unico intervallo continuo per i token multisegmento (riscontro statico, non prova empirica).
+- La revisione precedente registra un parsing AST del sorgente e un controllo di integrità ZIP riusciti. **In questo documento non sono stati ripetuti**, e non comportano idoneità operativa.
+
+Questi punti descrivono proprietà del testo del codice o evidenze storiche dichiarate; nessuno costituisce una nuova esecuzione della pipeline o un attestato di correttezza dei risultati empirici.
+
+## 5. Stato finale e condizioni di prosecuzione
+
+```text
+review_document_version: DRAFT_03
+review_status: STATIC_REVIEW_WITH_BLOCKING_FINDINGS
+gate: CLOSED_PENDING_VALIDATION
+RP-01: OPEN
+f085v: UNRESOLVED_NO_IVTFF_MATCH
+source_draft_02: UNCHANGED
+draft_02_package: UNCHANGED
+historical_inputs: UNCHANGED
+generator_execution: NOT_RUN
+parser_execution: NOT_RUN
+builder_execution: NOT_RUN
+analytical_execution: NOT_RUN
+five_artifacts_generation: NOT_RUN
+five_artifacts_comparison: NOT_RUN
+code_remediation_required: true
+manual_intervention_on_historical_data: false
+```
+
+**Prossimo artefatto eventualmente ammissibile:** una *specifica tecnica* e, solo con nuova istruzione, una revisione **source-only** denominata DRAFT 03 del generatore; entrambe distinte da questo verbale. Priorità F-01, F-02 e F-03. F-04, F-05 e F-06 restano prescrizioni da affrontare prima della validazione operativa. Non sono autorizzati builder, PCA, clustering, conditional coupling, promozione dei profili, creazione dei cinque registri o apertura del gate.
+
+## 6. Registro delle modifiche dal verbale DRAFT 02
+
+| ID modifica | Elemento precedente | Correzione applicata nel verbale DRAFT 03 |
+|---|---|---|
+| C-01 | `STATIC_REVIEW_OPEN_FINDINGS` in intestazione, altro stato in conclusione | Unificato in `STATIC_REVIEW_WITH_BLOCKING_FINDINGS` |
+| C-02 | `manual_intervention=false` nella conclusione, senza disambiguazione | Distinto `manual_intervention_on_historical_data=false` da `code_remediation_required=true` |
+| C-03 | Descrizione di f085v come genericamente irrisolto | Specificato `NO_IVTFF_MATCH_IN_CURRENT_PERIMETER`, non errore dimostrato |
+| C-04 | F-01: «gate protetto soltanto dal punto d'ingresso CLI» | Enunciato come assenza di enforcement a livello di funzione, anche dopo import |
+| C-05 | F-02: «prove propagate per semplice dizionario» | Specificato che digest forniti dal chiamante non sono prova dei **byte consumati** |
+| C-06 | F-03: «autorizzazione non autenticata» | Esplicitata l'**auto-dichiarazione** e l'assenza di attestazione esterna controllata |
+| C-07 | F-04: elenco di prove incompleto e sintetico | Specificati run ID, input raw, comando/configurazione, log SHA-256, exit code, output SHA-256, ambiente, indipendenza, approvazione |
+| C-08 | Prossimo passaggio suggerito: DRAFT 03 del codice | Chiarito che **questo output è solo il verbale**; codice DRAFT 03 non prodotto né autorizzato dalla revisione documentale |
+| C-09 | F-05/F-06 formulati genericamente | Distinti controlli richiesti, status ammessi, ragioni e indipendenza fra hash SHA-256 e Git blob |
+| C-10 | Riscontri statici enunciati senza uniforme delimitazione | Evidenziato che nessun controllo empirico è stato nuovamente eseguito |
+
+## 7. Affermazioni rimosse o ristrette perché non dimostrate
+
+1. **Rimossa l'implicazione** che disabilitare `__main__` renda non invocabili le funzioni dopo import: non è vero (F-01).
+2. **Rimossa l'implicazione** che un dizionario `hashes` costituisca prova di lettura e verifica dei byte effettivi (F-02).
+3. **Rimossa l'implicazione** che `signed_addendum_verified_externally=True`, fornito dal chiamante, attesti un'autorizzazione realmente verificata (F-03).
+4. **Rimossa qualsiasi equivalenza** fra confronto byte-identico di due set prodotti dal nuovo generatore e chiusura della provenienza storica RP-01 (F-04).
+5. **Rimossa l'ambiguità** tra `manual_intervention=false` sui dati storici e necessità di correzioni del codice; le due proposizioni sono compatibili.
+6. **Ristretta la portata dei riscontri positivi** al livello di lettura statica/attestazione documentale precedente: nessun nuovo `PASS` per verifiche di corpus, input, artefatti o multipannello.
+7. **Rimossa l'equivalenza** tra `f085v UNRESOLVED` ed «errore del generatore»: il mancato match riguarda il perimetro IVTFF corrente.
+8. **Rimossa ogni pretesa** che il presente verbale corregga il generatore o certifichi la futura eseguibilità: si tratta di sola rettifica documentale.
+
+**Conclusione vincolante:** `STATIC_REVIEW_WITH_BLOCKING_FINDINGS`; `CLOSED_PENDING_VALIDATION`; `RP-01 OPEN`; `f085v UNRESOLVED`; input e DRAFT 02 invariati; nessuna autorizzazione all'esecuzione, alla serializzazione o alla pubblicazione degli artefatti.
