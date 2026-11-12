@@ -1,0 +1,71 @@
+{
+  "verdict": "INCONCLUSIVO",
+  "input_sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+  "predeclaration_sha256": "33ca3ae18cc05a686bf7421db402028d5b5c0b38ca56cc59b5b95b047aa95af3",
+  "unit": "physical folio side: IVTFF trailing panel suffixes merged (e.g. f68v1 and f68v3 to f68v)",
+  "locus_types": [
+    "@Ri",
+    "@Ro"
+  ],
+  "eligible_min_n": 8,
+  "total_radial_loci": 142,
+  "folios_with_radial_loci": 8,
+  "n_eligible_folios": 7,
+  "n_excluded_folios": 1,
+  "table": [
+    {
+      "folio": "f69v",
+      "n": 28,
+      "k": 20,
+      "fraction": 0.7142857142857143
+    },
+    {
+      "folio": "f67v",
+      "n": 25,
+      "k": 16,
+      "fraction": 0.64
+    },
+    {
+      "folio": "f70r",
+      "n": 15,
+      "k": 7,
+      "fraction": 0.4666666666666667
+    },
+    {
+      "folio": "f68v",
+      "n": 28,
+      "k": 13,
+      "fraction": 0.4642857142857143
+    },
+    {
+      "folio": "f67r",
+      "n": 12,
+      "k": 5,
+      "fraction": 0.4166666666666667
+    },
+    {
+      "folio": "f69r",
+      "n": 22,
+      "k": 7,
+      "fraction": 0.3181818181818182
+    },
+    {
+      "folio": "f68r",
+      "n": 8,
+      "k": 0,
+      "fraction": 0.0
+    }
+  ],
+  "f69v": {
+    "folio": "f69v",
+    "n": 28,
+    "k": 20,
+    "fraction": 0.7142857142857143
+  },
+  "rank_f69v": 1,
+  "n_folios_fraction_at_least_f69v": 1,
+  "p_folio_rank": null,
+  "previous_result": "ESPLORATIVO",
+  "seed": null,
+  "requested_permutations": 0
+}
