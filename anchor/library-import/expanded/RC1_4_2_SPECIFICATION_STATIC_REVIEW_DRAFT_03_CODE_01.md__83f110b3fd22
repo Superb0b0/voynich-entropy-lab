@@ -1,0 +1,72 @@
+# RC1.4.2 V7.1 | Revisione statica della specifica DRAFT 03_CODE
+
+**Data:** 10 novembre 2026  
+**Natura:** verifica documentale e lettura statica; nessun import o esecuzione del generatore, parser, mapper o builder.  
+**Esito richiesto:** `SPECIFICATION_INADEQUATE` **per l'accettazione statica completa**. La specifica resta utilizzabile come roadmap di correzione.  
+**Specificazione esaminata:** `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE.md`, 9.874 byte, SHA-256 `c26268f659ef4ed529c6e1a57e4fd9da046f290120c0cf01200e0d72a941c10d` (ricalcolo locale dei byte con `sha256sum`, non attestazione indipendente).  
+**Riferimento sorgente:** `rc1_4_2_generator_clean_DRAFT_02.py`, 41.856 byte, SHA-256 `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325`.  
+**Verbale di riferimento:** `RC1_4_2_STATIC_CODE_REVIEW_DRAFT_04.md`, 14.817 byte, SHA-256 `490a4235951acbbb169f966ee6be46487973070219feeeecb79201c965b09983`.
+
+## A. Verifica degli otto criteri
+
+| Criterio | Esito documentale | Evidenza e limite |
+|---|---|---|
+| 1. F-01, autorizzazione anche dopo import | **PARTIAL** | §2 r. 21, §3 r. 29–34 e §3 r. 39: corretto il modello di protezione delle API supportate, ma manca una lista chiusa dei punti d'accesso e la distinzione tra serializzazione pura di byte e emissione di un bundle di audit. Nel sorgente DRAFT 02 `compare_generation_bytes()` emette inoltre un `technical_repeatability: PASS` (r. 679), mentre la specifica consente la diagnostica (r. 36) e contemporaneamente esige che nessun percorso non autorizzato produca `PASS` (r. 21). |
+| 2. F-02, digest dei byte consumati | **PARTIAL** | §2 r. 22 e §4 r. 45 prescrivono correttamente una catena verificata e uno snapshot. Manca tuttavia la scelta precisa del meccanismo che consenta ai parser congelati, che ricevono percorsi di file, di consumare esattamente lo snapshot controllato e non una rilettura sostituibile (sorgente DRAFT 02 r. 278–283). |
+| 3. F-03, controllo esterno e staging | **PARTIAL** | §2 r. 23 e §3 r. 34 impongono `BLOCKED` nello source-only e prevedono un orchestratore futuro. Devono però essere specificati confine di fiducia, attestante/verificatore, vincolo della decisione a input/output/scope e primitiva no-replace su piattaforma identificata. |
+| 4. Separazione funzioni pure / input / orchestrazione | **PARTIAL** | §3 r. 36 definisce `compare_two_read_only_directories()` «utilità pura», ma nel sorgente r. 743–752 essa legge il filesystem. È read-only, non pura. `canonical_csv()` e `canonical_json()` producono byte senza I/O: consentiti come trasformazioni pure se distinti dalla produzione ufficiale dei cinque artefatti. |
+| 5. Nessuna esecuzione o PASS empirico nella specifica | **SATISFIED** | §1, §4 e §5: la specifica non prescrive una esecuzione immediata e mantiene i controlli non compiuti a `NOT_RUN`. Questa valutazione non esegue la pipeline. |
+| 6. Separazione RP-01 da validazione e gate | **SATISFIED** | §1 r. 15, §4 r. 47 e §5 r. 63–66: RP-01 resta storico e separato, gate invariato. |
+| 7. Integrità dei congelati e DRAFT 02 | **SATISFIED AS SCOPE** | §1 e §5 vietano modifiche agli originali. In questa revisione non è stato alterato alcun file esistente. È un vincolo di perimetro, non una nuova attestazione di provenienza di tutti gli input. |
+| 8. Accettazione interamente verificabile staticamente | **PARTIAL** | §2 mescola controlli ispezionabili nel sorgente (assenza di chiamate a scritture; guard su API) con garanzie che richiedono riscontri in ambiente controllato (consumo effettivo dello snapshot; comportamento atomico nel filesystem; autenticazione reale). Occorre separare `STATIC_SOURCE_ACCEPTANCE` e `FUTURE_OPERATIONAL_VALIDATION_NOT_RUN`. |
+
+## B. Mappa F-01 / F-02 / F-03 e condizioni da rendere verificabili
+
+| Rilievo | Requisito già espresso correttamente | Integrazione alla specifica | Criterio statico verificabile nella futura bozza |
+|---|---|---|---|
+| **F-01** | Nessun avvio parser, bundle di audit o attribuzione di PASS da API supportata senza decisione esterna verificabile. | Inventario esaustivo delle API e degli effetti: parsing, generazione dei cinque output, pubblicazione, sidecar, etichette `PASS`; distinguere byte generici prodotti da funzioni pure e artefatti di audit identificati; vietare `technical_repeatability: PASS` da confronti diagnostici arbitrari. | Call graph delle API supportate: nessun percorso non autorizzato raggiunge i produttori di bundle, scritture o indicatori `PASS`; l'import del modulo non ha effetti collaterali; i confronti puri riportano solo differenze/uguaglianze, senza certificazioni. |
+| **F-02** | Integrità fondata sui byte raw effettivamente consumati, non su dizionari forniti dal chiamante. | Definire un unico snapshot immutabile o un meccanismo di consegna verificabile ai parser congelati, un modello per le evidenze per-controllo e una regola esplicita `NOT_RUN` in assenza della catena dei byte. Distinguere prova statica del flusso da prova empirica della lettura. | Diagramma dei dati e call graph che mostrino dove nascono i digest, dove è conservato lo snapshot, come il parser lo riceve, come ogni stato è derivato; vietati `PASS` da dizionari surrogati. Proprietà runtime dello snapshot rimangono da dimostrare dopo autorizzazione. |
+| **F-03** | Nessun `authorization` autodichiarato; staging bloccato nella revisione source-only. | Definire esplicitamente il verificatore esterno, il materiale autenticato, l'ambito e i percorsi vincolati. Per la futura pubblicazione specificare piattaforma, API no-replace e modello di directory/protezioni dei congelati. | Nella bozza source-only tutti i percorsi di staging/publication restano chiusi incondizionatamente. Per l'orchestratore futuro, verifica statica del protocollo, dei vincoli su percorsi, della primitiva scelta e dell'assenza di check-then-rename; efficacia filesystem da provare solo in futura sessione autorizzata. |
+
+## C. Lacune di specificazione, senza attribuzione di nuovi bug empirici
+
+- **S-01 [ALTA]:** §2 r. 21 e §3 r. 36 non definiscono coerentemente la possibilità di ottenere `PASS` tramite `compare_generation_bytes()` dopo import: DRAFT 02 r. 679 restituisce `technical_repeatability: PASS` da byte forniti dal chiamante. Una futura revisione dovrà produrre un mero esito diagnostico (`EQUAL`/`DIFFERENT`) o proteggere la qualifica di `PASS`.
+- **S-02 [ALTA]:** lo snapshot è un requisito, ma non è definito il tragitto dei medesimi byte fino ai parser congelati; il criterio statico «verificare TOCTOU» va sostituito con un vincolo di architettura ispezionabile.
+- **S-03 [ALTA]:** «verifica esterna» e «primitiva no-clobber» non identificano da sole una radice di fiducia o una garanzia atomica per la piattaforma concreta. L'enforcement è progettato, non dimostrato.
+- **S-04 [MEDIA]:** correggere la tassonomia: `compare_two_read_only_directories()` è read-only con effetti di lettura, non pura.
+- **S-05 [MEDIA]:** distinguere condizioni accertabili da analisi statica del sorgente da verifiche di comportamento e ambiente future. Non attribuire `PASS` a queste ultime senza esecuzione autorizzata.
+
+## D. Espressioni da circoscrivere
+
+- «Nessuna chiamata importata può creare cartelle/CSV/JSON» deve riguardare i **percorsi supportati di produzione e pubblicazione degli artefatti di audit**, non ogni possibile uso arbitrario dell'interprete controllato dal chiamante.
+- «Funzione pura di confronto» vale per `compare_generation_bytes()` per parametri ordinari; non per `compare_two_read_only_directories()` che legge percorsi esterni.
+- «Prova statica della semantica no-replace» può provare l'uso intenzionale della primitiva identificata, non sostituire la futura verifica ambientale delle sue garanzie concrete.
+- «Ogni `PASS` collegato ai byte consumati» è obiettivo strutturale; la sua correttezza effettiva non è verificata in questo audit statico.
+
+## E. Stato formale invariato
+
+```text
+specification_review_result: SPECIFICATION_INADEQUATE
+scope_of_inadequacy: INCOMPLETE_STATIC_ACCEPTANCE_CONTRACT
+roadmap_utility: ACCEPTABLE_WITH_REQUIRED_REFINEMENTS
+F-01: OPEN
+F-02: OPEN
+F-03: OPEN
+code_remediation_required: true
+DOC-01: RESOLVED_DOCUMENTALLY
+DOC-02: RESOLVED_DOCUMENTALLY
+DOC-03: RESOLVED_DOCUMENTALLY
+DOC-04: PENDING_EXTERNAL_ATTESTATION
+RP-01: OPEN
+f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data: false
+gate: CLOSED_PENDING_VALIDATION
+parser_import_or_execution: NOT_RUN
+generator_import_or_execution: NOT_RUN
+builder_PCA_clustering_coupling: NOT_RUN
+five_validation_artifacts_generated: NOT_RUN
+new_empirical_PASS: NONE
+source_or_frozen_inputs_modified: false
+```
+
+**Decisione:** non occorre una nuova revisione di stato del gate; serve una revisione mirata del contratto source-only per chiudere S-01–S-05 sul piano prescrittivo. Nessuna correzione di questa specifica chiude RP-01 o DOC-04 e nessun artefatto di questo esame costituisce validazione operativa.
