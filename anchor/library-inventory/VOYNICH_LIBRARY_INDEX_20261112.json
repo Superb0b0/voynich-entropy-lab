@@ -1,0 +1,2908 @@
+{
+  "title": "Voynich research file inventory, ChatGPT Library",
+  "inventory_date": "2026-11-12",
+  "source": "Read-only Library metadata scan",
+  "scope": "Project-related filenames or files under /Voynich/; generic unnamed files elsewhere may be omitted",
+  "file_count": 413,
+  "all_files_uploaded": false,
+  "binary_archives_uploaded": false,
+  "notes": [
+    "Metadata inventory only: listed items are NOT copies of archive bytes.",
+    "The staging branch separately contains exactly recovered ANCHOR rev3 text sources and selected Library text extracts.",
+    "Files imported via Files text reader may differ at the byte level from originals.",
+    "Existing frozen artifacts remain unchanged; no scientific validation implied."
+  ],
+  "files": [
+    {
+      "name": "Voynich_BROWSER_TENTATIVO_DOCUMENTATO_2026-11-12.zip",
+      "path": "/Voynich_BROWSER_TENTATIVO_DOCUMENTATO_2026-11-12.zip",
+      "bytes": 2164,
+      "created": "2026-11-12T22:40:08.598776+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_v1.1.0_VERIFICA_BROWSER_DA_ESEGUIRE.zip",
+      "path": "/Voynich_v1.1.0_VERIFICA_BROWSER_DA_ESEGUIRE.zip",
+      "bytes": 17434,
+      "created": "2026-11-12T22:38:41.138954+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_v1.1.0_AUDIT_DOCUMENTATO_2026-11-12.zip",
+      "path": "/Voynich_v1.1.0_AUDIT_DOCUMENTATO_2026-11-12.zip",
+      "bytes": 2819,
+      "created": "2026-11-12T22:37:09.103542+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_v1.1.0_browser_audit_PENDING.zip",
+      "path": "/Voynich_v1.1.0_browser_audit_PENDING.zip",
+      "bytes": 1421,
+      "created": "2026-11-12T22:35:30.864194+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_Research_Memory_v1.1.0_UI_CANDIDATE.zip",
+      "path": "/Voynich_Research_Memory_v1.1.0_UI_CANDIDATE.zip",
+      "bytes": 30531,
+      "created": "2026-11-12T22:34:05.072846+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_Research_Memory_v1.1.0_CANDIDATE.zip",
+      "path": "/Voynich_Research_Memory_v1.1.0_CANDIDATE.zip",
+      "bytes": 31839,
+      "created": "2026-11-12T22:32:56.564349+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_import_rev3.zip",
+      "path": "/ANCHOR02_import_rev3.zip",
+      "bytes": 1190,
+      "created": "2026-11-12T22:31:38.742332+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_ANCHOR_rev3.zip",
+      "path": "/Voynich_ANCHOR_rev3.zip",
+      "bytes": 7398,
+      "created": "2026-11-12T22:30:37.990863+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_ANCHOR_v1_1_schema_revision2.zip",
+      "path": "/Voynich_ANCHOR_v1_1_schema_revision2.zip",
+      "bytes": 1867,
+      "created": "2026-11-12T22:23:29.712794+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_ANCHOR_v1_1_schema.zip",
+      "path": "/Voynich_ANCHOR_v1_1_schema.zip",
+      "bytes": 1956,
+      "created": "2026-11-12T22:06:13.145822+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_Research_Memory(2).zip",
+      "path": "/Voynich_Research_Memory(2).zip",
+      "bytes": 15835,
+      "created": "2026-11-12T22:03:24.523371+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_Research_Memory(1).zip",
+      "path": "/Voynich_Research_Memory(1).zip",
+      "bytes": 15835,
+      "created": "2026-11-12T22:03:22.007317+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_Research_Memory.zip",
+      "path": "/Voynich_Research_Memory.zip",
+      "bytes": 15835,
+      "created": "2026-11-12T22:02:23+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_Research_Memory_v1.zip",
+      "path": "/Voynich_Research_Memory_v1.zip",
+      "bytes": 11677,
+      "created": "2026-11-12T21:58:58.638004+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_Research_Memory_v1.zip",
+      "path": "/Voynich Research Memory/Voynich_Research_Memory_v1.zip",
+      "bytes": 11677,
+      "created": "2026-11-12T21:58:43+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_site.zip",
+      "path": "/voynich_site.zip",
+      "bytes": 7240,
+      "created": "2026-11-12T20:54:07.526792+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "calibrazione_pre_freeze.json",
+      "path": "/calibrazione_pre_freeze.json",
+      "bytes": 1484,
+      "created": "2026-11-12T20:53:39+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "f70v2_glifi_pre_freeze.csv",
+      "path": "/f70v2_glifi_pre_freeze.csv",
+      "bytes": 1694,
+      "created": "2026-11-12T20:53:26.001738+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_test_v1_1.py",
+      "path": "/ANCHOR02_test_v1_1.py",
+      "bytes": 5960,
+      "created": "2026-11-12T20:35:06+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_protocol_v1_1.txt",
+      "path": "/ANCHOR02_protocol_v1_1.txt",
+      "bytes": 2667,
+      "created": "2026-11-12T20:35:00+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_create_models.py",
+      "path": "/ANCHOR02_create_models.py",
+      "bytes": 1278,
+      "created": "2026-11-12T20:19:32.557483+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_modello_etichette_f70v2.csv",
+      "path": "/ANCHOR02_modello_etichette_f70v2.csv",
+      "bytes": 721,
+      "created": "2026-11-12T20:19:27.771024+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ASTRO11_PREDECLARAZIONE_FOLIO_FISICO.txt",
+      "path": "/ASTRO11_PREDECLARAZIONE_FOLIO_FISICO.txt",
+      "bytes": 849,
+      "created": "2026-11-12T20:16:06.971290+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ASTRO11_FOLIO_FINAL.json",
+      "path": "/ASTRO11_FOLIO_FINAL.json",
+      "bytes": 1463,
+      "created": "2026-11-12T20:16:04.821227+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "astro11_folio_final.py",
+      "path": "/astro11_folio_final.py",
+      "bytes": 4704,
+      "created": "2026-11-12T20:16:02.519003+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ASTRO11_FOLIO_TABLE.csv",
+      "path": "/ASTRO11_FOLIO_TABLE.csv",
+      "bytes": 203,
+      "created": "2026-11-12T20:16:00.057241+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ASTRO_11_FINAL_CONTROL.json",
+      "path": "/ASTRO_11_FINAL_CONTROL.json",
+      "bytes": 2066,
+      "created": "2026-11-12T20:11:14.588602+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "astro11_final_control.py",
+      "path": "/astro11_final_control.py",
+      "bytes": 4012,
+      "created": "2026-11-12T20:11:12.175927+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_PREREQUISITES_CHECK(1).py",
+      "path": "/ANCHOR02_PREREQUISITES_CHECK(1).py",
+      "bytes": 1208,
+      "created": "2026-11-12T20:07:03.944949+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_PREREQUISITES_CHECK.py",
+      "path": "/ANCHOR02_PREREQUISITES_CHECK.py",
+      "bytes": 1208,
+      "created": "2026-11-12T20:06:57.599749+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ASTRO_11_RIESCUZIONE.json",
+      "path": "/ASTRO_11_RIESCUZIONE.json",
+      "bytes": 4237,
+      "created": "2026-11-12T20:06:47.759303+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "astro11_reexecution.py",
+      "path": "/astro11_reexecution.py",
+      "bytes": 3375,
+      "created": "2026-11-12T20:06:45.390079+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "verify_zl3b_sha256.py",
+      "path": "/verify_zl3b_sha256.py",
+      "bytes": 124,
+      "created": "2026-11-12T20:05:04.545375+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ZL3b-n(9).txt",
+      "path": "/ZL3b-n(9).txt",
+      "bytes": 411671,
+      "created": "2026-11-12T20:04:42+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "verify_voynich_input.py",
+      "path": "/verify_voynich_input.py",
+      "bytes": 426,
+      "created": "2026-11-12T20:04:07.849016+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ZL3b-n(8).txt",
+      "path": "/ZL3b-n(8).txt",
+      "bytes": 411671,
+      "created": "2026-11-12T20:03:52+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ZL3b-n(7).txt",
+      "path": "/ZL3b-n(7).txt",
+      "bytes": 411671,
+      "created": "2026-11-12T20:03:05+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ZODIAC_CROSSWALK_RESOLVED_20261112.zip",
+      "path": "/VOYNICH_ZODIAC_CROSSWALK_RESOLVED_20261112.zip",
+      "bytes": 10187,
+      "created": "2026-11-12T19:59:20.363590+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ASTRO_11_20261112.zip",
+      "path": "/VOYNICH_ASTRO_11_20261112.zip",
+      "bytes": 231963,
+      "created": "2026-11-12T19:58:42.456041+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_TEXT_BANDS_PROTOCOL.csv",
+      "path": "/ANCHOR02_TEXT_BANDS_PROTOCOL.csv",
+      "bytes": 379,
+      "created": "2026-11-12T19:58:24+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_QUADRANT_SE(1).jpg",
+      "path": "/ANCHOR02_QUADRANT_SE(1).jpg",
+      "bytes": 565028,
+      "created": "2026-11-12T19:58:20.519974+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_QUADRANT_SW(1).jpg",
+      "path": "/ANCHOR02_QUADRANT_SW(1).jpg",
+      "bytes": 525879,
+      "created": "2026-11-12T19:58:17.115392+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_QUADRANT_NE(1).jpg",
+      "path": "/ANCHOR02_QUADRANT_NE(1).jpg",
+      "bytes": 580056,
+      "created": "2026-11-12T19:58:11.396703+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_QUADRANT_NW(1).jpg",
+      "path": "/ANCHOR02_QUADRANT_NW(1).jpg",
+      "bytes": 579771,
+      "created": "2026-11-12T19:58:08.653325+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_TEXT_BANDS_EXPLORATORY(1).png",
+      "path": "/ANCHOR02_TEXT_BANDS_EXPLORATORY(1).png",
+      "bytes": 4095642,
+      "created": "2026-11-12T19:58:05.097717+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_QUADRANT_SE.jpg",
+      "path": "/ANCHOR02_QUADRANT_SE.jpg",
+      "bytes": 565028,
+      "created": "2026-11-12T19:57:59.019045+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_QUADRANT_SW.jpg",
+      "path": "/ANCHOR02_QUADRANT_SW.jpg",
+      "bytes": 525879,
+      "created": "2026-11-12T19:57:57.063327+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_QUADRANT_NE.jpg",
+      "path": "/ANCHOR02_QUADRANT_NE.jpg",
+      "bytes": 580056,
+      "created": "2026-11-12T19:57:55.074982+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_QUADRANT_NW.jpg",
+      "path": "/ANCHOR02_QUADRANT_NW.jpg",
+      "bytes": 579771,
+      "created": "2026-11-12T19:57:53.262612+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_TEXT_BANDS_EXPLORATORY.png",
+      "path": "/ANCHOR02_TEXT_BANDS_EXPLORATORY.png",
+      "bytes": 4095642,
+      "created": "2026-11-12T19:57:50.169408+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ZODIAC_CROSSWALK_AUDIT_20261112.zip",
+      "path": "/VOYNICH_ZODIAC_CROSSWALK_AUDIT_20261112.zip",
+      "bytes": 11858,
+      "created": "2026-11-12T19:56:51.873787+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_REMAINING16_CONTACT(1).png",
+      "path": "/ANCHOR02_REMAINING16_CONTACT(1).png",
+      "bytes": 3774001,
+      "created": "2026-11-12T19:55:17.857998+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_REMAINING16_CONTACT.png",
+      "path": "/ANCHOR02_REMAINING16_CONTACT.png",
+      "bytes": 3774001,
+      "created": "2026-11-12T19:55:15.971127+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_TEXT_REGION_TRIAGE_V2.csv",
+      "path": "/ANCHOR02_TEXT_REGION_TRIAGE_V2.csv",
+      "bytes": 1676,
+      "created": "2026-11-12T19:55:13.228078+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_FIGURE_ATTRIBUTES_20261112.zip",
+      "path": "/VOYNICH_FIGURE_ATTRIBUTES_20261112.zip",
+      "bytes": 14279,
+      "created": "2026-11-12T19:53:01.067126+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ASTRO_10_20261112.zip",
+      "path": "/VOYNICH_ASTRO_10_20261112.zip",
+      "bytes": 6668,
+      "created": "2026-11-12T19:52:19.941694+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_FOUR_REGION_INSPECTION(1).png",
+      "path": "/ANCHOR02_FOUR_REGION_INSPECTION(1).png",
+      "bytes": 2510145,
+      "created": "2026-11-12T19:50:19.512705+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_TEXT_REGION_TRIAGE_V1.csv",
+      "path": "/ANCHOR02_TEXT_REGION_TRIAGE_V1.csv",
+      "bytes": 1706,
+      "created": "2026-11-12T19:50:16.885967+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_FOUR_REGION_INSPECTION.png",
+      "path": "/ANCHOR02_FOUR_REGION_INSPECTION.png",
+      "bytes": 2510145,
+      "created": "2026-11-12T19:50:14.328293+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_STARLESS_TEST_20261112.zip",
+      "path": "/VOYNICH_STARLESS_TEST_20261112.zip",
+      "bytes": 17564,
+      "created": "2026-11-12T19:24:52.169124+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ASTRO_09_20261112.zip",
+      "path": "/VOYNICH_ASTRO_09_20261112.zip",
+      "bytes": 4839,
+      "created": "2026-11-12T19:20:59.022380+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_REGION_HEAD_PROXIMITY_AUDIT.csv",
+      "path": "/ANCHOR02_REGION_HEAD_PROXIMITY_AUDIT.csv",
+      "bytes": 2112,
+      "created": "2026-11-12T19:18:12.381115+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_CROWN_HEADWEAR_20261112.zip",
+      "path": "/VOYNICH_CROWN_HEADWEAR_20261112.zip",
+      "bytes": 6323,
+      "created": "2026-11-12T19:16:30.906093+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_PAGE_COORDINATES_RECOVERED.csv",
+      "path": "/ANCHOR02_PAGE_COORDINATES_RECOVERED.csv",
+      "bytes": 3033,
+      "created": "2026-11-12T19:16:29.540759+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_PAGE_TEXT_REGIONS_RECOVERED.png",
+      "path": "/ANCHOR02_PAGE_TEXT_REGIONS_RECOVERED.png",
+      "bytes": 3518640,
+      "created": "2026-11-12T19:16:26.789061+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ASTRO_08_20261112.zip",
+      "path": "/VOYNICH_ASTRO_08_20261112.zip",
+      "bytes": 3867,
+      "created": "2026-11-12T19:15:37.195507+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_COORDINATE_PROVENANCE_AUDIT.csv",
+      "path": "/ANCHOR02_COORDINATE_PROVENANCE_AUDIT.csv",
+      "bytes": 1900,
+      "created": "2026-11-12T19:14:33.908013+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ASTRO_07_20261112.zip",
+      "path": "/VOYNICH_ASTRO_07_20261112.zip",
+      "bytes": 2743,
+      "created": "2026-11-12T19:13:15+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_CROWNED_LABELS_20261112.zip",
+      "path": "/VOYNICH_CROWNED_LABELS_20261112.zip",
+      "bytes": 133823,
+      "created": "2026-11-12T19:11:42.343844+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_INNER_TEXT_REGIONS_PROVISIONAL.csv",
+      "path": "/ANCHOR02_INNER_TEXT_REGIONS_PROVISIONAL.csv",
+      "bytes": 3734,
+      "created": "2026-11-12T19:10:59.508580+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_INNER_TEXT_REGIONS_PROVISIONAL.png",
+      "path": "/ANCHOR02_INNER_TEXT_REGIONS_PROVISIONAL.png",
+      "bytes": 1768099,
+      "created": "2026-11-12T19:10:51.728274+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ASTRO_06_20261112.zip",
+      "path": "/VOYNICH_ASTRO_06_20261112.zip",
+      "bytes": 2758,
+      "created": "2026-11-12T19:09:42.662961+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_LABEL_CROPS_INNER(1).jpg",
+      "path": "/ANCHOR02_LABEL_CROPS_INNER(1).jpg",
+      "bytes": 373736,
+      "created": "2026-11-12T19:08:43.184418+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_INNER_LABEL_SPATIAL_AUDIT.csv",
+      "path": "/ANCHOR02_INNER_LABEL_SPATIAL_AUDIT.csv",
+      "bytes": 1360,
+      "created": "2026-11-12T19:08:37.236236+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_LABEL_INTEGRITY_20261112.zip",
+      "path": "/VOYNICH_LABEL_INTEGRITY_20261112.zip",
+      "bytes": 8687,
+      "created": "2026-11-12T19:05:02.900453+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ASTRO_05_20261112.zip",
+      "path": "/VOYNICH_ASTRO_05_20261112.zip",
+      "bytes": 4223,
+      "created": "2026-11-12T19:03:01.893223+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_LABEL_CROPS_INNER.jpg",
+      "path": "/ANCHOR02_LABEL_CROPS_INNER.jpg",
+      "bytes": 373736,
+      "created": "2026-11-12T19:01:31.003575+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_LABEL_CROPS_OUTER.jpg",
+      "path": "/ANCHOR02_LABEL_CROPS_OUTER.jpg",
+      "bytes": 686706,
+      "created": "2026-11-12T19:01:25.637081+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ASTRO_04_20261112.zip",
+      "path": "/VOYNICH_ASTRO_04_20261112.zip",
+      "bytes": 131053,
+      "created": "2026-11-12T18:59:55.373934+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_INDIVIDUAL_VISUAL_20261112.zip",
+      "path": "/VOYNICH_INDIVIDUAL_VISUAL_20261112.zip",
+      "bytes": 11127,
+      "created": "2026-11-12T18:59:54.969158+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_HEAD_INVENTORY_EXPLORATORY.csv",
+      "path": "/ANCHOR02_HEAD_INVENTORY_EXPLORATORY.csv",
+      "bytes": 2056,
+      "created": "2026-11-12T18:59:18.801069+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_HEAD_INVENTORY_EXPLORATORY.png",
+      "path": "/ANCHOR02_HEAD_INVENTORY_EXPLORATORY.png",
+      "bytes": 2567726,
+      "created": "2026-11-12T18:59:12.223908+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_CLAUDE_VISUAL_REVIEW.csv",
+      "path": "/ANCHOR02_CLAUDE_VISUAL_REVIEW.csv",
+      "bytes": 4931,
+      "created": "2026-11-12T18:57:53.341585+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_VISUAL_REVIEW.png",
+      "path": "/ANCHOR02_VISUAL_REVIEW.png",
+      "bytes": 1744815,
+      "created": "2026-11-12T18:57:44.194712+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "figure_label_manifest.csv",
+      "path": "/figure_label_manifest.csv",
+      "bytes": 20206,
+      "created": "2026-11-12T18:49:54.385572+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_FIGURE_POSITION_20261112.zip",
+      "path": "/VOYNICH_FIGURE_POSITION_20261112.zip",
+      "bytes": 8786,
+      "created": "2026-11-12T18:49:46.114812+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ASTRO_03_20261112.zip",
+      "path": "/VOYNICH_ASTRO_03_20261112.zip",
+      "bytes": 5324,
+      "created": "2026-11-12T18:48:43.569833+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_VISUAL_CANDIDATES_CLAUDE.csv",
+      "path": "/ANCHOR02_VISUAL_CANDIDATES_CLAUDE.csv",
+      "bytes": 1898,
+      "created": "2026-11-12T18:46:50.514999+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_VISUAL_CANDIDATES_CLAUDE.png",
+      "path": "/ANCHOR02_VISUAL_CANDIDATES_CLAUDE.png",
+      "bytes": 1745685,
+      "created": "2026-11-12T18:46:41.411961+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_LABEL_RING_20261112.zip",
+      "path": "/VOYNICH_LABEL_RING_20261112.zip",
+      "bytes": 233510,
+      "created": "2026-11-12T18:34:11.821184+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ASTRO_02_20261112.zip",
+      "path": "/VOYNICH_ASTRO_02_20261112.zip",
+      "bytes": 5349,
+      "created": "2026-11-12T18:30:54.192489+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_FIRST_WORD_20261112.zip",
+      "path": "/VOYNICH_FIRST_WORD_20261112.zip",
+      "bytes": 236012,
+      "created": "2026-11-12T18:28:46.452394+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ASTRO_01_20261112.zip",
+      "path": "/VOYNICH_ASTRO_01_20261112.zip",
+      "bytes": 3589,
+      "created": "2026-11-12T18:27:28.229359+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_30_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_30_20261112.zip",
+      "bytes": 16898,
+      "created": "2026-11-12T18:22:18.374046+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_FLOWER_EXACT_20261112.zip",
+      "path": "/VOYNICH_FLOWER_EXACT_20261112.zip",
+      "bytes": 11703,
+      "created": "2026-11-12T18:21:52.939006+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_29_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_29_20261112.zip",
+      "bytes": 14003,
+      "created": "2026-11-12T18:18:07.164122+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_FLOWER_PILOT_20261112.zip",
+      "path": "/VOYNICH_FLOWER_PILOT_20261112.zip",
+      "bytes": 220892,
+      "created": "2026-11-12T18:17:45.536055+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_28_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_28_20261112.zip",
+      "bytes": 8178,
+      "created": "2026-11-12T18:13:47.965185+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_PAIRWISE_MATCHES_VERIFIED.csv",
+      "path": "/ANCHOR02_PAIRWISE_MATCHES_VERIFIED.csv",
+      "bytes": 3302,
+      "created": "2026-11-12T18:12:41.241614+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_27_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_27_20261112.zip",
+      "bytes": 6787,
+      "created": "2026-11-12T18:11:07.977067+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_Gemini_overlay.png",
+      "path": "/ANCHOR02_Gemini_overlay.png",
+      "bytes": 1546406,
+      "created": "2026-11-12T18:09:30.470837+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_DeepSeek_overlay.png",
+      "path": "/ANCHOR02_DeepSeek_overlay.png",
+      "bytes": 1543644,
+      "created": "2026-11-12T18:09:28.233097+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR02_Claude_overlay.png",
+      "path": "/ANCHOR02_Claude_overlay.png",
+      "bytes": 1545886,
+      "created": "2026-11-12T18:09:25.522423+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_OBJECT_READINESS_20261112.zip",
+      "path": "/VOYNICH_OBJECT_READINESS_20261112.zip",
+      "bytes": 12734,
+      "created": "2026-11-12T18:09:16.760524+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_26_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_26_20261112.zip",
+      "bytes": 7427,
+      "created": "2026-11-12T18:08:04.357853+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_SEMANTIC_01_20261112.zip",
+      "path": "/VOYNICH_SEMANTIC_01_20261112.zip",
+      "bytes": 1808425,
+      "created": "2026-11-12T18:03:53.348255+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_25_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_25_20261112.zip",
+      "bytes": 130281,
+      "created": "2026-11-12T18:01:24.945750+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_AI04_REFERENCE_MATCHES.csv",
+      "path": "/ANCHOR01_AI04_REFERENCE_MATCHES.csv",
+      "bytes": 751,
+      "created": "2026-11-12T17:56:20.107886+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_24_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_24_20261112.zip",
+      "bytes": 8372,
+      "created": "2026-11-12T17:56:16.717292+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_INTERNAL_EDIT_CONTROL_20261112.zip",
+      "path": "/VOYNICH_INTERNAL_EDIT_CONTROL_20261112.zip",
+      "bytes": 95446,
+      "created": "2026-11-12T17:53:33.992581+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_VISUAL_REFERENCE_PROVISIONAL.csv",
+      "path": "/ANCHOR01_VISUAL_REFERENCE_PROVISIONAL.csv",
+      "bytes": 1557,
+      "created": "2026-11-12T17:53:01.225999+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_VISUAL_REFERENCE_PROVISIONAL.png",
+      "path": "/ANCHOR01_VISUAL_REFERENCE_PROVISIONAL.png",
+      "bytes": 1805458,
+      "created": "2026-11-12T17:52:56.478698+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_23_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_23_20261112.zip",
+      "bytes": 5794,
+      "created": "2026-11-12T17:51:20.561103+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_AI03_MATCH_AUDIT.csv",
+      "path": "/ANCHOR01_AI03_MATCH_AUDIT.csv",
+      "bytes": 1105,
+      "created": "2026-11-12T17:46:59.456617+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_COMPOSITION_20261112.zip",
+      "path": "/VOYNICH_COMPOSITION_20261112.zip",
+      "bytes": 344458,
+      "created": "2026-11-12T17:46:59.297835+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_22_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_22_20261112.zip",
+      "bytes": 6041,
+      "created": "2026-11-12T17:46:54.140927+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_21_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_21_20261112.zip",
+      "bytes": 2779,
+      "created": "2026-11-12T17:42:41.471503+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_AI03_candidate_register.csv",
+      "path": "/ANCHOR01_AI03_candidate_register.csv",
+      "bytes": 2728,
+      "created": "2026-11-12T17:42:07.293830+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_AI03_candidate_overlay.png",
+      "path": "/ANCHOR01_AI03_candidate_overlay.png",
+      "bytes": 1830017,
+      "created": "2026-11-12T17:42:03.128413+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_LATENT_FAMILIES_20261112.zip",
+      "path": "/VOYNICH_LATENT_FAMILIES_20261112.zip",
+      "bytes": 346755,
+      "created": "2026-11-12T17:40:58.129375+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_20_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_20_20261112.zip",
+      "bytes": 5488,
+      "created": "2026-11-12T17:39:27.412682+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_centers_visual_audit.png",
+      "path": "/voynich_centers_visual_audit.png",
+      "bytes": 1823350,
+      "created": "2026-11-12T17:37:38.006596+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_BIRTH_REUSE_TRANSMISSION_20261112.zip",
+      "path": "/VOYNICH_BIRTH_REUSE_TRANSMISSION_20261112.zip",
+      "bytes": 364354,
+      "created": "2026-11-12T17:04:59.531164+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_19_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_19_20261112.zip",
+      "bytes": 5231,
+      "created": "2026-11-12T17:00:52.297062+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_gemini_audit.png",
+      "path": "/voynich_gemini_audit.png",
+      "bytes": 610267,
+      "created": "2026-11-12T16:59:23.788122+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_deepseek_audit.png",
+      "path": "/voynich_deepseek_audit.png",
+      "bytes": 605351,
+      "created": "2026-11-12T16:59:21.751272+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_18_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_18_20261112.zip",
+      "bytes": 4404,
+      "created": "2026-11-12T16:57:20.657082+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_MORPHOGEN_20261112.zip",
+      "path": "/VOYNICH_MORPHOGEN_20261112.zip",
+      "bytes": 356044,
+      "created": "2026-11-12T16:56:57.732116+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "anchor17_verify.py",
+      "path": "/anchor17_verify.py",
+      "bytes": 2054,
+      "created": "2026-11-12T16:53:44+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR_17_EVIDENCE(1).json",
+      "path": "/ANCHOR_17_EVIDENCE(1).json",
+      "bytes": 1341,
+      "created": "2026-11-12T16:53:40.825652+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR_17_EVIDENCE.json",
+      "path": "/ANCHOR_17_EVIDENCE.json",
+      "bytes": 1341,
+      "created": "2026-11-12T16:53:33.095605+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR_17_REPORT_IT.md",
+      "path": "/ANCHOR_17_REPORT_IT.md",
+      "bytes": 3749,
+      "created": "2026-11-12T16:53:29.680171+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_deepseek_overlay.png",
+      "path": "/voynich_deepseek_overlay.png",
+      "bytes": 605209,
+      "created": "2026-11-12T16:51:38.741417+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_gemini_overlay.png",
+      "path": "/voynich_gemini_overlay.png",
+      "bytes": 609292,
+      "created": "2026-11-12T16:51:36.632384+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_GENERATIVE_GATE_20261112.zip",
+      "path": "/VOYNICH_GENERATIVE_GATE_20261112.zip",
+      "bytes": 340000,
+      "created": "2026-11-12T16:48:15.932192+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_16_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_16_20261112.zip",
+      "bytes": 3654,
+      "created": "2026-11-12T16:45:36.929724+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_UNIFIED_GATE_20261112.zip",
+      "path": "/VOYNICH_UNIFIED_GATE_20261112.zip",
+      "bytes": 321433,
+      "created": "2026-11-12T16:41:12+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_15_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_15_20261112.zip",
+      "bytes": 2631,
+      "created": "2026-11-12T16:39:51.317078+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR_14_OROR_EVIDENCE_20261112.zip",
+      "path": "/ANCHOR_14_OROR_EVIDENCE_20261112.zip",
+      "bytes": 3797,
+      "created": "2026-11-12T16:34:39.076557+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR_14_REPORT_IT.md",
+      "path": "/ANCHOR_14_REPORT_IT.md",
+      "bytes": 3468,
+      "created": "2026-11-12T16:34:36.444356+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_FOLIO_LEAF_BIFOLIO_20261112.zip",
+      "path": "/VOYNICH_FOLIO_LEAF_BIFOLIO_20261112.zip",
+      "bytes": 446101,
+      "created": "2026-11-12T16:32:05.467957+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "anchor13_result.json",
+      "path": "/anchor13_result.json",
+      "bytes": 1289,
+      "created": "2026-11-12T16:27:07+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_12_BORG_CONTROL_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_12_BORG_CONTROL_20261112.zip",
+      "bytes": 8875,
+      "created": "2026-11-12T16:26:58+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ZODIAC_CANVAS_ALIGNED_20261112.zip",
+      "path": "/VOYNICH_ZODIAC_CANVAS_ALIGNED_20261112.zip",
+      "bytes": 1344265,
+      "created": "2026-11-12T16:20:43+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_11_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_11_20261112.zip",
+      "bytes": 229611,
+      "created": "2026-11-12T16:04:49.039500+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_SEQ_LINE_MEMORY_20261112.zip",
+      "path": "/VOYNICH_SEQ_LINE_MEMORY_20261112.zip",
+      "bytes": 757593,
+      "created": "2026-11-12T16:04:03.279790+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ZODIAC_PREDISTRIBUTION_REWORK_20261112.zip",
+      "path": "/VOYNICH_ZODIAC_PREDISTRIBUTION_REWORK_20261112.zip",
+      "bytes": 1239475,
+      "created": "2026-11-12T16:03:13.683565+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_10_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_10_20261112.zip",
+      "bytes": 234730,
+      "created": "2026-11-12T15:52:52.477794+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ZODIAC_COLLECTION_START_20261112.zip",
+      "path": "/VOYNICH_ZODIAC_COLLECTION_START_20261112.zip",
+      "bytes": 2444244,
+      "created": "2026-11-12T15:48:09.964731+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_09_EVIDENCE(1).json",
+      "path": "/VOYNICH_ANCHOR_09_EVIDENCE(1).json",
+      "bytes": 2986,
+      "created": "2026-11-12T15:42:45.851173+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_09_EVIDENCE.json",
+      "path": "/VOYNICH_ANCHOR_09_EVIDENCE.json",
+      "bytes": 2986,
+      "created": "2026-11-12T15:42:40.038297+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_09_REPORT_IT.md",
+      "path": "/VOYNICH_ANCHOR_09_REPORT_IT.md",
+      "bytes": 5313,
+      "created": "2026-11-12T15:42:36.671389+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_PIVOT_12_PANEL_CUSTODIAN_INVENTORY_20261112.csv",
+      "path": "/ANCHOR01_PIVOT_12_PANEL_CUSTODIAN_INVENTORY_20261112.csv",
+      "bytes": 2922,
+      "created": "2026-11-12T15:42:05.093550+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_NAIBBE_FASE4_20261112.zip",
+      "path": "/VOYNICH_NAIBBE_FASE4_20261112.zip",
+      "bytes": 101121,
+      "created": "2026-11-12T15:21:58.205599+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_08_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_08_20261112.zip",
+      "bytes": 240548,
+      "created": "2026-11-12T15:18:30.511990+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "FREEZE_RECEIPT(1).json",
+      "path": "/FREEZE_RECEIPT(1).json",
+      "bytes": 3427,
+      "created": "2026-11-12T15:12:07.894352+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_R01_REVIEWER_PACKET(1).zip",
+      "path": "/ANCHOR01_R01_REVIEWER_PACKET(1).zip",
+      "bytes": 1213412,
+      "created": "2026-11-12T15:12:04.849046+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR-01-R01-GATE-FREEZE(1).md",
+      "path": "/ANCHOR-01-R01-GATE-FREEZE(1).md",
+      "bytes": 12727,
+      "created": "2026-11-12T15:12:01.960022+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR_01_R01_GATE_FREEZE_V11_20261112.zip",
+      "path": "/ANCHOR_01_R01_GATE_FREEZE_V11_20261112.zip",
+      "bytes": 26062675,
+      "created": "2026-11-12T15:11:59.156208+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_R01_REVIEWER_PACKET.zip",
+      "path": "/ANCHOR01_R01_REVIEWER_PACKET.zip",
+      "bytes": 1213412,
+      "created": "2026-11-12T15:05:39+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "FREEZE_RECEIPT.json",
+      "path": "/FREEZE_RECEIPT.json",
+      "bytes": 3083,
+      "created": "2026-11-12T15:05:39+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR-01-R01-GATE-FREEZE.md",
+      "path": "/ANCHOR-01-R01-GATE-FREEZE.md",
+      "bytes": 10396,
+      "created": "2026-11-12T15:05:39+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR-01-R01-GATE-FREEZE.json",
+      "path": "/ANCHOR-01-R01-GATE-FREEZE.json",
+      "bytes": 4925,
+      "created": "2026-11-12T15:05:39+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR_01_R01_GATE_FREEZE_20261112.zip",
+      "path": "/ANCHOR_01_R01_GATE_FREEZE_20261112.zip",
+      "bytes": 13030408,
+      "created": "2026-11-12T15:05:39+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "HEATMAP_LABEL_SIMILARITY_ZL3b.png",
+      "path": "/HEATMAP_LABEL_SIMILARITY_ZL3b.png",
+      "bytes": 171333,
+      "created": "2026-11-12T15:02:55.733228+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_05_07_REPORT_IT.md",
+      "path": "/VOYNICH_ANCHOR_05_07_REPORT_IT.md",
+      "bytes": 8521,
+      "created": "2026-11-12T15:02:53.572938+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_05_07_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_05_07_20261112.zip",
+      "bytes": 633743,
+      "created": "2026-11-12T15:02:50.113958+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_NAIBBE_DECODE_AUDIT_20261112.zip",
+      "path": "/VOYNICH_NAIBBE_DECODE_AUDIT_20261112.zip",
+      "bytes": 9409,
+      "created": "2026-11-12T14:57:49.607693+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_CORRECTIONS_AUDIT_20261112.zip",
+      "path": "/ANCHOR01_CORRECTIONS_AUDIT_20261112.zip",
+      "bytes": 10574509,
+      "created": "2026-11-12T14:51:01.230520+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_NAIBBE_FASE3_20261112.zip",
+      "path": "/VOYNICH_NAIBBE_FASE3_20261112.zip",
+      "bytes": 246756,
+      "created": "2026-11-12T14:43:45.882314+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR_03_REVIEWER_R02_UNCERTIFIED.zip",
+      "path": "/ANCHOR_03_REVIEWER_R02_UNCERTIFIED.zip",
+      "bytes": 848267,
+      "created": "2026-11-12T14:43:18.772324+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR_03_REVIEWER_R01_UNCERTIFIED.zip",
+      "path": "/ANCHOR_03_REVIEWER_R01_UNCERTIFIED.zip",
+      "bytes": 848267,
+      "created": "2026-11-12T14:43:16.246129+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_03_04_REPORT_IT.md",
+      "path": "/VOYNICH_ANCHOR_03_04_REPORT_IT.md",
+      "bytes": 8493,
+      "created": "2026-11-12T14:43:12.764681+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_03_04_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_03_04_20261112.zip",
+      "bytes": 2477538,
+      "created": "2026-11-12T14:43:09.109789+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR_02_VISUAL_CONTACT_SHEET.jpg",
+      "path": "/ANCHOR_02_VISUAL_CONTACT_SHEET.jpg",
+      "bytes": 243508,
+      "created": "2026-11-12T14:23:03.447142+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR_02_REPORT_IT.md",
+      "path": "/ANCHOR_02_REPORT_IT.md",
+      "bytes": 9472,
+      "created": "2026-11-12T14:22:58.172208+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_ANCHOR_02_20261112.zip",
+      "path": "/VOYNICH_ANCHOR_02_20261112.zip",
+      "bytes": 1612523,
+      "created": "2026-11-12T14:22:54.716863+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_GEOMETRY_CLARIFICATION_V12_20261112.zip",
+      "path": "/ANCHOR01_GEOMETRY_CLARIFICATION_V12_20261112.zip",
+      "bytes": 10724884,
+      "created": "2026-11-12T14:22:41+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_REVIEWER_BLIND_INPUTS.zip",
+      "path": "/ANCHOR01_REVIEWER_BLIND_INPUTS.zip",
+      "bytes": 1210815,
+      "created": "2026-11-12T14:13:54.547102+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_GEOMETRY_CLARIFICATION_V11_20261112.zip",
+      "path": "/ANCHOR01_GEOMETRY_CLARIFICATION_V11_20261112.zip",
+      "bytes": 10570934,
+      "created": "2026-11-12T14:13:44.212268+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR01_GEOMETRY_DIAGNOSTIC_20261112.zip",
+      "path": "/ANCHOR01_GEOMETRY_DIAGNOSTIC_20261112.zip",
+      "bytes": 10394,
+      "created": "2026-11-12T14:01:03.622275+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_NAIBBE_YO_TEST_20261112.zip",
+      "path": "/VOYNICH_NAIBBE_YO_TEST_20261112.zip",
+      "bytes": 216907,
+      "created": "2026-11-12T13:56:13.060615+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR_01_GEOMETRY_PILOT.zip",
+      "path": "/ANCHOR_01_GEOMETRY_PILOT.zip",
+      "bytes": 10562447,
+      "created": "2026-11-12T13:51:40+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ANCHOR_01_PREPARATION.zip",
+      "path": "/ANCHOR_01_PREPARATION.zip",
+      "bytes": 4660718,
+      "created": "2026-11-12T13:30:27+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "AUDIT_ANCHOR_01.md",
+      "path": "/AUDIT_ANCHOR_01.md",
+      "bytes": 9955,
+      "created": "2026-11-12T13:30:26+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "zl3b_P_ms408.tsv",
+      "path": "/zl3b_P_ms408.tsv",
+      "bytes": 232017,
+      "created": "2026-11-12T11:39:01+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_2_4130_loci_manifest.json",
+      "path": "/RC1_2_4130_loci_manifest.json",
+      "bytes": 1084,
+      "created": "2026-11-12T11:05:41.660250+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_EXP_VVM_MIRROR_01.zip",
+      "path": "/Voynich_EXP_VVM_MIRROR_01.zip",
+      "bytes": 40413329,
+      "created": "2026-11-11T21:04:53+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_EXP_VVM_PPM_02.zip",
+      "path": "/Voynich_EXP_VVM_PPM_02.zip",
+      "bytes": 10177880,
+      "created": "2026-11-11T19:41:39+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_EXP_VVM_CT_01.zip",
+      "path": "/Voynich_EXP_VVM_CT_01.zip",
+      "bytes": 4125505,
+      "created": "2026-11-11T18:45:45+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_VVM_ablation.zip",
+      "path": "/Voynich_VVM_ablation.zip",
+      "bytes": 3844877,
+      "created": "2026-11-11T17:25:38+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_all_models_audit.zip",
+      "path": "/Voynich_all_models_audit.zip",
+      "bytes": 3676571,
+      "created": "2026-11-11T16:44:38+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_benchmark_report_v2.zip",
+      "path": "/Voynich_benchmark_report_v2.zip",
+      "bytes": 2721384,
+      "created": "2026-11-11T16:08:21+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_AALpy_benchmark_v1.zip",
+      "path": "/Voynich_AALpy_benchmark_v1.zip",
+      "bytes": 2662389,
+      "created": "2026-11-11T15:57:48+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_Virtual_Machine_v0_2.zip",
+      "path": "/Voynich_Virtual_Machine_v0_2.zip",
+      "bytes": 2214696,
+      "created": "2026-11-11T15:39:22+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_Virtual_Machine_v0_1.zip",
+      "path": "/Voynich_Virtual_Machine_v0_1.zip",
+      "bytes": 1134670,
+      "created": "2026-11-11T15:29:24+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ROUND5_EXP_SEQ_05_RESULTS.zip",
+      "path": "/ROUND5_EXP_SEQ_05_RESULTS.zip",
+      "bytes": 51726,
+      "created": "2026-11-11T13:41:16.829768+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_NORMALIZZAZIONE_POSIZIONALE_20261111.md",
+      "path": "/EXP_SEQ_NORMALIZZAZIONE_POSIZIONALE_20261111.md",
+      "bytes": 3405,
+      "created": "2026-11-11T13:40:45.050678+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ROUND4_EXP_SEQ_05_RESULTS.zip",
+      "path": "/ROUND4_EXP_SEQ_05_RESULTS.zip",
+      "bytes": 652849,
+      "created": "2026-11-11T11:56:43.500189+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ROUND3_EXP_SEQ_05_RESULTS.zip",
+      "path": "/ROUND3_EXP_SEQ_05_RESULTS.zip",
+      "bytes": 60966,
+      "created": "2026-11-11T11:39:57.588154+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ROUND2_EXP_SEQ_05_RESULTS.zip",
+      "path": "/ROUND2_EXP_SEQ_05_RESULTS.zip",
+      "bytes": 38025,
+      "created": "2026-11-11T11:04:51.046438+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_05_RESULTS_EXPLORATORY.zip",
+      "path": "/EXP_SEQ_05_RESULTS_EXPLORATORY.zip",
+      "bytes": 30552,
+      "created": "2026-11-11T07:04:56.907200+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_TRANSCRIPTION_BLIND_AUDIT_20261110.zip",
+      "path": "/VOYNICH_TRANSCRIPTION_BLIND_AUDIT_20261110.zip",
+      "bytes": 7027,
+      "created": "2026-11-10T22:28:47.219871+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_TRANSCRIPTION_BLIND_AUDIT_20261110.zip",
+      "path": "/Voynich/EXP-SEQ-04/VOYNICH_TRANSCRIPTION_BLIND_AUDIT_20261110.zip",
+      "bytes": 7027,
+      "created": "2026-11-10T22:27:48+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_B2_C2_LENGTH_CONTROL_AUDIT_20261110.zip",
+      "path": "/VOYNICH_B2_C2_LENGTH_CONTROL_AUDIT_20261110.zip",
+      "bytes": 24633,
+      "created": "2026-11-10T21:26:51.507111+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_B2_C2_LENGTH_CONTROL_AUDIT_20261110.zip",
+      "path": "/Voynich/EXP-SEQ-04/VOYNICH_B2_C2_LENGTH_CONTROL_AUDIT_20261110.zip",
+      "bytes": 24633,
+      "created": "2026-11-10T21:25:33+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "VOYNICH_SINTESI_INTEGRALE_2026-11-10.zip",
+      "path": "/VOYNICH_SINTESI_INTEGRALE_2026-11-10.zip",
+      "bytes": 12184,
+      "created": "2026-11-10T21:13:26.581009+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_04_STRUCTURAL_PERIMETER_AUDIT_20261110.zip",
+      "path": "/EXP_SEQ_04_STRUCTURAL_PERIMETER_AUDIT_20261110.zip",
+      "bytes": 11804,
+      "created": "2026-11-10T20:59:07.635995+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Dossier_EXP_SEQ_04_CIECO.md",
+      "path": "/Dossier_EXP_SEQ_04_CIECO.md",
+      "bytes": 12656,
+      "created": "2026-11-10T20:47:29.267361+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_04_BLIND_DOSSIER.zip",
+      "path": "/EXP_SEQ_04_BLIND_DOSSIER.zip",
+      "bytes": 64306,
+      "created": "2026-11-10T20:47:26.299811+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_03_OSF_CODE_FROZEN_LOCAL.zip",
+      "path": "/EXP_SEQ_03_OSF_CODE_FROZEN_LOCAL.zip",
+      "bytes": 34916,
+      "created": "2026-11-10T20:34:39.348032+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_03_OSF_CODE_FROZEN_LOCAL.zip",
+      "path": "/Voynich/EXP-SEQ-03/EXP_SEQ_03_OSF_CODE_FROZEN_LOCAL.zip",
+      "bytes": 34916,
+      "created": "2026-11-10T20:34:10+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_03_OSF_FORM_READY.zip",
+      "path": "/EXP_SEQ_03_OSF_FORM_READY.zip",
+      "bytes": 19651,
+      "created": "2026-11-10T20:25:15.580457+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_03_A2_PREPUBLICATION.zip",
+      "path": "/EXP_SEQ_03_A2_PREPUBLICATION.zip",
+      "bytes": 16836,
+      "created": "2026-11-10T20:20:31.807796+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_03_PREPUBLICATION_PACKAGE.zip",
+      "path": "/EXP_SEQ_03_PREPUBLICATION_PACKAGE.zip",
+      "bytes": 11372,
+      "created": "2026-11-10T20:00:13+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_03_PREPUBLICATION_PACKAGE.zip",
+      "path": "/Voynich/EXP-SEQ-03/EXP_SEQ_03_PREPUBLICATION_PACKAGE.zip",
+      "bytes": 11372,
+      "created": "2026-11-10T19:53:04+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_03_PREREG_FROZEN_LOCAL.zip",
+      "path": "/EXP_SEQ_03_PREREG_FROZEN_LOCAL.zip",
+      "bytes": 7060,
+      "created": "2026-11-10T19:19:37.884437+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "PREREGISTERED_PROTOCOL.md",
+      "path": "/PREREGISTERED_PROTOCOL.md",
+      "bytes": 8706,
+      "created": "2026-11-10T19:19:34.989594+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_03_PREREG_FROZEN_LOCAL.zip",
+      "path": "/Voynich/EXP-SEQ-03/EXP_SEQ_03_PREREG_FROZEN_LOCAL.zip",
+      "bytes": 7060,
+      "created": "2026-11-10T19:18:57+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01_B_REPLICATION_LOCKED_2026-11-10.zip",
+      "path": "/EXP_SEQ_01_B_REPLICATION_LOCKED_2026-11-10.zip",
+      "bytes": 6421,
+      "created": "2026-11-10T19:14:17.856039+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01_02B_critical_review_followup.zip",
+      "path": "/EXP_SEQ_01_02B_critical_review_followup.zip",
+      "bytes": 147347,
+      "created": "2026-11-10T19:08:57.726060+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01_review_critical_checks.zip",
+      "path": "/EXP_SEQ_01_review_critical_checks.zip",
+      "bytes": 7526,
+      "created": "2026-11-10T19:02:02.325833+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Voynich_EXP_SEQ_01_02B_articolo_esplorativo.docx",
+      "path": "/Voynich_EXP_SEQ_01_02B_articolo_esplorativo.docx",
+      "bytes": 44700,
+      "created": "2026-11-10T18:50:25.590413+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_02B_MULTISEED_30_VERIFIED.zip",
+      "path": "/EXP_SEQ_02B_MULTISEED_30_VERIFIED.zip",
+      "bytes": 12330,
+      "created": "2026-11-10T18:39:08.346261+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_02_Timm_VERIFIED_RESULTS.zip",
+      "path": "/EXP_SEQ_02_Timm_VERIFIED_RESULTS.zip",
+      "bytes": 28147,
+      "created": "2026-11-10T18:34:42.391800+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_Timm_offline_runner.zip",
+      "path": "/EXP_SEQ_Timm_offline_runner.zip",
+      "bytes": 4869,
+      "created": "2026-11-10T18:26:00+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01k_folio_distribution.py",
+      "path": "/EXP_SEQ_01k_folio_distribution.py",
+      "bytes": 2367,
+      "created": "2026-11-10T17:35:22.707934+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01j_transizioni(1).py",
+      "path": "/EXP_SEQ_01j_transizioni(1).py",
+      "bytes": 2743,
+      "created": "2026-11-10T17:32:00.893895+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01j_transizioni.py",
+      "path": "/EXP_SEQ_01j_transizioni.py",
+      "bytes": 2743,
+      "created": "2026-11-10T17:31:55.018350+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01i_classi_grafici_dati_codice.zip",
+      "path": "/EXP_SEQ_01i_classi_grafici_dati_codice.zip",
+      "bytes": 126080,
+      "created": "2026-11-10T17:27:06.702370+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01h_blocchi_lessico.py",
+      "path": "/EXP_SEQ_01h_blocchi_lessico.py",
+      "bytes": 4710,
+      "created": "2026-11-10T17:23:13.394013+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01f_lunghezze_blocchi_dati_grafici.zip",
+      "path": "/EXP_SEQ_01f_lunghezze_blocchi_dati_grafici.zip",
+      "bytes": 152946,
+      "created": "2026-11-10T17:09:46.374202+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01f_confronto_appaiato.png",
+      "path": "/EXP_SEQ_01f_confronto_appaiato.png",
+      "bytes": 80096,
+      "created": "2026-11-10T17:09:43.767105+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01f_blocchi_offset2.png",
+      "path": "/EXP_SEQ_01f_blocchi_offset2.png",
+      "bytes": 84122,
+      "created": "2026-11-10T17:09:41.152334+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01e_offset_marker(1).py",
+      "path": "/EXP_SEQ_01e_offset_marker(1).py",
+      "bytes": 5156,
+      "created": "2026-11-10T17:05:44.874802+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01e_offset_marker.py",
+      "path": "/EXP_SEQ_01e_offset_marker.py",
+      "bytes": 5156,
+      "created": "2026-11-10T17:05:37.306950+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01e_loci_offsets.csv",
+      "path": "/EXP_SEQ_01e_loci_offsets.csv",
+      "bytes": 204532,
+      "created": "2026-11-10T17:05:22.348856+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01e_aggregati.csv",
+      "path": "/EXP_SEQ_01e_aggregati.csv",
+      "bytes": 2752,
+      "created": "2026-11-10T17:05:19.720784+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01e_aiin.png",
+      "path": "/EXP_SEQ_01e_aiin.png",
+      "bytes": 98797,
+      "created": "2026-11-10T17:05:17.324360+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01e_dy.png",
+      "path": "/EXP_SEQ_01e_dy.png",
+      "bytes": 91965,
+      "created": "2026-11-10T17:05:14.830692+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01e_qo.png",
+      "path": "/EXP_SEQ_01e_qo.png",
+      "bytes": 92371,
+      "created": "2026-11-10T17:05:12.741504+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01d_posizioni_mano_tipo.py",
+      "path": "/EXP_SEQ_01d_posizioni_mano_tipo.py",
+      "bytes": 2697,
+      "created": "2026-11-10T16:56:12.547016+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01d_posizioni_mano_tipo.csv",
+      "path": "/EXP_SEQ_01d_posizioni_mano_tipo.csv",
+      "bytes": 2191,
+      "created": "2026-11-10T16:56:09.971422+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01d_mano_layout_controlli_dati_codice.zip",
+      "path": "/EXP_SEQ_01d_mano_layout_controlli_dati_codice.zip",
+      "bytes": 173729,
+      "created": "2026-11-10T16:50:23.330209+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01d_permutazioni_condizionate.png",
+      "path": "/EXP_SEQ_01d_permutazioni_condizionate.png",
+      "bytes": 61517,
+      "created": "2026-11-10T16:50:19.950124+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01c_cooc_esplorativa(1).py",
+      "path": "/EXP_SEQ_01c_cooc_esplorativa(1).py",
+      "bytes": 6630,
+      "created": "2026-11-10T16:39:35.856503+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01c_cooc_esplorativa.py",
+      "path": "/EXP_SEQ_01c_cooc_esplorativa.py",
+      "bytes": 6630,
+      "created": "2026-11-10T16:39:28.067975+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01c_interne_30_60.csv",
+      "path": "/EXP_SEQ_01c_interne_30_60.csv",
+      "bytes": 667,
+      "created": "2026-11-10T16:39:23.577186+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01c_cooc_6_10.csv",
+      "path": "/EXP_SEQ_01c_cooc_6_10.csv",
+      "bytes": 2467,
+      "created": "2026-11-10T16:39:19.567440+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01b_bis_grafici_dati_codice.zip",
+      "path": "/EXP_SEQ_01b_bis_grafici_dati_codice.zip",
+      "bytes": 326360,
+      "created": "2026-11-10T16:29:29+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01b_bis_qo_n8(1).png",
+      "path": "/EXP_SEQ_01b_bis_qo_n8(1).png",
+      "bytes": 94084,
+      "created": "2026-11-10T16:29:23.662663+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01b_bis_qo_n7(1).png",
+      "path": "/EXP_SEQ_01b_bis_qo_n7(1).png",
+      "bytes": 93938,
+      "created": "2026-11-10T16:29:20.766091+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01b_bis_qo_n6(1).png",
+      "path": "/EXP_SEQ_01b_bis_qo_n6(1).png",
+      "bytes": 86989,
+      "created": "2026-11-10T16:29:18.174367+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01b_bis_qo_delta(1).png",
+      "path": "/EXP_SEQ_01b_bis_qo_delta(1).png",
+      "bytes": 83036,
+      "created": "2026-11-10T16:29:15.352742+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01b_bis_qo_n8.png",
+      "path": "/EXP_SEQ_01b_bis_qo_n8.png",
+      "bytes": 94084,
+      "created": "2026-11-10T16:29:09.118237+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01b_bis_qo_n7.png",
+      "path": "/EXP_SEQ_01b_bis_qo_n7.png",
+      "bytes": 93938,
+      "created": "2026-11-10T16:29:06.777885+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01b_bis_qo_n6.png",
+      "path": "/EXP_SEQ_01b_bis_qo_n6.png",
+      "bytes": 86989,
+      "created": "2026-11-10T16:29:03.845163+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01b_bis_qo_delta.png",
+      "path": "/EXP_SEQ_01b_bis_qo_delta.png",
+      "bytes": 83036,
+      "created": "2026-11-10T16:29:01.103194+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01a_gradiente_posizionale.py",
+      "path": "/EXP_SEQ_01a_gradiente_posizionale.py",
+      "bytes": 8121,
+      "created": "2026-11-10T16:23:38+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01a_frequenze_posizionali.csv",
+      "path": "/EXP_SEQ_01a_frequenze_posizionali.csv",
+      "bytes": 1983,
+      "created": "2026-11-10T16:23:28+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01a_aiin(1).png",
+      "path": "/EXP_SEQ_01a_aiin(1).png",
+      "bytes": 113735,
+      "created": "2026-11-10T16:23:24.529856+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01a_dy(1).png",
+      "path": "/EXP_SEQ_01a_dy(1).png",
+      "bytes": 102071,
+      "created": "2026-11-10T16:23:20.485007+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01a_qo(1).png",
+      "path": "/EXP_SEQ_01a_qo(1).png",
+      "bytes": 111704,
+      "created": "2026-11-10T16:23:17.919709+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01a_aiin.png",
+      "path": "/EXP_SEQ_01a_aiin.png",
+      "bytes": 113735,
+      "created": "2026-11-10T16:23:11.092717+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01a_dy.png",
+      "path": "/EXP_SEQ_01a_dy.png",
+      "bytes": 102071,
+      "created": "2026-11-10T16:23:08.370896+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01a_qo.png",
+      "path": "/EXP_SEQ_01a_qo.png",
+      "bytes": 111704,
+      "created": "2026-11-10T16:23:06.185488+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP_SEQ_01a_grafici_dati_codice.zip",
+      "path": "/EXP_SEQ_01a_grafici_dati_codice.zip",
+      "bytes": 297922,
+      "created": "2026-11-10T16:23:03.366362+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "rc1_4_2_diagnostic_report.json",
+      "path": "/rc1_4_2_diagnostic_report.json",
+      "bytes": 3411,
+      "created": "2026-11-10T16:01:20.761402+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_REV_04_PASTED_CANDIDATE.py",
+      "path": "/RC1_4_2_DRAFT_03_CODE_REV_04_PASTED_CANDIDATE.py",
+      "bytes": 21735,
+      "created": "2026-11-10T15:47:21.319651+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_REV_04.py.sha256",
+      "path": "/RC1_4_2_DRAFT_03_CODE_REV_04.py.sha256",
+      "bytes": 98,
+      "created": "2026-11-10T15:47:19.087787+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_REV_04.py",
+      "path": "/RC1_4_2_DRAFT_03_CODE_REV_04.py",
+      "bytes": 22583,
+      "created": "2026-11-10T15:47:16.022951+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_REV_03(1).py",
+      "path": "/RC1_4_2_DRAFT_03_CODE_REV_03(1).py",
+      "bytes": 19073,
+      "created": "2026-11-10T15:39:27.859009+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_REV_03.py",
+      "path": "/RC1_4_2_DRAFT_03_CODE_REV_03.py",
+      "bytes": 19073,
+      "created": "2026-11-10T15:39:17.460074+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_REV_03_STATIC_SOURCE_REVIEW_01.md",
+      "path": "/RC1_4_2_DRAFT_03_CODE_REV_03_STATIC_SOURCE_REVIEW_01.md",
+      "bytes": 11068,
+      "created": "2026-11-10T15:39:13.910183+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_REV_02(1).py",
+      "path": "/RC1_4_2_DRAFT_03_CODE_REV_02(1).py",
+      "bytes": 11473,
+      "created": "2026-11-10T15:26:36.027445+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_REV_02.py",
+      "path": "/RC1_4_2_DRAFT_03_CODE_REV_02.py",
+      "bytes": 11473,
+      "created": "2026-11-10T15:26:27.883476+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_REV_02_STATIC_SOURCE_REVIEW_01.md",
+      "path": "/RC1_4_2_DRAFT_03_CODE_REV_02_STATIC_SOURCE_REVIEW_01.md",
+      "bytes": 9414,
+      "created": "2026-11-10T15:26:24.899518+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_TRUSTED_OS_SERVICE_IMPLEMENTATION_DESIGN_SPEC_DRAFT_01.md.sha256",
+      "path": "/RC1_4_2_TRUSTED_OS_SERVICE_IMPLEMENTATION_DESIGN_SPEC_DRAFT_01.md.sha256",
+      "bytes": 132,
+      "created": "2026-11-10T15:14:32.588945+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_TRUSTED_OS_SERVICE_IMPLEMENTATION_DESIGN_SPEC_DRAFT_01.md",
+      "path": "/RC1_4_2_TRUSTED_OS_SERVICE_IMPLEMENTATION_DESIGN_SPEC_DRAFT_01.md",
+      "bytes": 42376,
+      "created": "2026-11-10T15:14:30.189370+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_TRUSTED_OS_SERVICE_DESIGN_STATIC_REVIEW_01.md",
+      "path": "/RC1_4_2_TRUSTED_OS_SERVICE_DESIGN_STATIC_REVIEW_01.md",
+      "bytes": 12312,
+      "created": "2026-11-10T15:00:02.400173+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_TRUSTED_OS_SERVICE_DESIGN_SPEC_DRAFT_01.md",
+      "path": "/RC1_4_2_TRUSTED_OS_SERVICE_DESIGN_SPEC_DRAFT_01.md",
+      "bytes": 31042,
+      "created": "2026-11-10T14:55:04.338223+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_REV_01_STATIC_SOURCE_REVIEW_01.md",
+      "path": "/RC1_4_2_DRAFT_03_CODE_REV_01_STATIC_SOURCE_REVIEW_01.md",
+      "bytes": 14983,
+      "created": "2026-11-10T14:47:51.174959+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "MANIFEST_REV_01_SOURCE_ONLY.json",
+      "path": "/MANIFEST_REV_01_SOURCE_ONLY.json",
+      "bytes": 2042,
+      "created": "2026-11-10T14:16:44+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "rc1_4_2_generator_clean_DRAFT_03_CODE_REV_01.py",
+      "path": "/rc1_4_2_generator_clean_DRAFT_03_CODE_REV_01.py",
+      "bytes": 3965,
+      "created": "2026-11-10T14:16:35+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_REV_01_SOURCE_ONLY.zip",
+      "path": "/RC1_4_2_DRAFT_03_CODE_REV_01_SOURCE_ONLY.zip",
+      "bytes": 22670,
+      "created": "2026-11-10T14:16:24.088806+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_STATIC_SOURCE_REVIEW_01.md",
+      "path": "/RC1_4_2_DRAFT_03_CODE_STATIC_SOURCE_REVIEW_01.md",
+      "bytes": 14805,
+      "created": "2026-11-10T13:20:32.423106+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "SOURCE_ONLY_FILE_MANIFEST.json",
+      "path": "/SOURCE_ONLY_FILE_MANIFEST.json",
+      "bytes": 3312,
+      "created": "2026-11-10T12:53:37.035483+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "rc1_4_2_generator_clean_DRAFT_03_CODE.py",
+      "path": "/rc1_4_2_generator_clean_DRAFT_03_CODE.py",
+      "bytes": 3935,
+      "created": "2026-11-10T12:53:34.692628+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_SOURCE_ONLY.zip",
+      "path": "/RC1_4_2_DRAFT_03_CODE_SOURCE_ONLY.zip",
+      "bytes": 29717,
+      "created": "2026-11-10T12:53:32.521016+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_IMPLEMENTATION_DESIGN_STATIC_REVIEW_01.md",
+      "path": "/RC1_4_2_IMPLEMENTATION_DESIGN_STATIC_REVIEW_01.md",
+      "bytes": 12346,
+      "created": "2026-11-10T12:13:27.676777+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ZL3b-n(6).txt",
+      "path": "/ZL3b-n(6).txt",
+      "bytes": 411671,
+      "created": "2026-11-10T12:07:10.813716+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ZL3b-n(5).txt",
+      "path": "/ZL3b-n(5).txt",
+      "bytes": 411671,
+      "created": "2026-11-10T12:07:07.979326+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_IMPLEMENTATION_DESIGN_SPEC_ONLY.zip",
+      "path": "/RC1_4_2_IMPLEMENTATION_DESIGN_SPEC_ONLY.zip",
+      "bytes": 15551,
+      "created": "2026-11-10T12:03:11.810275+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_IMPLEMENTATION_DESIGN_SPEC.md",
+      "path": "/RC1_4_2_DRAFT_03_CODE_IMPLEMENTATION_DESIGN_SPEC.md",
+      "bytes": 36312,
+      "created": "2026-11-10T12:03:09.215419+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DESIGN_STATIC_REVIEW_DRAFT_03_CODE_01.md",
+      "path": "/RC1_4_2_DESIGN_STATIC_REVIEW_DRAFT_03_CODE_01.md",
+      "bytes": 10272,
+      "created": "2026-11-10T11:43:50.110988+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DRAFT_03_CODE_DESIGN_SPEC.md",
+      "path": "/RC1_4_2_DRAFT_03_CODE_DESIGN_SPEC.md",
+      "bytes": 31692,
+      "created": "2026-11-10T11:32:18.310921+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_STATIC_ACCEPTANCE_REVIEW_REV_02_2_01.md",
+      "path": "/RC1_4_2_STATIC_ACCEPTANCE_REVIEW_REV_02_2_01.md",
+      "bytes": 8149,
+      "created": "2026-11-10T11:24:32.197627+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_LOCAL_INTEGRITY_RECORD_REV_02_2.md",
+      "path": "/RC1_4_2_LOCAL_INTEGRITY_RECORD_REV_02_2.md",
+      "bytes": 1720,
+      "created": "2026-11-10T11:18:26.730094+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_APPENDICE_NORMATIVA_A01_A02_REV_02_2.md",
+      "path": "/RC1_4_2_APPENDICE_NORMATIVA_A01_A02_REV_02_2.md",
+      "bytes": 12932,
+      "created": "2026-11-10T11:18:24.175703+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_2.md",
+      "path": "/RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_2.md",
+      "bytes": 43792,
+      "created": "2026-11-10T11:18:21.525558+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_SPEC_ONLY_REV_02_2_A01_A02.zip",
+      "path": "/RC1_4_2_SPEC_ONLY_REV_02_2_A01_A02.zip",
+      "bytes": 22783,
+      "created": "2026-11-10T11:18:19.192227+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_STATIC_ACCEPTANCE_REVIEW_REV_02_1_01.md",
+      "path": "/RC1_4_2_STATIC_ACCEPTANCE_REVIEW_REV_02_1_01.md",
+      "bytes": 8677,
+      "created": "2026-11-10T11:09:20.179575+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_1.md",
+      "path": "/RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_1.md",
+      "bytes": 30496,
+      "created": "2026-11-10T11:03:11.059058+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_STATIC_SPEC_ACCEPTANCE_REVIEW_REV_02_02.md",
+      "path": "/RC1_4_2_STATIC_SPEC_ACCEPTANCE_REVIEW_REV_02_02.md",
+      "bytes": 8098,
+      "created": "2026-11-10T10:57:04.088736+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02.md",
+      "path": "/RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02.md",
+      "bytes": 23479,
+      "created": "2026-11-10T10:52:00.472848+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_SPECIFICATION_STATIC_REVIEW_DRAFT_03_CODE_01.md",
+      "path": "/RC1_4_2_SPECIFICATION_STATIC_REVIEW_DRAFT_03_CODE_01.md",
+      "bytes": 9008,
+      "created": "2026-11-10T10:44:25.598986+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE.md",
+      "path": "/RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE.md",
+      "bytes": 9874,
+      "created": "2026-11-10T10:37:08.416103+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_LOCAL_INTEGRITY_RECORD_DRAFT_04.md",
+      "path": "/RC1_4_2_LOCAL_INTEGRITY_RECORD_DRAFT_04.md",
+      "bytes": 1005,
+      "created": "2026-11-10T10:30:50.217628+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_ATTESTAZIONE_ESTERNA_MODELLO_DRAFT_04.md",
+      "path": "/RC1_4_2_ATTESTAZIONE_ESTERNA_MODELLO_DRAFT_04.md",
+      "bytes": 2826,
+      "created": "2026-11-10T10:30:47.705314+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_STATIC_CODE_REVIEW_DRAFT_04.md",
+      "path": "/RC1_4_2_STATIC_CODE_REVIEW_DRAFT_04.md",
+      "bytes": 14817,
+      "created": "2026-11-10T10:30:45.257683+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_DOCUMENTARY_REVISION_DRAFT_04.zip",
+      "path": "/RC1_4_2_DOCUMENTARY_REVISION_DRAFT_04.zip",
+      "bytes": 8346,
+      "created": "2026-11-10T10:30:43.125043+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_STATIC_CODE_REVIEW_DRAFT_03.md",
+      "path": "/RC1_4_2_STATIC_CODE_REVIEW_DRAFT_03.md",
+      "bytes": 16864,
+      "created": "2026-11-10T10:17:47.168054+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_STATIC_CODE_REVIEW_DRAFT_02.md",
+      "path": "/RC1_4_2_STATIC_CODE_REVIEW_DRAFT_02.md",
+      "bytes": 8071,
+      "created": "2026-11-10T10:12:40.484786+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "rc1_4_2_generator_clean_DRAFT_02.py",
+      "path": "/rc1_4_2_generator_clean_DRAFT_02.py",
+      "bytes": 41856,
+      "created": "2026-11-10T10:04:59.729526+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_CLEAN_GENERATOR_DRAFT_02(1).zip",
+      "path": "/RC1_4_2_CLEAN_GENERATOR_DRAFT_02(1).zip",
+      "bytes": 24982,
+      "created": "2026-11-10T10:04:57.281156+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_CLEAN_GENERATOR_DRAFT_02.zip",
+      "path": "/RC1_4_2_CLEAN_GENERATOR_DRAFT_02.zip",
+      "bytes": 24982,
+      "created": "2026-11-10T10:04:27+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_CLEAN_GENERATOR_DRAFT_01.zip",
+      "path": "/RC1_4_2_CLEAN_GENERATOR_DRAFT_01.zip",
+      "bytes": 7690,
+      "created": "2026-11-10T09:49:18+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_A1_YALE_METADATA_VERIFICATION.json",
+      "path": "/RC1_4_2_A1_YALE_METADATA_VERIFICATION.json",
+      "bytes": 2654,
+      "created": "2026-11-10T01:42:47+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_AUDIT_ADDENDUM_A1.json",
+      "path": "/RC1_4_2_AUDIT_ADDENDUM_A1.json",
+      "bytes": 3049,
+      "created": "2026-11-10T01:42:42+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_SHA256SUMS.txt",
+      "path": "/RC1_4_2_SHA256SUMS.txt",
+      "bytes": 477,
+      "created": "2026-11-10T01:35:05.712378+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_MANIFEST.json",
+      "path": "/RC1_4_2_MANIFEST.json",
+      "bytes": 3102,
+      "created": "2026-11-10T01:35:03.546953+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_validation_report.json",
+      "path": "/RC1_4_2_validation_report.json",
+      "bytes": 11291,
+      "created": "2026-11-10T01:35:01.490080+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_unresolved_register.csv",
+      "path": "/RC1_4_2_unresolved_register.csv",
+      "bytes": 217,
+      "created": "2026-11-10T01:34:59.627919+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_exclusion_register.csv",
+      "path": "/RC1_4_2_exclusion_register.csv",
+      "bytes": 3946,
+      "created": "2026-11-10T01:34:57.763714+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_candidate_register.csv",
+      "path": "/RC1_4_2_candidate_register.csv",
+      "bytes": 16099,
+      "created": "2026-11-10T01:34:55.742446+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_V7_1_AUDIT_ARTIFACTS.zip",
+      "path": "/RC1_4_2_V7_1_AUDIT_ARTIFACTS.zip",
+      "bytes": 8107,
+      "created": "2026-11-10T01:34:53.564467+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_CONFIG_v7_1.json",
+      "path": "/RC1_4_2_CONFIG_v7_1.json",
+      "bytes": 28255,
+      "created": "2026-11-10T01:26:44+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_MULTIPANEL_DISJOINTNESS_VALIDATION.json",
+      "path": "/RC1_4_2_MULTIPANEL_DISJOINTNESS_VALIDATION.json",
+      "bytes": 14116,
+      "created": "2026-11-10T01:26:40+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_V7_1_OA_MULTIPANEL_TECHNICAL_PACKAGE.zip",
+      "path": "/RC1_4_2_V7_1_OA_MULTIPANEL_TECHNICAL_PACKAGE.zip",
+      "bytes": 1021822,
+      "created": "2026-11-10T01:26:33.770470+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "path": "/SHA256SUMS.txt",
+      "bytes": 419,
+      "created": "2026-11-10T01:23:07+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ivtff_parser_rc1_4_offset_aware_validation.json",
+      "path": "/ivtff_parser_rc1_4_offset_aware_validation.json",
+      "bytes": 4988,
+      "created": "2026-11-10T01:23:02+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ivtff_parser_rc1_4_offset_aware_report(1).json",
+      "path": "/ivtff_parser_rc1_4_offset_aware_report(1).json",
+      "bytes": 21048063,
+      "created": "2026-11-10T01:23:00.156637+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ivtff_parser_rc1_4_offset_aware.py",
+      "path": "/ivtff_parser_rc1_4_offset_aware.py",
+      "bytes": 12095,
+      "created": "2026-11-10T01:22:34+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ivtff_parser_rc1_4_offset_aware_report.json",
+      "path": "/ivtff_parser_rc1_4_offset_aware_report.json",
+      "bytes": 21048063,
+      "created": "2026-11-10T01:22:28.819938+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "README_RC1_4_OA_DELIVERY.md",
+      "path": "/README_RC1_4_OA_DELIVERY.md",
+      "bytes": 1859,
+      "created": "2026-11-10T01:22:23.612819+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_OA_TECHNICAL_VALIDATION.zip",
+      "path": "/RC1_4_OA_TECHNICAL_VALIDATION.zip",
+      "bytes": 877766,
+      "created": "2026-11-10T01:22:21.772420+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_CONFIG_v7.json",
+      "path": "/RC1_4_2_CONFIG_v7.json",
+      "bytes": 24632,
+      "created": "2026-11-10T01:15:02.293894+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_CONFIG_v6(1).json",
+      "path": "/RC1_4_2_CONFIG_v6(1).json",
+      "bytes": 15214,
+      "created": "2026-11-10T01:08:11.441190+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_2_CONFIG_v6.json",
+      "path": "/RC1_4_2_CONFIG_v6.json",
+      "bytes": 15214,
+      "created": "2026-11-10T01:08:05.063790+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_profiles_5.json",
+      "path": "/voynich_profiles_5.json",
+      "bytes": 23097,
+      "created": "2026-11-10T00:38:38+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_profiles.json",
+      "path": "/voynich_profiles.json",
+      "bytes": 4758062,
+      "created": "2026-11-10T00:33:12+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_1_CONFIG_v5.json",
+      "path": "/RC1_4_1_CONFIG_v5.json",
+      "bytes": 8595,
+      "created": "2026-11-09T00:29:50+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_1_CONFIG_v4.json",
+      "path": "/RC1_4_1_CONFIG_v4.json",
+      "bytes": 7966,
+      "created": "2026-11-09T00:27:37+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "RC1_4_1_recovered_materials.zip",
+      "path": "/RC1_4_1_recovered_materials.zip",
+      "bytes": 12390,
+      "created": "2026-11-08T23:52:23.001927+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "build_remaining_crosswalks_rc1_4_corrected.py",
+      "path": "/build_remaining_crosswalks_rc1_4_corrected.py",
+      "bytes": 14249,
+      "created": "2026-11-08T18:30:03.829561+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "build_remaining_crosswalks_rc1_4.py",
+      "path": "/build_remaining_crosswalks_rc1_4.py",
+      "bytes": 5926,
+      "created": "2026-11-08T18:17:23.501714+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "BUILD_REMAINING_CROSSWALKS_README.md",
+      "path": "/Voynich/RC1.4/BUILD_REMAINING_CROSSWALKS_README.md",
+      "bytes": 1122,
+      "created": "2026-11-08T18:16:46+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "build_ivtff_crosswalk_rc1_4.py",
+      "path": "/build_ivtff_crosswalk_rc1_4.py",
+      "bytes": 2146,
+      "created": "2026-11-07T08:54:04+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ivtff_parser_rc1_4_validation_summary.json",
+      "path": "/ivtff_parser_rc1_4_validation_summary.json",
+      "bytes": 881,
+      "created": "2026-11-07T08:54:00+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ivtff_parser_rc1_4_report.json",
+      "path": "/ivtff_parser_rc1_4_report.json",
+      "bytes": 1373637,
+      "created": "2026-11-07T08:53:52+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ivtff_parser_rc1_4.py",
+      "path": "/ivtff_parser_rc1_4.py",
+      "bytes": 14100,
+      "created": "2026-11-07T08:53:47+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "README_RC1_4_DELIVERY.md",
+      "path": "/README_RC1_4_DELIVERY.md",
+      "bytes": 2078,
+      "created": "2026-11-07T08:53:34.024778+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "PARSER_SPEC_V1_RC1_4.md",
+      "path": "/PARSER_SPEC_V1_RC1_4.md",
+      "bytes": 2315,
+      "created": "2026-11-07T08:53:29.691405+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voy_crosswalk_rc1_4_partial_delivery.zip",
+      "path": "/voy_crosswalk_rc1_4_partial_delivery.zip",
+      "bytes": 159518,
+      "created": "2026-11-07T08:53:24.863397+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voy_crosswalk_rc1_4_partial_delivery.zip",
+      "path": "/Voynich/RC1.4/voy_crosswalk_rc1_4_partial_delivery.zip",
+      "bytes": 159518,
+      "created": "2026-11-07T08:52:22+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "README_RC1_4_DELIVERY.md",
+      "path": "/Voynich/RC1.4/README_RC1_4_DELIVERY.md",
+      "bytes": 2078,
+      "created": "2026-11-07T08:52:22+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "PARSER_SPEC_V1_RC1_4.md",
+      "path": "/Voynich/RC1.4/PARSER_SPEC_V1_RC1_4.md",
+      "bytes": 2315,
+      "created": "2026-11-07T08:51:56+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "folio_ivtff_crosswalk.csv",
+      "path": "/Voynich/RC1.4/folio_ivtff_crosswalk.csv",
+      "bytes": 13269,
+      "created": "2026-11-07T08:51:56+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_page_metadata_ZL3b_audit.json",
+      "path": "/voynich_page_metadata_ZL3b_audit.json",
+      "bytes": 1229,
+      "created": "2026-11-06T11:25:20.647535+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_page_metadata_ZL3b.csv",
+      "path": "/voynich_page_metadata_ZL3b.csv",
+      "bytes": 7848,
+      "created": "2026-11-06T11:25:18.647966+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_preprint_v3.md",
+      "path": "/voynich_preprint_v3.md",
+      "bytes": 25644,
+      "created": "2026-11-03T16:11:21+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_preprint_v2.md",
+      "path": "/voynich_preprint_v2.md",
+      "bytes": 24498,
+      "created": "2026-11-03T15:13:04+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_preprint_v1.md",
+      "path": "/voynich_preprint_v1.md",
+      "bytes": 19412,
+      "created": "2026-11-03T14:29:32+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "benchmark_dieci_processi_voynich_2026-11-03.md",
+      "path": "/benchmark_dieci_processi_voynich_2026-11-03.md",
+      "bytes": 10872,
+      "created": "2026-11-03T13:53:22+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_processi.zip",
+      "path": "/voynich_processi.zip",
+      "bytes": 8639,
+      "created": "2026-11-03T12:38:34+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_paper_v1.md",
+      "path": "/voynich_paper_v1.md",
+      "bytes": 6302,
+      "created": "2026-11-03T12:03:22+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP-SEQ-01_M5_M6_FORMALIZZAZIONE_OPERATIVA_v1.md",
+      "path": "/EXP-SEQ-01_M5_M6_FORMALIZZAZIONE_OPERATIVA_v1.md",
+      "bytes": 4473,
+      "created": "2026-11-03T02:37:11.098850+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP-SEQ-01_M3_V12_check(1).json",
+      "path": "/EXP-SEQ-01_M3_V12_check(1).json",
+      "bytes": 17893,
+      "created": "2026-11-03T02:26:01.299858+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP-SEQ-01_M3_V12_check.json",
+      "path": "/EXP-SEQ-01_M3_V12_check.json",
+      "bytes": 17893,
+      "created": "2026-11-03T02:25:54.386761+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP-SEQ-01_M2_generator_4000.py",
+      "path": "/EXP-SEQ-01_M2_generator_4000.py",
+      "bytes": 4414,
+      "created": "2026-11-03T02:23:39+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "EXP-SEQ-01_M2_generator_4000_report.json",
+      "path": "/EXP-SEQ-01_M2_generator_4000_report.json",
+      "bytes": 2547,
+      "created": "2026-11-03T02:23:32+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_parser_audit_results_20261027.zip",
+      "path": "/voynich_parser_audit_results_20261027.zip",
+      "bytes": 451866,
+      "created": "2026-10-29T12:53:27+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_ivtt_operational_bundle_20261027.zip",
+      "path": "/voynich_ivtt_operational_bundle_20261027.zip",
+      "bytes": 301131,
+      "created": "2026-10-29T12:53:21+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ZL3b-n(4).txt",
+      "path": "/ZL3b-n(4).txt",
+      "bytes": 411671,
+      "created": "2026-10-29T12:53:16.519162+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ivtff_ivtt_differential_protocol.md",
+      "path": "/ivtff_ivtt_differential_protocol.md",
+      "bytes": 3367,
+      "created": "2026-10-27T14:49:26.138501+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ivtff_ivtt_differential_protocol_bundle.zip",
+      "path": "/ivtff_ivtt_differential_protocol_bundle.zip",
+      "bytes": 2989,
+      "created": "2026-10-27T14:49:21.473923+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ZL3b-n(3).txt",
+      "path": "/ZL3b-n(3).txt",
+      "bytes": 411671,
+      "created": "2026-10-27T14:08:26.187756+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "fetch_validate_voynich_visuals.py",
+      "path": "/fetch_validate_voynich_visuals.py",
+      "bytes": 4997,
+      "created": "2026-10-27T13:37:09+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_tokenization_sensitivity.json",
+      "path": "/voynich_tokenization_sensitivity.json",
+      "bytes": 21899,
+      "created": "2026-10-27T11:39:36+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_tokenization_sensitivity.py",
+      "path": "/voynich_tokenization_sensitivity.py",
+      "bytes": 8504,
+      "created": "2026-10-27T11:39:29+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_tokenization_sensitivity.csv",
+      "path": "/voynich_tokenization_sensitivity.csv",
+      "bytes": 4617,
+      "created": "2026-10-27T11:39:19.914704+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_subset_section_test_report.json",
+      "path": "/voynich_subset_section_test_report.json",
+      "bytes": 9514,
+      "created": "2026-10-27T11:33:40.143396+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_section_map_explorer.tsv",
+      "path": "/voynich_section_map_explorer.tsv",
+      "bytes": 10646,
+      "created": "2026-10-27T11:33:38.287581+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_subset_section_test.py",
+      "path": "/voynich_subset_section_test.py",
+      "bytes": 6199,
+      "created": "2026-10-27T11:33:36.073335+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "PROTOCOLLO_B2_C2_LOFO_V1.md",
+      "path": "/PROTOCOLLO_B2_C2_LOFO_V1.md",
+      "bytes": 2121,
+      "created": "2026-10-25T17:32:10+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "PROTOCOLLO_DIAGNOSTICA_FEATURE_POSIZIONALI_V1.md",
+      "path": "/PROTOCOLLO_DIAGNOSTICA_FEATURE_POSIZIONALI_V1.md",
+      "bytes": 1923,
+      "created": "2026-10-25T17:17:52.621721+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "PROTOCOLLO_CONFRONTO_TRE_VIE_LOFO_V1.md",
+      "path": "/PROTOCOLLO_CONFRONTO_TRE_VIE_LOFO_V1.md",
+      "bytes": 2451,
+      "created": "2026-10-25T17:15:33.413509+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "PROTOCOLLO_MORFOTASSI_LOFO_V1.md",
+      "path": "/PROTOCOLLO_MORFOTASSI_LOFO_V1.md",
+      "bytes": 2318,
+      "created": "2026-10-25T17:09:56.730281+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "PROTOCOLLO_BENCHMARK_LOFO_M3_V1_1_ERRATA.md",
+      "path": "/PROTOCOLLO_BENCHMARK_LOFO_M3_V1_1_ERRATA.md",
+      "bytes": 1901,
+      "created": "2026-10-25T16:50:07.887995+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "PROTOCOLLO_BENCHMARK_LOFO_M3_V1.md",
+      "path": "/PROTOCOLLO_BENCHMARK_LOFO_M3_V1.md",
+      "bytes": 4370,
+      "created": "2026-10-25T16:45:17.313585+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "PROTOCOLLO_BENCHMARK_LOFO_M0_M1_V1.md",
+      "path": "/PROTOCOLLO_BENCHMARK_LOFO_M0_M1_V1.md",
+      "bytes": 3769,
+      "created": "2026-10-25T16:41:07.467102+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "MANIFEST_BASELINE_1_0(1).json",
+      "path": "/MANIFEST_BASELINE_1_0(1).json",
+      "bytes": 3692,
+      "created": "2026-10-25T16:37:50.050988+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "MANIFEST_BASELINE_1_0.json",
+      "path": "/MANIFEST_BASELINE_1_0.json",
+      "bytes": 3692,
+      "created": "2026-10-25T16:37:43.628207+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_cv.py",
+      "path": "/voynich_cv.py",
+      "bytes": 15861,
+      "created": "2026-10-23T13:33:53+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ZL3b-n(2).txt",
+      "path": "/ZL3b-n(2).txt",
+      "bytes": 411671,
+      "created": "2026-10-23T13:30:27.138889+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ZL3b-n(1).txt",
+      "path": "/ZL3b-n(1).txt",
+      "bytes": 411671,
+      "created": "2026-10-23T13:30:24.920316+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "ZL3b-n.txt",
+      "path": "/ZL3b-n.txt",
+      "bytes": 411671,
+      "created": "2026-10-22T16:07:45+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "Molina_2026_Voynich_Label_Generative_Null_Reassessment_2026-09-14.pdf",
+      "path": "/Molina_2026_Voynich_Label_Generative_Null_Reassessment_2026-09-14.pdf",
+      "bytes": 417653,
+      "created": "2026-10-15T21:55:04+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_C_sensitivity_manifest.json",
+      "path": "/voynich_C_sensitivity_manifest.json",
+      "bytes": 1817,
+      "created": "2026-10-15T20:41:21.856523+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_synth_bench(1).py",
+      "path": "/voynich_synth_bench(1).py",
+      "bytes": 14143,
+      "created": "2026-10-15T20:41:18.796117+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_C_sensitivity.py",
+      "path": "/voynich_C_sensitivity.py",
+      "bytes": 3107,
+      "created": "2026-10-15T20:41:16.618915+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_C_sensitivity_highcopy_results.json",
+      "path": "/voynich_C_sensitivity_highcopy_results.json",
+      "bytes": 32866,
+      "created": "2026-10-15T20:41:14.268764+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_C_sensitivity_results.json",
+      "path": "/voynich_C_sensitivity_results.json",
+      "bytes": 16405,
+      "created": "2026-10-15T20:41:12.065506+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_C_sensitivity_all.csv",
+      "path": "/voynich_C_sensitivity_all.csv",
+      "bytes": 10351,
+      "created": "2026-10-15T20:41:09.896494+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_synth_bench.py",
+      "path": "/voynich_synth_bench.py",
+      "bytes": 14008,
+      "created": "2026-10-15T20:34:37+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_C_seed1_report.json",
+      "path": "/voynich_C_seed1_report.json",
+      "bytes": 1368,
+      "created": "2026-10-15T20:32:11+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_C_reps_partial.json",
+      "path": "/voynich_C_reps_partial.json",
+      "bytes": 9949,
+      "created": "2026-10-15T20:32:04+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "audit_voynich(1).py",
+      "path": "/audit_voynich(1).py",
+      "bytes": 4850,
+      "created": "2026-10-11T11:55:45.872999+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "audit_voynich.py",
+      "path": "/audit_voynich.py",
+      "bytes": 4850,
+      "created": "2026-10-11T11:55:40.309583+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_data_audit.py",
+      "path": "/voynich_data_audit.py",
+      "bytes": 15077,
+      "created": "2026-10-10T23:33:49+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_data_audit(1).py",
+      "path": "/voynich_data_audit(1).py",
+      "bytes": 11916,
+      "created": "2026-10-10T23:31:10.383706+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_explorer (1).html",
+      "path": "/voynich_explorer (1).html",
+      "bytes": 552769,
+      "created": "2026-06-15T10:36:05+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    },
+    {
+      "name": "voynich_explorer.html",
+      "path": "/voynich_explorer.html",
+      "bytes": 191209,
+      "created": "2026-06-15T10:25:54+00:00",
+      "status": "CATALOGUED_NOT_UPLOADED"
+    }
+  ]
+}
