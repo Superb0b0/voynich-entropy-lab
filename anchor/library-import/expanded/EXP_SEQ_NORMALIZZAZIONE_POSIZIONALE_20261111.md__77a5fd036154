@@ -1,0 +1,32 @@
+# EXP-SEQ | Normalizzazione posizionale (esplorativa)
+Data: 2026-11-11. Stato: ESPLORATIVO, NON PREREGISTRATO.
+
+## Premessa
+Le affermazioni del «creatore» nel gioco di ruolo sono finzione narrativa, **non** testimonianze. L'ipotesi empirica è più limitata: forme graficamente simili potrebbero avere distribuzioni differenti secondo la posizione nella riga. Un'associazione statistica non prova equivalenza semantica o decifrazione.
+
+## Materiali
+- `ZL3b-n(6).txt`, byte SHA-256 `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc`.
+- Parser RC1.2 originale, loci P; 4.130 righe, 35.492 token, 6.980 forme.
+- Codice riproducibile allegato `exp_positional_test.py`; nessuna modifica a corpus, parser, manifest, RC1.4.2 o pipeline di profili.
+
+## Procedura
+Confronto token nella posizione 1 della riga contro tutte le altre posizioni. Coppie di forme con suffisso condiviso, lunghezza suffisso ≥3 caratteri; ogni forma ha frequenza complessiva ≥2. L'analisi aggregata usa Fisher esatto; l'analisi condizionata per coppia usa Mantel-Haenszel (CMH) con una tavola 2x2 per ogni coppia di forme informativa. Le sostituzioni iniziali esplorate sono `q/o`, `d/o`, `s/o`, `y/o`, `k/t`, `d/q`. Non è stata eseguita correzione per scelta ex post delle sostituzioni o per altre ipotesi già esplorate. Mancano controlli per sezione, mano, folio, lunghezza di riga, posizione nel paragrafo e dipendenze fra parole.
+
+## Risultati
+
+| Confronto | Coppie informative CMH | OR CMH primo carattere rispetto al secondo (95% CI) | p nominale |
+|---|---:|---:|---:|
+| `yX` contro `oX` | 94 | 4,662 (3,711–5,857) | < 1e-15 |
+| `sX` contro `oX` | 12 | 1,654 (0,956–2,865) | 0,0672 |
+| `kX` contro `tX` | 40 | 0,123 (0,078–0,195) | < 1e-15 |
+| `dX` contro `oX` | 18 | 0,830 (0,529–1,303) | 0,3634 |
+
+Altre prove:
+- Coppie `qoX` contro `X`, con X≥3 e entrambe le forme presenti almeno due volte: 190 coppie; `qoX` iniziale 390, altrove 3.552; `X` iniziale 671, altrove 5.197. Fisher aggregato OR 0,850, p 0,01695 (debole e contrario alla semplice idea di arricchimento iniziale).
+- Associazione globale del prefisso `qo` con la posizione 1: 516/4.130 contro 4.678/31.362 nelle altre posizioni (OR 0,814; Fisher p=2,74e-5). Questo aggregato non controlla composizione lessicale, manos, sezioni o righe.
+
+## Giudizio
+**Segnale grafotattico posizionale presente, nessuna prova di normalizzazione semantica.** Il confronto `yX/oX` è forte, ma è esplorativo; `kX/tX` mostra una differenza in direzione opposta; la regola semplicistica `qoX ↔ X` non è sostenuta. Non si può ancora costruire una tabella di traduzione né eliminare prefissi per «normalizzare» le parole. L'analogia con un sistema di allomorfia condizionata dalla posizione rimane una possibile interpretazione fra diverse.
+
+## Test decisivo successivo
+Bloccare su un insieme di addestramento la lista di trasformazioni candidate; verificare su folii non visti, separando A/B, controllando lunghezza della riga, frequenza, posizione nel paragrafo e gli inizi fisici delle righe; includere un nullo di permutazione intrafolio che preservi la struttura delle righe e le distribuzioni delle forme. Verificare inoltre se sostituire le varianti migliora la predizione dei contesti testuali fuori campione rispetto a un modello che non le unisce. Solo quest'ultimo test può dare un indizio (non prova) di intercambiabilità funzionale.
