@@ -1,0 +1,198 @@
+{
+  "V1_4_2_artifacts_generated": false,
+  "analytical_builder_executed": false,
+  "corpus_modified": false,
+  "gate": "CLOSED_PENDING_VALIDATION",
+  "lexical_equivalence": {
+    "actual_loci": 4130,
+    "actual_tokens": 35492,
+    "difference_count": 0,
+    "differences": [],
+    "expected_loci": 4130,
+    "expected_tokens": 35492
+  },
+  "multisegment_gap_patterns": {
+    "b'{'": 211,
+    "b'}'": 279,
+    "b'}{'": 2
+  },
+  "multisegment_reason_counts": {
+    "INTRA_LINE_TRANSFORMATION": 338,
+    "NONE": 35154
+  },
+  "output_files": {
+    "parser": "ivtff_parser_rc1_4_offset_aware.py",
+    "provenance_report": "ivtff_parser_rc1_4_offset_aware_report.json"
+  },
+  "parent_parser_modified": false,
+  "provenance_counts": {
+    "TRACEABLE_CONTIGUOUS": 35154,
+    "TRACEABLE_MULTISEGMENT": 338
+  },
+  "source_line_join_summary": {
+    "filename": "ZL3b-n.txt",
+    "logical_lines_after_parent_join": 8510,
+    "physical_lines": 8510,
+    "physical_lines_removed_by_continuation_join": 0,
+    "sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    "size_bytes": 411671
+  },
+  "status": "PASS_TECHNICAL_ONLY",
+  "test_counts": {
+    "fail": 0,
+    "pass": 14
+  },
+  "tests": [
+    {
+      "description": "SHA-256 corpus originale",
+      "detail": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+      "status": "PASS",
+      "test_id": "OA-001"
+    },
+    {
+      "description": "SHA-256 parser padre congelato",
+      "detail": "075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d",
+      "status": "PASS",
+      "test_id": "OA-002"
+    },
+    {
+      "description": "Suite unitaria originale RC1.4",
+      "detail": {
+        "failures": []
+      },
+      "status": "PASS",
+      "test_id": "OA-003"
+    },
+    {
+      "description": "Conteggio righe fisiche e join effettivi del corpus",
+      "detail": {
+        "filename": "ZL3b-n.txt",
+        "logical_lines_after_parent_join": 8510,
+        "physical_lines": 8510,
+        "physical_lines_removed_by_continuation_join": 0,
+        "sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+        "size_bytes": 411671
+      },
+      "status": "PASS",
+      "test_id": "OA-004"
+    },
+    {
+      "description": "Equivalenza puntuale record RC1.4",
+      "detail": {
+        "actual_loci": 4130,
+        "actual_tokens": 35492,
+        "difference_count": 0,
+        "differences": [],
+        "expected_loci": 4130,
+        "expected_tokens": 35492
+      },
+      "status": "PASS",
+      "test_id": "OA-005"
+    },
+    {
+      "description": "Cardinalità loci canonici",
+      "detail": 4130,
+      "status": "PASS",
+      "test_id": "OA-006"
+    },
+    {
+      "description": "Cardinalità token",
+      "detail": 35492,
+      "status": "PASS",
+      "test_id": "OA-007"
+    },
+    {
+      "description": "Ordine e valore token con corrispondenza uno-a-uno",
+      "detail": {
+        "canonical": 35492,
+        "provenance": 35492
+      },
+      "status": "PASS",
+      "test_id": "OA-008"
+    },
+    {
+      "description": "Intervalli semiaperti entro i byte sorgente",
+      "detail": {
+        "segments": 35984,
+        "source_bytes": 411671
+      },
+      "status": "PASS",
+      "test_id": "OA-009"
+    },
+    {
+      "description": "Ricostruzione del token dai byte sorgente",
+      "detail": {
+        "examples": [],
+        "mismatches": 0
+      },
+      "status": "PASS",
+      "test_id": "OA-010"
+    },
+    {
+      "description": "Assenza di sovrapposizioni tra segmenti token",
+      "detail": {
+        "examples": [],
+        "overlaps": 0
+      },
+      "status": "PASS",
+      "test_id": "OA-011"
+    },
+    {
+      "description": "Mappatura delle trasformazioni marker/graffe/quadre",
+      "detail": {
+        "cleaned": "abcdef ij kl",
+        "first_token": "abcdef",
+        "first_token_segments": [
+          [
+            100,
+            102
+          ],
+          [
+            103,
+            105
+          ],
+          [
+            106,
+            108
+          ]
+        ]
+      },
+      "status": "PASS",
+      "test_id": "OA-012"
+    },
+    {
+      "description": "Continuazione sintetica con provenienza multisegmento",
+      "detail": {
+        "logical_line": "<f1r.1,+P0> abcdef",
+        "segments": [
+          [
+            12,
+            15
+          ],
+          [
+            102,
+            105
+          ]
+        ]
+      },
+      "status": "PASS",
+      "test_id": "OA-013"
+    },
+    {
+      "description": "Determinismo seconda generazione e immutabilità sorgenti",
+      "detail": {
+        "byte_for_byte_identical": true,
+        "inputs_unchanged": true,
+        "report_bytes": 21048063
+      },
+      "status": "PASS",
+      "test_id": "OA-014"
+    }
+  ],
+  "v7_single_span_compatibility": {
+    "compatible_tokens": 35154,
+    "incompatible_tokens_requiring_contract_review": 338,
+    "status": "BLOCKED_FOR_MULTISEGMENT_TOKENS"
+  },
+  "validation_id": "RC1.4-OA-VALIDATION-01"
+}
