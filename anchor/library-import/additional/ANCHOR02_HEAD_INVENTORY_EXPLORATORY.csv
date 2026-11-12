@@ -1,0 +1,32 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: ANCHOR02_HEAD_INVENTORY_EXPLORATORY.csv>
+index,id,ring,x,y,xn,yn,status
+0,O01,outer,385,151,385,158,manual_head_candidate_nonblind_exploratory
+1,O02,outer,452,128,452,134,manual_head_candidate_nonblind_exploratory
+2,O03,outer,515,130,515,136,manual_head_candidate_nonblind_exploratory
+3,O04,outer,569,143,569,150,manual_head_candidate_nonblind_exploratory
+4,O05,outer,650,166,650,174,manual_head_candidate_nonblind_exploratory
+5,O06,outer,721,214,721,224,manual_head_candidate_nonblind_exploratory
+6,O07,outer,771,285,771,298,manual_head_candidate_nonblind_exploratory
+7,O08,outer,802,360,802,377,manual_head_candidate_nonblind_exploratory
+8,O09,outer,813,475,813,497,manual_head_candidate_nonblind_exploratory
+9,O10,outer,768,581,768,608,manual_head_candidate_nonblind_exploratory
+10,O11,outer,680,676,680,707,manual_head_candidate_nonblind_exploratory
+11,O12,outer,588,749,588,783,manual_head_candidate_nonblind_exploratory
+12,O13,outer,453,754,453,789,manual_head_candidate_nonblind_exploratory
+13,O14,outer,337,724,337,757,manual_head_candidate_nonblind_exploratory
+14,O15,outer,263,614,263,642,manual_head_candidate_nonblind_exploratory
+15,O16,outer,226,505,226,528,manual_head_candidate_nonblind_exploratory
+16,O17,outer,209,383,209,401,manual_head_candidate_nonblind_exploratory
+17,O18,outer,264,270,264,282,manual_head_candidate_nonblind_exploratory
+18,O19,outer,322,203,322,212,manual_head_candidate_nonblind_exploratory
+19,I01,inner,425,247,425,258,manual_head_candidate_nonblind_exploratory
+20,I02,inner,530,236,530,247,manual_head_candidate_nonblind_exploratory
+21,I03,inner,626,315,626,329,manual_head_candidate_nonblind_exploratory
+22,I04,inner,696,391,696,409,manual_head_candidate_nonblind_exploratory
+23,I05,inner,684,526,684,550,manual_head_candidate_nonblind_exploratory
+24,I06,inner,597,608,597,636,manual_head_candidate_nonblind_exploratory
+25,I07,inner,479,652,479,682,manual_head_candidate_nonblind_exploratory
+26,I08,inner,333,560,333,586,manual_head_candidate_nonblind_exploratory
+27,I09,inner,303,449,303,470,manual_head_candidate_nonblind_exploratory
+28,I10,inner,335,349,335,365,manual_head_candidate_nonblind_exploratory
