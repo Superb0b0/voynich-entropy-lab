@@ -1,0 +1,296 @@
+# RC1.4.2 V7.1 | TRUSTED OS SERVICE IMPLEMENTATION DESIGN SPEC, DRAFT 01
+
+**Data:** 10 novembre 2026  
+**Artefatto:** specifica implementativa dettagliata **SPEC-ONLY**, non eseguibile  
+**Stato documento:** `TRUSTED_SERVICE_IMPLEMENTATION_DESIGN_PROPOSED_PENDING_STATIC_REVIEW`  
+**Fondamento:** `TRUSTED_SERVICE_DESIGN_ADEQUATE` con qualifica `INTERNAL_STATIC_TRUSTED_SERVICE_DESIGN_REVIEW_ONLY`  
+**Confine immutabile:** `GATE=CLOSED_PENDING_VALIDATION`; `RP-01=OPEN`; `DOC-04=PENDING_EXTERNAL_ATTESTATION`; nessun `PASS` empirico, nessun servizio creato o autorizzato, nessun parser importato o eseguito.
+
+## 0. Scopo, identificazione e gerarchia dei requisiti
+
+Questa specifica traduce il design fidato DRAFT 01 in **contratti, call graph, transizioni di stato, gestione dei fallimenti e criteri statici del futuro codice**. Non implementa il servizio e non costituisce approvazione di deployment, apertura del gate o autorizzazione audit-only. Le scelte implementative indicate come **proposte** non valgono come policy firmata e possono essere attivate solo dopo approvazione della governance competente. Un vincolo non realizzabile sul target conduce a `BLOCKED` oppure a una nuova revisione contrattuale distinta, mai a un fallback automatico.
+
+| Riferimento congelato o documento di base | SHA-256 (riferimento documentale, controllato sui file locali per questa stesura) |
+|---|---|
+| `RC1_4_2_CODE_REMEDIATION_SPEC_DRAFT_03_CODE_REV_02_2.md` | `c3f57f4cacd8b17c2d7a452020db3479cd7518415e02cf194adbd6634cfde58e` |
+| `RC1_4_2_DRAFT_03_CODE_IMPLEMENTATION_DESIGN_SPEC.md` | `82cec25351e97d10fa90d5d9c0f287d87097f6262ad110df4a362293b2829dbe` |
+| `RC1_4_2_DRAFT_03_CODE_REV_01_STATIC_SOURCE_REVIEW_01.md` | `171e6387407638025cec07aa649f4c9bd2d7f86bb62c87a05479e74bf8dbaa12` |
+| `RC1_4_2_TRUSTED_OS_SERVICE_DESIGN_SPEC_DRAFT_01.md` | `a6b70785ce558b4a6c1c0227ed11da2dd116a1c7b6b1958bf71be5c23ce3d22d` |
+| `RC1_4_2_TRUSTED_OS_SERVICE_DESIGN_STATIC_REVIEW_01.md` | `dd466c4acde9c5ee6535de219c19b972cf67df7eb01fa42981b164510a590690` |
+| DRAFT 02 originale `rc1_4_2_generator_clean_DRAFT_02.py` | `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325` |
+| DRAFT 03_CODE rev. 01 ZIP source-only | `29239803c4677c0445fbf26e79fbc201bd0bc0a50fddab66a8ce1c2ed859c4db` |
+
+**Gerarchia:** la rev. 02.2 resta il contratto prescrittivo; il design fidato DRAFT 01 è la base architetturale; il rapporto di revisione fissa TSD-01–TSD-05. Questa specifica **non modifica** la V7.1 congelata, i parser, il mapper, il corpus, i registri, la rev. 01 o gli SHA dei documenti storici. In caso di divergenza prevalgono i vincoli più restrittivi e la governance, mai una deduzione implicita di permesso.
+
+## 1. Modello di minaccia e confini di fiducia: TSD-01
+
+**Attori non fidati:** processo frontend e interprete Python controllato dal chiamante; richieste, `dict`, `bool`, path, `RequestId`, hint, file descriptor numerici e ricevute costruite dal caller; processi parser/worker; IPC e `oa` serializzati dal worker; scrittori concorrenti non privilegiati sui percorsi sorgenti; utenti con accesso ai path o ai socket non qualificati.
+
+**Dominio fidato da proteggere mediante OS, non Python:** identità degli account di servizio; trust anchor e chiavi approvati; policy/addendum autenticati; root input e output; socket del verifier, del supervisor e del broker; ledger; staging; runtime allowlisted; stato del launcher e process handles. Il futuro codice deve essere revisionato insieme alla configurazione di credenziali, owner, permessi e sandbox. Nessuna dataclass o `MappingProxyType` è un confine di sicurezza verso un interprete avversario.
+
+**Fuori dal modello di garanzia:** amministratore root dell'host o kernel compromesso, accesso fisico non autorizzato, hypervisor compromesso e amministratore del backing store con possibilità di alterare byte arbitrariamente durante acquisizione. Un deployment che includa tali avversari deve introdurre ulteriori protezioni approvate prima di rivendicare integrità. `openat2`, digest, bind mount read-only e `pivot_root` da soli **non** eliminano writer concorrenti esterni o host root.
+
+**Proposta normativa TSD-01:** ogni sorgente pinned deve risiedere in uno storage la cui immutabilità *durante acquisizione e uso* sia garantita dal deployment approvato: ad esempio una sorgente immutable/content-addressed materializzata in volume protetto, con policy di accesso esclusiva e attestazione del dominio che la fornisce. Non assumere che `stat` prima/dopo, confronto SHA o lock advisory impediscano la mutazione; un lock è ammissibile soltanto se il modello di controllo impedisce concretamente ai writer non cooperanti di aggirarlo. Il supervisor legge una sola sequenza di byte per ruolo, verifica pinned bytes e costruisce da quei buffer lo snapshot privato; il child vede solo tale snapshot e runtime chiuso. Se la proprietà di immutabilità e la sua catena di fiducia non sono dimostrabili, **`BLOCKED_INPUT_STABILITY`**.
+
+## 2. Componenti, processi, API e separazione degli effetti
+
+| Componente, dominio | Interfaccia concettuale *da implementare* | Input ammessi | Output e limite di autorità |
+|---|---|---|---|
+| `request_frontend` (non fidato) | `submit_request(RequestEnvelope) -> RequestId` | Intento e campi informativi limitati | `RequestId` è identificatore diagnostico, non firma/capability/autorizzazione |
+| `authorization_verifier_service` (fidato separato) | `verify_signed_policy_and_addendum(server_context, signed_material) -> AuthorizationDecision` | Materiale da canale fidato e trust store protetto | Decisione solo nel processo fidato; nessun bool o token del caller |
+| `trusted_session_supervisor` (account protetto) | `start_authorized_session(decision, server_context) -> InternalSessionHandle` | Decisione verificata da servizio autorizzante reale | Handle interno non serializzabile in una capability per il frontend |
+| `trusted_input_acquirer` (solo supervisor) | `acquire_pinned_buffers(session, trusted_root_fds) -> InternalPinnedBuffers` | Radici fidate da policy, schema sette ruoli | Byte acquisiti una volta, digest misurati da supervisor, o `BLOCKED` |
+| `snapshot_builder` (solo supervisor/broker) | `seal_snapshot(session, verified_buffers) -> InternalSnapshotHandle` | I medesimi buffer già verificati | Root privata verificata per contenuto e immutabilità, non un path user |
+| `linux_isolation_launcher` (broker con privilegi temporanei) | `launch_confined_worker(session, snapshot, runtime_manifest) -> ProcessHandle` | Parametri da policy e supervisor, mai `dirfd` caller | Child confinato solo dopo tutte le guardie; nessun parser sul broker |
+| `confined_parser_worker` (child non fidato) | `parse_approved_snapshot(approved_paths) -> UntrustedObservationStream` | Soli path interni già confinati | Dati osservati, senza `PASS`, firma o attestazione di provenienza |
+| `ipc_observer_and_evidence_validator` (supervisor) | `accept_observation(session, kernel_peer, bytes) -> VerifiedFactRefs` | Framing limitato + eventi osservati dal kernel/supervisor | Solo fatti verificati e riferimenti interni; mai fiducia nell'eco del figlio |
+| `control_assessment_engine` (supervisor) | `assess_control(control_id, fact_refs, spec_revision) -> InternalAssessment` | Registrazioni del ledger interne alla sessione | `PASS` solo per controllo verificato; nessun `PASS` precostituito |
+| `qualified_serializer_publisher` (service protetto) | `stage_validate_commit(session, assessments, authorized_target) -> PublicationResult` | Autorizzazione audit-only, scope, output root dalla policy | Cinque output qualificati solo se tutte le condizioni sono vere |
+
+Le firme sopra sono **descrittive**, non funzioni implementate né un'API supportata. I tipi con prefisso `Internal*` non sono autorità se rappresentati soltanto da oggetti Python: devono essere collegati a stato del processo server, credenziali, capability OS e registrazioni ledger inaccessibili al caller.
+
+**Call graph ufficiale:** `request_frontend → authorization_verifier_service → trusted_session_supervisor → trusted_input_acquirer → snapshot_builder → linux_isolation_launcher → confined_parser_worker → IPC non fidato → ipc_observer_and_evidence_validator → control_assessment_engine → qualified_serializer_publisher`. La decisione di autorizzazione deve essere rivalutata al punto di commit, non solo all'ingresso. Il blocco dei servizi non implementati della rev. 01 rimane attivo; **è vietato collegare direttamente** questi nomi concettuali agli stub importabili come se fossero servizi autonomi.
+
+**Call graph proibiti:** `caller(dict|bool|RequestId) → authorization`; `caller(fd|path) → read/snapshot/publish`; `caller bytes → report PASS`; `child observation → VerifiedEvidenceRef senza verifica`; `EQUAL → AUDIT_VALIDATED_REPEATABILITY`; `loader → parser prima delle guardie`; `Path.exists → rename`; `unsigned addendum → bypass gate`; `new service success → RP-01 resolved`.
+
+## 3. Autorizzazione, manifest runtime e governance: SRC-04, F-03, D-02
+
+La policy di deployment **deve** essere firmata/autenticata tramite una catena approvata esterna al caller. Il verificatore carica la trust anchor da un trust store protetto; non accetta chiavi, issuer, algoritmo, flags o target dal frontend. Definizioni da risolvere prima del deployment: issuer reale, ID e materiale delle trust anchor, algoritmo e canonicalizzazione firmata, versione e scadenze, meccanismo di revoca/rotazione, operatori autorizzati, credenziali socket, versione del servizio e codice ammessi, manifest runtime completo, radici OS, target e scope.
+
+Il materiale firmato audit-only deve vincolare **identità della policy, governance che approva l'eccezione, sette pin, sorgente/versione, manifest runtime, sessione/nonce secondo protocollo approvato, cinque output ammessi, root di pubblicazione, vincoli temporali, scopo e revoca**. Il `RequestId` non è una prova. La revoca deve essere ricontrollata nei punti prescritti, in particolare immediatamente prima di qualsiasi pubblicazione. In caso di outage dell'autorità, firma non valida, scadenza, mismatch, replay, policy non approvata o verificatore non deployato: `BLOCKED_AUTHORIZATION`.
+
+**Invariante V7.1:** `validation_artifact_generation_allowed=false`, `CLOSED_PENDING_VALIDATION` e le esclusioni V7.1 restano immutati. Un addendum audit-only futuro deve **risolvere espressamente** la possibilità della sola attestazione tecnica in regime di gate chiuso con approvazione di governance distinta; altrimenti non esiste alcun percorso lecito verso i cinque artefatti. Non si presume che un addendum possa modificare automaticamente questo vincolo. Nessuna firma, policy o addendum viene creata dal presente documento.
+
+**Manifest runtime:** elenco chiuso e autenticato di binario Python esatto, loader, librerie condivise, estensioni, moduli richiesti, configurazioni, runtime standard library, file regolari, mount, locale/ambiente, UID/GID, ownership e dipendenze native. Per file regolari: path interno esatto, ruolo, size, SHA-256 e versione/provenienza. Per socket, mount, filesystem, device: campi tecnici appropriati al tipo, **non hash inventati**. Audit statico del dependency graph inclusi import transitivi, dynamic loading, `dlopen`, bytecode e path di ricerca; zero risorse runtime non elencate. Stato oggi `PENDING_RUNTIME_INVENTORY`. L'allowlist device del child è `[]`, nessun `/dev` generico, `/proc`, `/sys`, rete o mount extra. Se la compatibilità effettiva richiede una deroga, `BLOCKED` e modifica contrattuale distinta.
+
+## 4. Manifest pinned: sette sorgenti e snapshot da buffer
+
+| Ruolo | Nome congelato | Byte | SHA-256 pinned |
+|---|---|---:|---|
+| configuration | `RC1_4_2_CONFIG_v7_1.json` | 28.255 | `abed55bd3d44be25e751cafa0a2f3279f857175232ec8d884610e810e850e3f0` |
+| semantic_profiles | `voynich_profiles.json` | 4.758.062 | `7ec540723dffa59a06e6c4f4f971bdf2d3e69bf0e5760fae43300ab4e73b7546` |
+| corpus_metadata | `corpus_metadata.csv` | 38.578 | `19b3e0885a467df849c352c650eeee864e987da3b2eaf295322345cf4e798625` |
+| ivtff_crosswalk | `folio_ivtff_crosswalk.csv` | 13.269 | `769fcd2c94f93c232cc4828cd98e9ff16ff42d50baf051886d0dada00b4b3041` |
+| corpus | `ZL3b-n.txt` | 411.671 | `bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc` |
+| lexical_parser | `ivtff_parser_rc1_4.py` | 14.100 | `075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d` |
+| offset_aware_mapper | `ivtff_parser_rc1_4_offset_aware.py` | 12.095 | `ccce4b8514bbd60b9be5d0122ac2cb40353827d43b12d9709782550b60646565` |
+
+I digest sono **pin documentali**, non attestazioni session-bound. `ZL3b-n.txt` è stato reperito dalla Library; `corpus_metadata.csv` verificato contro il blob Git `eb05cb69d4847f6acb34a9d095e05c38369010d2` del commit `d4b31a245ba8133b727dc4255278b5e8349bbe39`. Non si inferisce da ciò indipendenza del generatore storico o DOC-04. I file storici restano non modificabili.
+
+Contratto di acquisizione del futuro servizio, con risultato fail-closed:
+
+1. Aprire solo i sette **path relativi fissati dalla policy** da radici protette, usando `dirfd` protetti e `openat2` con `RESOLVE_BENEATH|RESOLVE_NO_SYMLINKS|RESOLVE_NO_MAGICLINKS`, aggiungendo `RESOLVE_NO_XDEV` ove richiesto. Non usare path, `fd` o symlink forniti dal chiamante. Controllare file regolare, identità del backing e owner/permessi come da policy.
+2. Leggere ogni contenuto in **un buffer originale**; size e SHA-256 calcolati su quel buffer. Verificare identità pinned e protezione dell'input contro writer concorrenti come TSD-01. Non basta un checksum da file riletto dopo.
+3. Scrivere **esclusivamente quei buffer** in uno snapshot tree privato, privo di symlink/hardlink esterni e di mount non approvati. Rileggerne integralmente ciascun file, confrontare size, hash e, dove richiesto, identità byte-per-byte; rendere la vista del child read-only e protetta dal dominio del caller.
+4. Esporre al child soltanto i path interni del runtime e dello snapshot. I parser sono **path-based**: non dichiarare che consumano direttamente buffer in memoria. Gli open/read rilevanti devono essere osservabili tramite meccanismo approvato; la lettura effettiva di **ogni** ruolo non può essere affermata se il parser non lo usa e il supervisor non lo osserva.
+5. Record distinti per `SOURCE_BUFFER_VERIFIED`, `SNAPSHOT_BYTES_VERIFIED`, `WORKER_VIEW_BOUND` e `INPUT_CONSUMPTION_OBSERVED(role, process, read_context)`; non convertirli per implicazione. Se non è disponibile un'osservazione affidabile di quanto richiesto dal singolo controllo, l'assessment resta `NOT_RUN` e il percorso qualificato è `BLOCKED_EVIDENCE`.
+
+## 5. Macchina a stati server-side e punti di fallimento
+
+| Stato | Evidenza richiesta dal servizio per entrarvi | Fail state |
+|---|---|---|
+| `RECEIVED_UNTRUSTED` | Request framed, peer del frontend osservato, budget dimensioni e tempo | `BLOCKED_REQUEST` |
+| `POLICY_AUTHORIZED` | Materiale di governance e firma/validità/revoca/scope verificati, nonce riservato atomicamente | `BLOCKED_AUTHORIZATION` |
+| `PINNED_INPUTS_ACQUIRED` | Sette buffer + identità backing, size/SHA pinned, stabilità TSD-01 | `BLOCKED_INPUT_STABILITY` |
+| `SNAPSHOT_PREPARED` | Snapshot byte-identica, chiusa a writer esterni, runtime allowlisted | `BLOCKED_SNAPSHOT` |
+| `CHILD_ISOLATED_VERIFIED` | Guardie mount/root/fd/capability/no_new_privs/identità verificate prima del parser | `BLOCKED_ISOLATION` |
+| `OBSERVATIONS_RECEIVED_UNTRUSTED` | IPC framed, peer process identity, nonce/seq, worker terminato e exit osservato | `BLOCKED_IPC` |
+| `EVIDENCE_CHECKED` | Verifica contenuti/segmenti/schema e fatti osservati, ledger riferimenti per controllo | `BLOCKED_EVIDENCE` |
+| `ASSESSMENTS_ELIGIBLE` | Nessun assessment obbligatorio senza prova, nessuna promozione EQUAL→PASS | `BLOCKED_ASSESSMENT` |
+| `BUNDLE_STAGED_PRIVATE` | Qualifica autorizzata e staging completo, pre-commit fsync come TSD-04 | `BLOCKED_STAGING` |
+| `COMMIT_IN_PROGRESS` | Intento di commit scritto nel ledger protetto, autorizzazione rivalutata, destino no-replace | `COMMIT_OUTCOME_UNCERTAIN` se commit non osservabile dopo crash |
+| `COMMITTED_DURABILITY_UNCERTAIN` | Rename riuscito ma durability proof non completata, oppure risultato post-commit ambiguo | Stato terminale di eccezione, mai `NOT_PUBLISHED` |
+| `PUBLISHED_NO_REPLACE` | Rename no-replace riuscito **e** fsync dei dirfd richiesti dalla policy completati e registrati | Non raggiungibile su sole eccezioni/echo |
+
+La tabella elenca **stati progettati**, non stati transitati. Un errore prima del commit non autorizza pubblicazione; un errore **dopo** un commit possibile o osservato non consente di dichiarare che la pubblicazione non sia avvenuta. La classificazione `BLOCKED_*` è workflow del supervisore, **non** un valore arbitrariamente aggiunto allo schema congelato del JSON `validation_report`.
+
+In caso di crash/restart, ogni sessione `IN_PROGRESS` viene resa non continuabile finché il servizio non riconcilia ledger e filesystem con procedura autenticata di recupero. Non ripetere automaticamente un rename su nome esistente, non cancellare target committati e non attribuire `PUBLISHED_NO_REPLACE` da un solo pathname visibile.
+
+## 6. Launcher Linux, root privata e drop privilegi: SRC-01/SRC-05, TSD-02
+
+**Ordine obbligatorio del futuro launcher** (senza autorizzazione a eseguirlo ora):
+
+1. Il supervisor crea snapshot e runtime manifest verificati. Il broker riceve **handle server-side** già vincolati a sessione e identità; nessun path, binary o policy dal caller. Validare che broker e child non condividano un interprete controllato dal frontend.
+2. Il broker apre mount namespace dedicato e disabilita propagazione condivisa (`MS_PRIVATE` appropriato). Prepara new root come mount conforme, snapshot read-only e runtime chiuso. Nessun `/proc`, `/sys`, `/dev`, device, rete o mount del sistema host nel child. Se non è possibile soddisfare le precondizioni di `pivot_root`, `BLOCKED_ISOLATION`.
+3. Esegue `pivot_root(new_root, put_old)`, cambia cwd a `/`, smonta vecchia root con `umount2(put_old, MNT_DETACH)` e rimuove mountpoint residuo. Verifica i mount e l'assenza di riferimenti a root host, inclusi fd, cwd, processi collaterali e risorse di runtime. `chroot()` da solo non sostituisce questa sequenza.
+4. **Descriptor policy:** fd 0,1,2 soltanto endpoint approvati e senza path all'host; fd 3 socket IPC legato dal broker al worker, con endpoint osservato e titolarità non scelta dal caller; nessun altro fd trasferibile al parser. Eseguire la **syscall reale** `close_range(4, UINT_MAX, CLOSE_RANGE_UNSHARE)`, verificare il ritorno e l'assenza di fd >=4. `CLOSE_RANGE_CLOEXEC` non equivale a chiuderli prima del parser. Se `close_range` è indisponibile, `EINVAL`, `ENOMEM`, `EMFILE` o la sua semantica non sono controllabili: **`BLOCKED_ISOLATION`**, nessun giro `for fd in range(max_fd)` né fallback di default. Eventuali alternative richiedono revisione e approvazione esplicite del contratto.
+5. **Sequenza privilege drop:** dopo tutte le operazioni che richiedono privilegio, mentre è ancora possibile esercitarlo, `PR_CAPBSET_DROP` per ciascuna capability applicabile al kernel target; `PR_CAP_AMBIENT_CLEAR_ALL`; `setgroups` a lista vuota; `setresgid` a identità non privilegiata; `setresuid` a identità non privilegiata; `capset` per svuotare `CapEff`, `CapPrm`, `CapInh`; impostare `PR_SET_NO_NEW_PRIVS=1`; `PR_SET_DUMPABLE=0`. Verificare l'ordine effettivo, i return code e le precondizioni di capability `CAP_SETPCAP`/`CAP_SETGID` prima di perderle; non affidarsi a transizioni UID implicite. Eventuali securebits e file capabilities non possono consentire recuperi; il piano finale deve essere revisionato sul backend esatto.
+6. **Guardia pre-parser:** dal dominio fidato con osservazioni OS approvate, verificare `CapEff=CapPrm=CapInh=CapAmb=CapBnd=∅`, UID/GID reali/effettivi/salvati non privilegiati, gruppi supplementari vuoti, `NoNewPrivs=1`, `dumpable=0`, root/cwd/mount, fd e process identity. Un messaggio del child non costituisce attestazione kernel. Incompatibilità o assenza di meccanismo d'osservazione: `BLOCKED_ISOLATION`.
+7. **Solo dopo** tutte le guardie, il worker può caricare i due parser congelati e invocarli sui soli path interni approved. Il loader non deve essere raggiungibile dal frontend non fidato, e il broker non importa parser. Non esistono chiamate a questi componenti nella presente specifica.
+
+TSD-02 richiede nel futuro source il controllo di ritorno della **chiamata concreta**, non una stringa che ne riporti il nome. Il child resta non attendibile anche se confinato; un parser non può attribuire evidenze verificate o `PASS`. L'ordine finale UID/GID/capability è un **obbligo staticamente ispezionabile**, non una presunzione di fattibilità kernel; richiede test autorizzati successivi in ambiente target. La policy del cinque set vuoti non si allenta per far funzionare Python.
+
+## 7. IPC, verifica OA e osservabilità del consumo: SRC-03/SRC-06
+
+**Trasporto e identità:** socket Unix creato e posseduto dal dominio fidato, endpoint del child su fd 3 secondo policy. Peer identity ottenuta dal kernel (`SO_PEERCRED` o meccanismo approvato), con binding a process handle osservato, UID/GID attesi, `session_id`, `invocation_id` e `snapshot_id` server-side. Una `pid` fornita nel JSON non è identità autenticata. Qualsiasi riavvio/reuse PID è trattato con handle/process start identity per evitare ambiguità. Nessun fd o percorso arbitario dall'IPC viene usato per autorizzare letture.
+
+**Framing:** prefisso lunghezza unsigned 32-bit in network order, limite massimo coerente con policy (la rev. 01 descrive `8_388_608` byte come limite proposto, da approvare), timeout e budget di memoria CPU, parsing JSON con esatto schema e rifiuto di duplicati, chiavi non ammesse, profondità/cicli fuori limite, NaN/Inf e interi fuori range. Ammettere `oa` solo nei tipi e cardinalità previsti dal parser freeze, compresi **338 token multisegmento** come intervalli discontinui; nessuna interpolazione. JSON annidato o errori di escaping non devono alterare i segmenti originali.
+
+**Envelope minimo non fidato del child:** `wire_schema`, `session_hint`, `invocation_hint`, `nonce_hint`, `sequence`, `snapshot_hint`, `input_digest_hints_by_role` (sette), `parser_digest_hints`, `oa_payload`, `exit_claim`. I campi con suffisso `_hint` e persino gli hash che coincidono **non** sono prove. Identità/nonce/seq e le digest accettate sono **risolte dal ledger server**, non promosse dal payload. Non usare `exit_claim` come codice di uscita effettivo.
+
+**Verifiche del supervisor:** dimensioni e sequenza, anti-replay atomico, peer kernel, digest calcolati dai buffer e snapshot, attestazione di isolamento, schema/offset OA, process handle e exit status osservato da `waitid`/equivalente su handle approvato; verifica per controllo degli eventi open/read su ruoli richiesti. L'osservazione delle letture deve avere una fonte OS/supervisor verificabile; non è implicita in `SO_PEERCRED`, in un digest riportato dal figlio o nel semplice possesso del file. Se manca una tecnologia approvata per attribuire la lettura al processo e al contenuto pinned, **`BLOCKED_EVIDENCE`**.
+
+**Emissione di `VerifiedEvidenceRef`:** il supervisor registra un evento per fatto attestato, vincolato alla versione della policy e alla sessione. La reference è un identificatore server-side di record protetto; né oggetto Python costruibile né token riutilizzabile da parte del caller. La sua validità deve essere controllata anche durante l'assessment. Le misurazioni storiche (206 record, 196 riconciliati, 9 cover, `f085v` unresolved, 146 primaria, 9 sensibilità multipannello, 338 token multisegmento) sono **invarianti storiche da riconfrontare** in futuro, non nuovi risultati di questa stesura.
+
+## 8. Ledger fidato, concorrenza, crash/restart e revoca: TSD-03
+
+**Proprietà obbligatorie:** owner/account del ledger approvato, permessi e root file inaccessibili al caller e al child, namespace/storage separati, accesso solo via supervisore, integrità delle transizioni e dei record, idempotenza controllata e logging di accessi privilegiati. Un file JSON modificabile dal frontend, una dict Python o un hash auto-dichiarato non sono ledger fidati.
+
+**Record minimi:** `ledger_schema_version`, `policy_digest`, `authorization_reference`, `session_id`, `invocation_id`, `nonce`, `nonce_status` (`RESERVED|CONSUMED|REVOKED`), `request_peer_identity`, `source_buffer_digests`, `snapshot_digest`, `runtime_manifest_digest`, `worker_handle`, `worker_identity_observed`, `sequence_max`, `facts_by_control`, `assessment_refs`, `publication_intent`, `publish_target`, `rename_result`, `durability_status`, `terminal_reason`, `created_at` e `updated_at` da fonte server. Nessun campo sostituisce le evidenze sottostanti. Proteggere gli eventi contro modifica non autorizzata, rollback e perdita al crash secondo threat model approvato.
+
+**Concorrenza:** una transazione serializzata o lock realmente obbligatorio nel dominio fidato deve riservare atomicamente nonce e identificatori e impedire doppio consumo, doppio commit, sequence duplicate o upgrade impropri dopo revoca. Persistenza prima della concessione di poteri al worker e prima della chiamata a `renameat2`. `compare-and-swap` o transazioni equivalenti devono essere reali e revisionabili, non solo commenti o check-then-write.
+
+**Crash/restart:** nessun ripristino di stato di autorizzazione dal `RequestId` fornito dal caller; recovery confronta ledger protetto, snapshot e filesystem pubblicazione tramite handle da policy. Se un intent è durabile ma l'esito del commit è ignoto, registrare `COMMIT_OUTCOME_UNCERTAIN`; se rename confermato ma fsync no, `COMMITTED_DURABILITY_UNCERTAIN`. Non riutilizzare nonce né ripubblicare per semplice ritentativo. Un ledger danneggiato o non riconciliabile blocca ogni nuova qualifica, senza considerarlo prova di non-pubblicazione.
+
+**Revoca:** controllo iniziale e **nuovo controllo pre-commit**; evento di revoca durante worker fa fallire le transizioni successive verso bundle. Revoca dopo commit non cancella il target retroattivamente e non giustifica dichiarare `NOT_PUBLISHED`. La retention delle evidenze non qualificate e i criteri di purga sono policy di deployment pendenti, non valori inventati qui.
+
+## 9. Nonce e anti-replay: TSD-05
+
+**Scelta implementativa proposta, soggetta a policy approvata:** nonce server-side di **256 bit (32 byte)** ottenuto dal syscall Linux `getrandom` con entropia inizializzata, rappresentato nelle interfacce firmate come **64 caratteri esadecimali minuscoli** e mai accettato da un campo del caller. Il `getrandom` del supervisor non richiede un device `/dev/urandom` montato nel worker. La misura di unicità non è garantita da probabilità soltanto: il ledger deve anche imporre **unicità, riserva, consumo e deduplicazione atomici**. È vietato un nonce ripetuto, scaduto o già usato.
+
+**Condizioni di errore:** `getrandom` indisponibile, ritorno incompleto, `EINTR`, `EAGAIN`, entropia non pronta, collisione, persist failure o lookup nonce non attestabile => `BLOCKED_NONCE`; il policy owner potrà in futuro approvare una strategia di retry limitata ma non una fonte debole o scelta dal caller. Il valore del nonce **non è firma** e non autorizza nulla senza scope/issuer/policy verificati; deve essere legato al materiale firmato o al challenge-response secondo protocollo approvato. Non inserire nonce di esempio nel manifest come se fossero prova.
+
+## 10. Assessment per controllo e claim che non si implicano
+
+Il futuro motore produce un assessment **per ciascun control ID congelato**, con `control_id`, `spec_sha256`, `session_ref`, `evidence_refs_by_fact`, `procedure_version`, `required_facts`, `observed_facts`, `result` e `reason`. L'esito `PASS` è ammissibile solo dopo esecuzione e verifica di **tutti** i fatti specifici richiesti. Senza prova, `NOT_RUN` e blocco del percorso qualificato, mai `PASS` precompilato. Il workflow `BLOCKED` è distinto dai valori del file report congelato; non aggiungere senza autorizzazione nuove colonne/chiavi ai cinque output V7.1.
+
+| Claim | Evidenza richiesta | Inferenza vietata |
+|---|---|---|
+| `TECHNICAL_BYTE_EQUALITY = EQUAL|DIFFERENT` | Comparazione pura di byte disponibili | `EQUAL` non prova generazione indipendente |
+| `AUDIT_VALIDATED_REPEATABILITY` | Due run realmente indipendenti, autorizzati e attestati in modo controllabile | Stessa cartella/copiatore/hash non è secondo run |
+| `PROVENANCE_ESTABLISHED` | Origine storica generatore originale, comando, input, log, catena di custodia e attestazione appropriata | Validazione del nuovo servizio non chiude RP-01 |
+| `OPERATIONAL_VALIDATION_PASSED` | Test autorizzati nel target e prove misurate | Documento, source review o stub `BLOCKED` non sono runtime PASS |
+
+I controlli dei dati Voynich devono conservare i confini V7.1 e le popolazioni primaria/sensibilità, senza forzare `f085v`. Le cardinalità storiche non sono ricalcolate da questo documento. DOC-04 richiede attestazione esterna indipendente, non autoprodotta.
+
+## 11. Publisher no-replace e durabilità: TSD-04, F-03
+
+**Precondizioni per qualsiasi staging:** approvazione firmata audit-only che risolva il conflitto V7.1, policy e scope validi, revoca rivalutata, manifest runtime chiuso, sette input verificati per sessione, worker confinato, evidence refs valide, assessments completi e autorizzazione della root target da policy. In loro assenza **nessuna creazione di staging qualificato**.
+
+**Nomi degli unici cinque artefatti qualificati possibili:** `RC1_4_2_candidate_register.csv`, `RC1_4_2_exclusion_register.csv`, `RC1_4_2_unresolved_register.csv`, `RC1_4_2_validation_report.json`, `RC1_4_2_MANIFEST.json`. Manifest senza proprio SHA al suo interno; un eventuale sidecar non è un sesto artefatto audit qualificato. Esiti tecnici `EQUAL` non sono tradotti in atti di audit.
+
+**Sequenza ordinata prescrittiva per il futuro codice:**
+
+1. Aprire una root output **fidata** da policy autenticata con `dirfd` e policy di filesystem. Risolvere componenti subordinati con `openat2(RESOLVE_BENEATH|RESOLVE_NO_SYMLINKS|RESOLVE_NO_MAGICLINKS)` e `RESOLVE_NO_XDEV` se richiesto; negare symlink, traversal, mount attraversati non approvati e directory dal frontend. Verificare stesso filesystem di staging e final target; supporto no-replace reale.
+2. Creare staging privato senza sostituzione, owner e permessi esatti, nomi dei cinque file congelati, schema/ordine/encoding V7.1, checksum sui byte **effettivamente scritti**, manifest e verifica completa del contenuto. Scrivere solo entro il dominio fidato; non pubblicare durante validazione.
+3. Eseguire `fsync` con controllo dei return code **di ciascun file**, poi della directory di staging e di eventuali componenti metadata rilevanti secondo filesystem/policy. Errore **pre-rename** => `BLOCKED_STAGING`; può essere eliminato o quarantinato **soltanto staging non committato**, con policy autenticata.
+4. Registrare **intent di commit durabile** e ricontrollare approvazione, revoca, scope, target, collisioni e nonce. Chiamare `renameat2(..., RENAME_NOREPLACE)` **sulla directory finale** mediante dirfd fidati, senza `Path.exists()+rename()`, senza fallback a `rename()`, senza sostituzione e senza richieste arbitrarie dal caller.
+5. Se il rename ritorna successo, il target può essere **visibile da subito**. Registrare `RENAME_SUCCEEDED` e sincronizzare la directory genitrice finale e, se diversa, quella originaria secondo policy verificata. Solo dopo esito positivo e ledger coerente si può arrivare a `PUBLISHED_NO_REPLACE`.
+6. Se `fsync` **dopo rename riuscito** fallisce: `COMMITTED_DURABILITY_UNCERTAIN`. Non attribuire `PUBLISHED_NO_REPLACE`, non dichiarare `NOT_PUBLISHED`, non cancellare o sovrascrivere target committato e non ripetere il rename. Trattare il target come possibile/effettivo commit visibile, con recovery autenticato e senza PASS empirico.
+7. Se il processo muore o perde il riscontro **durante rename**, lo stato diventa `COMMIT_OUTCOME_UNCERTAIN`, non `NOT_PUBLISHED`. Recovery da ledger/dirfd/policy riconcilia outcome e dati; un semplice `exists()` non prova identità né durabilità. Se una semantica di filesystem o syscall richiesta manca, `BLOCKED` **prima del punto di commit**.
+
+**Tabella obbligatoria degli esiti:**
+
+| Fase osservata | Stato corretto | Affermabile / vietato |
+|---|---|---|
+| Errore prima di rename, e nessun commit avviato | `BLOCKED_STAGING` | Nessun commit effettuato per questa sessione; cleanup soltanto staging |
+| `RENAME_NOREPLACE` rifiutato con errore certo e nessun effetto documentato | `BLOCKED_COMMIT` | Non assumere che il caller possa cambiare il target; non sostituire |
+| Rename riuscito; `fsync` genitrice ancora non comprovato | `COMMITTED_DURABILITY_UNCERTAIN` | Target potenzialmente visibile; non `NOT_PUBLISHED` |
+| Rename outcome non registrato a causa di crash o mancanza osservazione | `COMMIT_OUTCOME_UNCERTAIN` | Né successo né non-pubblicazione asseribili |
+| Rename riuscito, `fsync` obbligatori riusciti e ledger riconciliato | `PUBLISHED_NO_REPLACE` | Solo claim di pubblicazione tecnica previsto dalla policy; non RP-01/DOC-04 |
+
+Un errore finale del ledger dopo un rename già riuscito richiede anch'esso stato incerto e recovery, non una retroattiva cancellazione. Questa clausola **rettifica in senso più preciso** l'espressione generica «fsync fallito => BLOCKED e nessuna pubblicazione» presente nei design precedenti, senza sovrascriverli. La durabilità effettiva dipende dal filesystem/hardware target e rimane da validare in modo autorizzato; `fsync` e `renameat2` non sono stati invocati in questa stesura.
+
+## 12. Tracciabilità SRC-01–SRC-06, F-01–F-03 e TSD-01–TSD-05
+
+| ID | Contratto implementativo | Accettazione statica futura, non concessa ora |
+|---|---|---|
+| SRC-01 | Loader soltanto nel worker dopo guardie OS | Call graph, process/privilege boundary, input parser dall'interno snapshot |
+| SRC-02 | I/O privilegiato solo nel dominio supervisor/broker/publisher | Socket credenziali/ACL reali, dirfd policy-only, nessun helper OS caller-runnable |
+| SRC-03 | Evidence refs solo su ledger supervisor con fatti verificati | Nessun oggetto/dict/receipt caller mintabile o promosso |
+| SRC-04 | Verifier, supervisor, launcher, assessor, serializer, publisher **realmente implementati** | Stub `Blocked` non sufficiente; senza governance reale percorso bloccato |
+| SRC-05 | Chiamata concreta `close_range(4, UINT_MAX, CLOSE_RANGE_UNSHARE)` | Return, fd0-3, error branch e ordine prima di import verificabili nel codice |
+| SRC-06 | Framing, OA strict schema, peer kernel, nonce, seq, exit, ledger | Untrusted payload separato da attestazione server e fatti per-controllo |
+| F-01 | Nessuna qualificazione da API importabili del caller | Inventario dei simboli, chiamate indirette, entrypoint e confine OS |
+| F-02 | Digest su byte acquisiti e consumati nello scope richiesto | Verifica buffer→snapshot→parser→fatti, niente hint come prova |
+| F-03 | Firma, addendum, scope, nonce/revoca; publish no-replace e durabilità | Policy reale e syscall corrette; nessun bool o rename sostitutivo |
+| TSD-01 | Threat model e input backing immutabile durante sessione | No prova TOCTOU da `stat/hash` soltanto |
+| TSD-02 | `close_range` reale o `BLOCKED`; niente fallback | Return/syscall/order; fd policy completo |
+| TSD-03 | Ledger protected, concurrency, replay, restart, revoca | Record transazionali reali, rollback/recovery, ownership |
+| TSD-04 | File+staging fsync, commit no-replace, dir fsync, outcome incerto | Stati post-commit corretti, cleanup solo pre-commit |
+| TSD-05 | Nonce CSPRNG 256-bit proposto, format e uniqueness | `getrandom` e ledger dedupe, mai nonce caller |
+
+## 13. Matrice T-01–T-10: criteri per la futura source review
+
+| Test | Verifica sul futuro sorgente e ambiente | Stato **attuale** |
+|---|---|---|
+| T-01 | Call graph di frontend importabile vs dominio fidato, nessuna emissione qualificata da caller | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-02 | Sette pin, stable source, byte buffer, snapshot, parser consumati, VerifiedFact per ruolo | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-03 | Verifica authorization/addendum, openat2 e renameat2 RENAME_NOREPLACE, TSD-04 | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-04 | Uguaglianza `EQUAL|DIFFERENT` non attribuisce PASS audit | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-05 | Mount namespace, pivot_root, old root detached, fd closure completa, no host | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-06 | CapEff/Prm/Inh/Amb/Bnd tutti vuoti, UID/GID, NNP, dumpable, ordering | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-07 | Trust anchor reale, governance, B-01, manifest runtime e approvazione | `PENDING_DEPLOYMENT_APPROVAL` |
+| T-08 | `allowed_device_nodes=[]`, nessun /proc, /sys, /dev non previsto, runtime compatibilità | `RUNTIME_FEASIBILITY_NOT_RUN` |
+| T-09 | RP-01 e DOC-04 separati, gate chiuso, no promozioni da uguaglianza | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+| T-10 | Tutti e sette i pin da byte effettivi; frozen originals invarianti; no session PASS oggi | `NOT_EVALUATED_FUTURE_SERVICE_SOURCE` |
+
+La matrice è un **piano di prova futuro**, non l'esito delle prove. Persino se i controlli statici sul servizio futuro risultassero conformi, `FUTURE_OPERATIONAL_VALIDATION` rimarrebbe distinto, non trasferibile dalla source review. Un'eventuale verifica indipendente DOC-04 va prodotta da soggetto realmente esterno e con prove crittografiche verificabili.
+
+## 14. Dipendenze aperte e criteri di arresto
+
+| ID | Decisione/risorsa ancora assente | Conseguenza |
+|---|---|---|
+| DEP-01 | Trust anchor, issuer, politica firmata e revoca reali | Verifier non attivabile; `BLOCKED_AUTHORIZATION` |
+| DEP-02 | Autorizzazione audit-only e governance eccezione V7.1 | Nessuna emissione qualificata, anche con codice completo |
+| DEP-03 | Inventario runtime chiuso e firmato, inclusi loader/lib | Worker non avviabile |
+| DEP-04 | Account, socket, mount, root, root of trust, B-01 approvati | Servizio non deployabile |
+| DEP-05 | Compatibilità reale kernel/filesystem per syscall necessarie | `BLOCKED_ISOLATION` o `BLOCKED_COMMIT` |
+| DEP-06 | Osservabilità OS delle letture/consumo, schema OA completo | `BLOCKED_EVIDENCE` |
+| DEP-07 | Compatibilità senza device e /proc-/sys nel worker | `BLOCKED_ISOLATION`, nessun allentamento tacito |
+| DEP-08 | DOC-04 e RP-01 storici, separati da nuovo servizio | Restano pendenti/open fino a evidenza indipendente adeguata |
+| DEP-09 | Policy ledger durable e recovery, inclusi target post-commit | Publisher non attivabile |
+| DEP-10 | Contratto nonce, scope firme e anti-replay finali | Autorizzazione non attivabile |
+
+**Divieti nel presente passaggio:** non creare, importare, compilare, avviare o testare alcun modulo sorgente; non chiamare parser, builder o generatori; non modificare file congelati o la rev. 01; non generare i cinque artefatti, eseguire PCA/clustering/conditional coupling, promuovere i 146 primari/9 sensibilità, associare arbitrariamente `f085v`, creare credenziali o firme inventate, attribuire nuovi `PASS` empirici. La documentazione non può eliminare il requisito di deployment approvato o la verifica esterna DOC-04.
+
+## 15. Registro formale dopo la sola redazione del presente documento
+
+```text
+ARTIFACT_KIND: TRUSTED_OS_SERVICE_IMPLEMENTATION_DESIGN_SPEC_ONLY
+ARTIFACT_STATUS: PROPOSED_PENDING_STATIC_REVIEW
+REVIEW_SCOPE: NOT_YET_REVIEWED
+TRUSTED_SERVICE_DESIGN: TRUSTED_SERVICE_DESIGN_ADEQUATE
+TRUSTED_SERVICE_DESIGN_REVIEW_SCOPE: INTERNAL_STATIC_TRUSTED_SERVICE_DESIGN_REVIEW_ONLY
+TRUSTED_SERVICE_IMPLEMENTATION_DESIGN: PROPOSED_PENDING_STATIC_REVIEW
+TRUSTED_SERVICE_SOURCE: NOT_CREATED
+TRUSTED_SERVICE_DEPLOYMENT: NOT_APPROVED_NOT_DEPLOYED
+DRAFT03_REV01_STATIC_SOURCE_ACCEPTANCE: NOT_GRANTED
+SRC01: BYPASS_REMOVED_WORKER_ABSENT
+SRC02: BYPASS_REMOVED_TRUSTED_OS_SERVICE_ABSENT
+SRC03: PYTHON_AUTHORITY_BYPASS_REMOVED_SERVER_VERIFIER_ABSENT
+SRC04: BLOCKING_INCOMPLETE_SAFE_BLOCKED
+SRC05: UNSAFE_MAX_FD_REMOVED_KERNEL_CLOSURE_NOT_IMPLEMENTED
+SRC06: IPC_SCHEMA_EXPANDED_SESSION_BOUND_VALIDATION_ABSENT
+F01: IMPORTABLE_BYPASSES_REMOVED_QUALIFIED_PATH_NOT_IMPLEMENTED
+F02: OPEN_AS_FULL_IMPLEMENTATION
+F03: SAFE_BLOCKED_NOT_IMPLEMENTED
+code_remediation_required: true
+pinned_seven_files: DOCUMENTARY_INTEGRITY_REFERENCED
+runtime_manifest: PENDING_RUNTIME_INVENTORY
+D02_B01: PENDING_DEPLOYMENT_APPROVAL
+B02: ALLOWLIST_EMPTY_RUNTIME_FEASIBILITY_NOT_RUN
+TSD01_TSD05: INCORPORATED_AS_FUTURE_IMPLEMENTATION_REQUIREMENTS
+DOC01_DOC02_DOC03: RESOLVED_DOCUMENTALLY
+DOC04: PENDING_EXTERNAL_ATTESTATION
+RP01: OPEN
+f085v: UNRESOLVED_NO_IVTFF_MATCH_IN_CURRENT_PERIMETER
+manual_intervention_on_historical_data: false
+GATE: CLOSED_PENDING_VALIDATION
+FUTURE_OPERATIONAL_VALIDATION: NOT_RUN
+QUALIFIED_ARTIFACTS_GENERATED: NONE
+NEW_EMPIRICAL_PASS: NONE
+```
+
+**Prossima fase consentita:** revisione statica interna del **presente** design implementativo con possibili esiti `TRUSTED_SERVICE_IMPLEMENTATION_DESIGN_ADEQUATE` o `TRUSTED_SERVICE_IMPLEMENTATION_DESIGN_INADEQUATE`. Un esito positivo resterebbe circoscritto a questo documento; **non** autorizzerebbe automaticamente creazione, import, esecuzione, test, deployment, staging o pubblicazione del servizio.
+
+## Riferimenti tecnici Linux (contesto esterno, non prove sul target)
+
+- `openat2(2)` (risoluzione ancorata/flag): https://man7.org/linux/man-pages/man2/openat2.2.html
+- `close_range(2)` (range incluso, `CLOSE_RANGE_UNSHARE`, errori): https://man7.org/linux/man-pages/man2/close_range.2.html
+- `pivot_root(2)` (mount namespace, privilegi e vincoli): https://man7.org/linux/man-pages/man2/pivot_root.2.html
+- `rename(2)` (`renameat2` e `RENAME_NOREPLACE`): https://man7.org/linux/man-pages/man2/rename.2.html
+- `fsync(2)` (durabilità file distinta da directory): https://man7.org/linux/man-pages/man2/fsync.2.html
+- `getrandom(2)` (nonce da CSPRNG kernel): https://man7.org/linux/man-pages/man2/getrandom.2.html
+
+I manuali descrivono semantiche Linux generali; né la loro citazione né le firme concettuali sopra attestano che il sistema operativo concreto, il filesystem o l'implementazione futura soddisfino tali requisiti.
