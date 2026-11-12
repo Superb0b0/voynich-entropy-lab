@@ -1,0 +1,77 @@
+# RC1.4.2 V7.1 | Revisione statica indipendente del codice DRAFT 02
+
+**Data:** 10 novembre 2026  
+**Oggetto:** `rc1_4_2_generator_clean_DRAFT_02.py`  
+**SHA-256 del sorgente esaminato:** `00814bfc71531f093898cb029805cd72cf3db29251c3d008d5b7efa03382b325`  
+**SHA-256 del pacchetto esaminato:** `d8087da33352363eda45f7bc3cd36df6ec307d0ccda462a38f1cbec42420a8ed`  
+**Stato della revisione:** `STATIC_REVIEW_OPEN_FINDINGS`  
+**Gate:** `CLOSED_PENDING_VALIDATION`  
+**RP-01:** `OPEN`  
+**Esecuzione del generatore/parser/builder:** `NOT_RUN`  
+**Produzione o confronto dei cinque artefatti:** `NOT_RUN`
+
+## Perimetro e attività consentite
+
+È stato letto il sorgente (801 righe) senza importarlo né richiamare alcuna funzione. Sono stati esaminati, **come dati e in sola lettura**, il JSON di configurazione V7.1, il CSV crosswalk, i sorgenti del parser congelato e del mapper OA e un estratto dello schema dei profili e del report OA preesistente. È stato effettuato un parsing AST del testo del nuovo modulo, **non un'esecuzione**. Sono stati calcolati SHA-256 dei file locali e verificata la struttura ZIP tramite controllo dell'archivio. Non sono state modificate le fonti congelate né il DRAFT 02; non sono stati creati o ricalcolati registri di validazione.
+
+## Esito generale
+
+La logica insiemistica `206 = 9 cover/binding + 196 match IVTFF + 1 unresolved f085v` è coerente e non duplica `f085v`. La distinzione tra `146 primary` e `9 sensitivity` e la soglia inclusiva `>=75` sono rappresentate. L'AST è valido. **Ciò non costituisce idoneità operativa:** il DRAFT 02 presenta criticità bloccanti per una futura esecuzione di audit, elencate di seguito.
+
+### F-01 | BLOCANTE | Il gate è protetto soltanto dal punto d'ingresso CLI
+
+**Riferimenti:** righe 684–711, 632–660 e 800–801.  
+Il ramo `if __name__ == '__main__'` blocca l'avvio diretto, ma `prepare_audit_from_verified_inputs()` e `serialize_validation_artifacts()` restano chiamabili dopo import. La seconda può serializzare cinque artefatti in memoria senza prova di autorizzazione. Il controllo `verify_contract()` conferma che `validation_artifact_generation_allowed` è `false`, ma non impedisce a tali funzioni di operare.
+
+**Rimedio obbligatorio:** separare esplicitamente logica pura e funzione di orchestrazione; nessuna generazione degli artefatti deve essere accessibile senza un'autorizzazione esterna verificabile e senza l'esito del controllo completo degli input. Per la versione in review, valutare la rimozione/disabilitazione totale delle funzioni di scrittura e generazione finché non venga approvato un addendum separato.
+
+### F-02 | BLOCANTE | Le prove degli input sono propagabili per semplice dizionario
+
+**Riferimenti:** righe 162–183, 602–629 e 684–711.  
+`prepare_audit_from_verified_inputs(inputs)` accetta un qualsiasi dizionario con chiavi compatibili. Non invoca `verify_input_integrity()`, né verifica la provenienza di `inputs['hashes']`, ma inoltra tali hash al report che marca `input_hashes_and_sizes` come `PASS` dopo la restante elaborazione. Pertanto il controllo dichiarato non è legato in modo dimostrabile a una verifica crittografica effettiva dei byte forniti.
+
+**Rimedio obbligatorio:** un'unica orchestrazione che rilegga e verifichi raw input e configurazione; attestazione interna non costruibile dal chiamante, legata ai digest dei byte effettivamente consumati; niente `PASS` su una sezione il cui verificatore non sia stato eseguito nella stessa sessione autorizzata.
+
+### F-03 | BLOCANTE | L'autorizzazione alla pubblicazione non è autentificata
+
+**Riferimenti:** righe 756–797.  
+`stage_new_audit_bundle()` accetta booleani in un dizionario fornito dal chiamante, inclusa la dichiarazione `signed_addendum_verified_externally=True`. Non c'è verifica effettiva di documento, firma, identità autorizzante o perimetro dei percorsi. Il controllo `frozen_input_directories` può essere svuotato; il commento ammette inoltre che un `rename()` non garantisce no-clobber in presenza di corse concorrenti.
+
+**Rimedio obbligatorio:** mantenere disabilitata questa funzione. In un futuro wrapper separato, usare attestazione esterna verificata, percorsi congelati vincolati e una primitiva no-clobber reale. Nessun booleano auto-dichiarato deve fungere da autorizzazione.
+
+### F-04 | ALTO | RP-01 non è documentabile con il record prospettico attuale
+
+**Riferimenti:** righe 663–681 e 714–726.  
+`build_external_execution_record()` registra le stringhe dei percorsi dei log ma non i byte o gli SHA-256 dei log, l'exit code, i digest degli output, gli ID delle due esecuzioni, l'ambiente riproducibile e il confronto indipendente. `compare_generation_bytes()` prova uguaglianza byte-per-byte di due set forniti, non l'indipendenza della provenienza né l'identità del generatore storico.
+
+**Rimedio:** predisporre manifest di provenienza per ciascuna esecuzione, hash dei log conservati, exit status, input ed output hashati, comando e configurazione effettivi, hash del sorgente, confronto dei cinque output, firma/approvazione della revisione. Anche due esecuzioni identiche del nuovo generatore non sanano automaticamente il rilievo storico RP-01.
+
+### F-05 | MEDIO | Semantica di `anomalies` e controllo multisegmento da rafforzare
+
+**Riferimenti:** righe 411–435 e 602–629.  
+Il report assegna `PASS` alla sezione `anomalies` senza una funzione che valuti o classifichi le anomalie accumulate. Per i 338 token multisegmento sono controllati segmenti e status, ma non è asserita la ragione attesa `INTRA_LINE_TRANSFORMATION` né il vincolo storico di provenienza da una sola linea fisica. Il confronto dei conteggi non sostituisce questi controlli semantici.
+
+**Rimedio:** definire criteri espliciti per anomalie ammissibili e bloccanti, e validare `multisegment_reason` contro le righe sorgente, distinguendo osservazioni dai dati correnti e conteggi storici attesi.
+
+### F-06 | MEDIO | Provenienza Git del profilo non verificata in modo simmetrico
+
+**Riferimento:** righe 167–176.  
+Il codice verifica il Git blob SHA-1 per `corpus_metadata.csv`, ma non per `voynich_profiles.json`, pur avendo l'identificativo Git blob atteso nella configurazione. La verifica SHA-256 del file è presente, ma la verifica dell'identificativo oggetto Git è un controllo documentale distinto.
+
+**Rimedio:** verificare in modo omogeneo gli identificativi Git dichiarati, senza trattarli come sostituti dello SHA-256 dei byte raw.
+
+## Riscontri positivi, limitati alla revisione statica
+
+- I nomi dei campi `source_segments` / `physical_line` del mapper OA sono esplicitamente riconosciuti rispetto alle denominazioni concettuali V7.1.
+- I 338 token multisegmento non sono ridotti ad intervalli sintetici; il codice usa liste di segmenti.
+- Il `token_count` per folio deriva dall'unione di occorrenze dopo il controllo a coppie; il codice non effettua una somma cieca dei token dei pannelli.
+- `f085v` entra nel registro degli irrisolti solo in assenza di match IVTFF; la partizione per insiemi è controllata.
+- Le categorie `archetype_scores` (16) ed `emotion_distribution` (9) definite nel sorgente sono coerenti con i nomi dei campi esaminati nel file profili, **senza una nuova validazione di tutta la popolazione**.
+- Il modulo supera il parsing AST senza importazione o esecuzione.
+- La verifica del contenitore ZIP non ha segnalato errori di integrità dell'archivio.
+
+## Prossimo passaggio tecnico ammissibile
+
+Preparare un **DRAFT 03 solo come nuova versione di sorgente**, applicando F-01/F-02/F-03 prima degli altri rilievi, senza eseguire le funzioni, senza sostituire DRAFT 02 e senza creare registri di audit. Ogni futura validazione operativa richiederà una distinta e comprovabile autorizzazione. La chiusura di RP-01 richiede comunque la catena documentale storica originale o una decisione formale esplicita che distingua la nuova validazione dall'attestazione storica.
+
+**Conclusione:** `STATIC_REVIEW_WITH_BLOCKING_FINDINGS`; `CLOSED_PENDING_VALIDATION`; `RP-01 OPEN`; `f085v UNRESOLVED`; `manual_intervention=false`.
