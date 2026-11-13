@@ -8,3 +8,6 @@
 - Branch anchor-rev3-staging-20261112: preservato, nessuna mutazione.
 - Discrepanza iniziale: LOG.md, KNOWLEDGE.md, STATE.md e attempts/ assenti nel main e nello staging all'avvio; aggiunti ora solo a main. Repo xenoglyph-ai/voynich-public consultato in sola lettura.
 - Continuità: questa sessione esegue cicli sincroni; automazione ricorrente separata necessaria per ulteriori riprese, non equivale a processo infinito.
+
+## Batch protocol bootstrap — 2026-11-13
+PROTOCOL.md committed on main. Current run BLOCKED before five qualifying scientific cycles: full SHA-256 verification of both corpora, prior attempts inventory and user-selected holdout provenance not completed; no new experiment counted. HOLDOUT.md intentionally not created. Next action: inspect full attempts/ and CI, verify complete input hashes and execute folio-split generator-rival tests on training only. Do not claim batch completed.
