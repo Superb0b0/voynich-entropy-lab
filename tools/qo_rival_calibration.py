@@ -64,9 +64,11 @@ def main():
     rng=random.Random(SEED)
     models={}
     for model in ("within_paragraph","within_folio"):
-        sims=[count(permute(groups,model,rng)) for _ in range(REPS)]\n        rates=sorted([n/d for n,d in sims if d>0])\n        if len(rates)!=REPS or den==0:raise SystemExit("FAIL CLOSED: zero qo denominator")\n        observed_rate=obs/den
-        sims.sort()
-        p=(1+sum(x<=obs for x in sims))/(REPS+1)
+        sims=[count(permute(groups,model,rng)) for _ in range(REPS)]
+        rates=sorted([n/d for n,d in sims if d>0])
+        if len(rates)!=REPS or den==0:raise SystemExit("FAIL CLOSED: zero qo denominator")
+        observed_rate=obs/den
+        p=(1+sum(x<=observed_rate for x in rates))/(REPS+1)
         models[model]={"null_mean_rate":sum(rates)/REPS,"null_95_rate":[rates[49],rates[1949]],"observed_rate":observed_rate,"p_depletion":p,
                        "holm_2":None}
     ps=sorted(models,key=lambda x:models[x]["p_depletion"])
