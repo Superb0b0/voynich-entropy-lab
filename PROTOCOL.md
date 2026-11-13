@@ -16,3 +16,10 @@ Known-generator calibration with ms408 DireLabs / pykeedy Naibbe / Timm–Schinn
 
 ## Anti-stall and output
 Never fabricate a result, citation, hash, run, or commit. If blocked by permissions, missing verified corpus, compute/time limit or missing user-defined holdout, record the exact blocker and next executable action in STATE.md; stop that run rather than mislabeling a smoke test as a scientific attempt. Never claim continuous execution outside scheduled runs. After a completed batch (or documented technical limit), report at most eight lines: qualifying attempt ID, hypothesis, verdict, commit, and next action.
+
+## Mandatory CI verification gate (2026-11-13)
+An archived attempt counts as a qualifying or verified attempt **only when the GitHub Actions `.github/workflows/verify.yml` job is green for the relevant commit**. A red, missing, skipped, or unconfirmed CI run means the result must be recorded as **NON VERIFICATO** in `TESTS.md`, regardless of local p-values or a successful commit. CI green establishes reproducibility under this verifier, **not** scientific validity or independent holdout confirmation.
+
+For each `attempts/NNN-*/`, provide `attempt.yml` with an integer `seed`, a nonnegative numeric `tolerance`, and either `run.sh` or an explicit `command`; commit `results.json`. The replay must write `results_ci.json` in its attempt directory. The verifier checks SHA-256 for all `data/*.txt` against `MANIFEST.md`, replays every attempt, compares numeric fields within the declared absolute tolerance and other fields exactly, and fails closed on missing inputs or inaccessible holdout isolation.
+
+`HOLDOUT.md` identifies protected folios/pages inside corpus files rather than a separate list of data files. To avoid leakage, the verifier supplies a filtered training-only corpus in `VOYNICH_DATA_DIR` and audits file opens with `strace`. Attempts that open original `data/*.txt` or `HOLDOUT.md` fail. Scripts must explicitly use the filtered directory and must not reconstruct held-out content from other inputs. If an attempt's input format cannot be safely filtered, verification fails rather than silently weakening protection.
