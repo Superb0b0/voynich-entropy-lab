@@ -1,0 +1,42 @@
+name: Verify archived attempts
+on:
+  push:
+    paths:
+      - 'data/**'
+      - 'MANIFEST.md'
+      - 'HOLDOUT.md'
+      - 'PROTOCOL.md'
+      - 'TESTS.md'
+      - 'attempts/**'
+      - 'tools/verify_attempts.py'
+      - '.github/workflows/verify.yml'
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deterministic verifier dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y strace
+          python -m pip install 'PyYAML==6.0.2'
+      - name: Verify manifest, attempts and protected input isolation
+        run: python tools/verify_attempts.py
+      - name: Upload replay results even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: attempt-replay-results
+          path: attempts/**/results_ci.json
+          if-no-files-found: ignore
+          retention-days: 30
