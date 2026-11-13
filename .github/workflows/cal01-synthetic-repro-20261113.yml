@@ -1,0 +1,36 @@
+name: CAL-01 synthetic reproducibility
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research/voy-cal01-synthetic-20261113
+    paths:
+      - 'attempts/voy-cal01-synthetic-20261113/**'
+      - '.github/workflows/cal01-synthetic-repro-20261113.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify CAL-01 synthetic output byte-for-byte
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd attempts/voy-cal01-synthetic-20261113
+          python calibrate.py > /tmp/cal01-recomputed.json
+          cmp -s /tmp/cal01-recomputed.json results.json
+      - name: Verify six-generator stress output byte-for-byte
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd attempts/voy-cal01-synthetic-20261113
+          python stress.py > /tmp/cal01-stress-recomputed.json
+          cmp -s /tmp/cal01-stress-recomputed.json stress_results.json
