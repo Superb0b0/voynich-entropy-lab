@@ -1,0 +1,39 @@
+{
+  "split0": {
+    "observed": 12,
+    "qo_predecessors": 263,
+    "null_mean": 48.767,
+    "ratio": 0.24606803781245512,
+    "p": 0.000999000999000999,
+    "null95": [
+      39,
+      59
+    ],
+    "folios": 48
+  },
+  "split1": {
+    "observed": 2,
+    "qo_predecessors": 133,
+    "null_mean": 15.319,
+    "ratio": 0.13055682485801945,
+    "p": 0.000999000999000999,
+    "null95": [
+      9,
+      22
+    ],
+    "folios": 30
+  },
+  "controls": {
+    "page_null_p": [
+      0.000999000999000999,
+      0.000999000999000999
+    ],
+    "long_lines_p": [
+      0.000999000999000999,
+      0.000999000999000999
+    ]
+  },
+  "seed": 20261115,
+  "permutations": 1000,
+  "verdict": "TRAINING SIGNAL, EXPLORATORY"
+}
