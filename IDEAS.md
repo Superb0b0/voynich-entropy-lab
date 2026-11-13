@@ -1,2 +1,3 @@
 # IDEAS
-- 2026-11-13 | CAL-01 | Calibrate a proposed generator-classifier on blind, known-mechanism synthetic corpora before using Voynich; candidate methods must pass preregistered recovery thresholds. Status: NOT RUN. Source: user-supplied research agenda, not independently validated.
+- 2026-11-13 | CAL-01 | Blind known-generator recovery with multiple realistic synthetic rivals, including local-copy, slot-grammar, and transposition. Source: user research agenda; not tested.
+- 2026-11-13 | external visual profiles | Review xenoglyph-ai/voynich-public provenance and leakage before using any profiles as independent semantic anchors. Source: GitHub repository inventory.
