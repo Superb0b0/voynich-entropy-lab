@@ -1,0 +1,30 @@
+{
+  "experiment/exp_line_memory.py": {
+    "bytes": 11142,
+    "sha256": "b2224b6965f0315e7e2f89e15fc630bbc693441c7097829f92b1450cf81451c3"
+  },
+  "experiment/inputs/ZL3b-n.txt": {
+    "bytes": 411671,
+    "sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc"
+  },
+  "experiment/inputs/ivtff_parser_rc1_2.py": {
+    "bytes": 10599,
+    "sha256": "8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5"
+  },
+  "experiment/inputs/zl3b_P_ms408.tsv": {
+    "bytes": 232017,
+    "sha256": "41c3ea40b7f71ea612fbee49a65ebd253231a209ce2d5096131126c957bcd1f2"
+  },
+  "expected/permutation_distributions.csv": {
+    "bytes": 282591,
+    "sha256": "ca0f7b6502830829bb9190ea8a577a2a9e4b0b46c182f8de1c3d5f5ddbc78484"
+  },
+  "expected/results.json": {
+    "bytes": 9118,
+    "sha256": "cce4b1689011af4795e03c7ed47acef8b148b9c494f08d3da460f21f73a46586"
+  },
+  "requirements-ci.txt": {
+    "bytes": 13,
+    "sha256": "7bd6b8946940b79948c548c8048e545684b91c8edc9444d8dfc0c8f76a97c0a7"
+  }
+}

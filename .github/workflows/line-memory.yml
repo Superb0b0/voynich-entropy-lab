@@ -1,0 +1,38 @@
+name: LINE_MEMORY - reproducibility
+on:
+  workflow_dispatch:
+  push:
+    branches: [ci/line-memory-20261113]
+permissions:
+  contents: read
+jobs:
+  reproduce:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: experiments/line-memory
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.14'
+      - name: Verify locked source and baseline
+        run: python ci/verify.py --check-only
+      - name: Install fixed dependency
+        run: |
+          python -m pip install --only-binary=:all: -r requirements-ci.txt
+      - name: Reproduce and compare archived results
+        run: python ci/verify.py
+      - name: Preserve verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: line-memory-verification
+          path: experiments/line-memory/ci-output/
+          if-no-files-found: warn
