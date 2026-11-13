@@ -27,7 +27,8 @@ jobs:
       - name: Run fixed exploratory tests on training only
         run: python tools/free_research_cycle.py
       - name: Exploratory qo rival calibration (preregistered)
-        run: python tools/qo_rival_calibration.py\n      - name: Archive results (no commits, no API, no paid service)
+        run: python tools/qo_rival_calibration.py
+      - name: Archive results (no commits, no API, no paid service)
         uses: actions/upload-artifact@v4
         with:
           name: voynich-free-exploratory-${{ github.run_number }}
