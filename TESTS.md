@@ -2,6 +2,8 @@
 
 Conservare protocolli e verdetti inalterati. La definizione di tentativo QUALIFICANTE stabilita nel successivo PROTOCOL.md v1 è più severa dei test esplorativi già svolti; non retro-promuovere.
 
+**Stato CI al 2026-11-13:** **NON VERIFICATO** per tutti i tentativi registrati (001–004): non è stata accertata alcuna esecuzione verde di `.github/workflows/verify.yml` sul commit pertinente. I valori storici qui sotto restano descrittivi e non sono risultati verificati dalla CI. Una CI verde futura non equivale da sola a validazione scientifica.
+
 | ID | Ipotesi / famiglia | Esito | P non corrette | Stato rispetto a PROTOCOL.md v1 |
 |---|---|---|---|---|
 | 001 | Apertura del paragrafo come chiave lessicale a distanza; 2 split indipendenti per folio | non sostenuta | 0,746; 0,002 | NON QUALIFICANTE: manca calibrazione su generatori noti e completo controllo dei confondenti |
