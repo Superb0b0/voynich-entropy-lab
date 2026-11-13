@@ -1,0 +1,32 @@
+{
+  "alpha": 0.01,
+  "criteria": {
+    "false_positive_max": 0.025,
+    "power_min": 0.8
+  },
+  "group_size": 8,
+  "groups": 120,
+  "limitations": [
+    "synthetic generators only; not ms408/Naibbe/Timm-Schinner",
+    "no Voynich text accessed",
+    "no folio holdout opened",
+    "not a qualifying attempt"
+  ],
+  "pass": true,
+  "replicates_per_family": 400,
+  "results": {
+    "anti": {
+      "mean_stat": -0.419816,
+      "positive_count": 400,
+      "rate": 1.0
+    },
+    "iid": {
+      "mean_stat": 0.000188,
+      "positive_count": 3,
+      "rate": 0.0075
+    }
+  },
+  "seed": 20261113,
+  "status": "SYNTHETIC_CALIBRATION_ONLY",
+  "threshold": -0.08125490966221521
+}
