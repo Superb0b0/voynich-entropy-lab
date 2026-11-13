@@ -10,24 +10,24 @@ SHA="bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc"
 HELD={2,5,9,17,31,32,36,37,38,45,48,49,67,69,78,85,86,94,95,101,111}
 SEED=20261113
 REPS=2000
-PAGE=re.compile(r"^<f(\d+)[rv]\d*>\s+<!")
-LINE=re.compile(r"^<f(\d+)[rv]\d*\.(\d+),([^>]*)>\s*(.*)")
+PAGE=re.compile(r"^<(f(\d+)[rv]\d*)>\s+<!")
+LINE=re.compile(r"^<(f(\d+)[rv]\d*)\.(\d+),([^>]*)>\s*(.*)")
 def parse():
     raw=SOURCE.read_bytes()
     if hashlib.sha256(raw).hexdigest()!=SHA:raise SystemExit("FAIL CLOSED: corpus SHA")
     current=None;groups=collections.defaultdict(list);paragraph=0
     for s in raw.decode("utf-8").splitlines():
         p=PAGE.match(s)
-        if p:current=int(p[1]);paragraph=0;continue
+        if p:current=p[1];paragraph=0;continue
         m=LINE.match(s)
-        if not m or current is None or current in HELD or int(m[1])!=current:continue
-        locus=m[3]
+        if not m or current is None or int(m[2]) in HELD or m[1]!=current:continue
+        locus=m[4]
         if not re.match(r"^[*@+=]P",locus):continue
         if locus.startswith(("*P","@P")):paragraph+=1
-        txt=re.sub(r"<!.*?>|<[^>]*>|\{[^}]*\}|\[[^]]*\]","",m[4])
+        txt=re.sub(r"<!.*?>|<[^>]*>|\{[^}]*\}|\[[^]]*\]","",m[5])
         first=re.split(r"[.,\s]+",txt.lstrip("% ").strip())[0].lower()
         first=re.sub("[^a-z]","",first)
-        if first:groups[(current,paragraph)].append((int(m[2]),first))
+        if first:groups[(current,paragraph)].append((int(m[3]),first))
     return groups
 def count(groups):
     numerator=denominator=0
@@ -48,11 +48,11 @@ def permute(groups,model,rng):
     elif model=="within_folio":
         byleaf=collections.defaultdict(list)
         for k,v in groups.items():
-            for _,w in v:byleaf[k[0]].append(w)
+            for _,w in v:byleaf[int(re.match(r"f(\d+)",k[0])[1])].append(w)
         for words in byleaf.values():rng.shuffle(words)
         cursor=collections.Counter()
         for k,v in groups.items():
-            leaf=k[0];n=len(v);start=cursor[leaf]
+            leaf=int(re.match(r"f(\d+)",k[0])[1]);n=len(v);start=cursor[leaf]
             out[k]=[(v[i][0],w) for i,w in enumerate(byleaf[leaf][start:start+n])]
             cursor[leaf]+=n
     else:raise ValueError(model)
