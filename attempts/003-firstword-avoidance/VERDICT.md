@@ -1,0 +1,2 @@
+# 003 — First-word repetition avoidance
+Observed 6/1871 and 7/1226, rival means 13.026 and 10.405, O/E 0.461 and 0.673; one-sided p 0.01798 and 0.17782. Holm within 2 split primary tests 0.03596 and 0.17782 (not family-wide). Preregistered both-split criterion FAILED. Page shuffle and >=5-token line controls do not rescue. VERDICT: NOT SUPPORTED / EXPLORATORY. Earlier whole-corpus inspection prevents confirmatory interpretation. Parser is a simplified first-token extraction, not independently certified RC1.2. No holdout opened.
