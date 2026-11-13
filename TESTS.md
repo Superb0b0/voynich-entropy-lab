@@ -10,3 +10,6 @@ Conservare protocolli e verdetti inalterati. La definizione di tentativo QUALIFI
 A fini descrittivi, Holm per i due p dello 001 produce 0,746 e 0,004 rispettivamente; Holm per il 002 produce 0,539 e 0,262 rispettivamente. Questa correzione non altera il verdetto: il successo richiedeva entrambi gli split, non uno solo. Nessun risultato è VALIDATO o tradotto.
 
 Input principali: ZL3b-n.txt (bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc), parser RC1.2 (8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5).
+
+| 003 | First-word exact-repeat avoidance, training only, 2 folio splits, within-paragraph shuffled rival | NOT SUPPORTED | 0.017982; 0.177822 | EXPLORATORY; Holm across 2 splits 0.035964; 0.177822, not family-wide |
+| 004 | qo->qo first-word transition depletion, training only, 2 folio splits, within-paragraph shuffled rival | TRAINING SIGNAL, not independently confirmed | 0.000999; 0.000999 | EXPLORATORY; Holm across 2 splits 0.001998 each, not family-wide; prior whole-corpus leakage |
