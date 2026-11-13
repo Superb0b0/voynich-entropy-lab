@@ -1,6 +1,9 @@
 name: Voynich free scheduled research checks
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'research/ci-verification.md'
   schedule:
     - cron: '27 3 * * *'
 permissions:
