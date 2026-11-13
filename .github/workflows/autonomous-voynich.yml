@@ -1,0 +1,21 @@
+name: Voynich research integrity (no paid APIs)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '27 3 * * *'
+permissions:
+  contents: read
+jobs:
+  verify:
+    # Workflow staged on research branch; no paid services, secrets, or AI calls.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify local corpora and holdout marker
+        run: python tools/research_guard.py
