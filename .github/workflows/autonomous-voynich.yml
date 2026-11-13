@@ -1,15 +1,17 @@
-name: Voynich research integrity (no paid APIs)
+name: Voynich free scheduled research checks
 on:
   workflow_dispatch:
   schedule:
     - cron: '27 3 * * *'
 permissions:
   contents: read
+concurrency:
+  group: voynich-free-checks
+  cancel-in-progress: false
 jobs:
-  verify:
-    # Workflow staged on research branch; no paid services, secrets, or AI calls.
+  research:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -17,5 +19,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Verify local corpora and holdout marker
+      - name: Integrity check
         run: python tools/research_guard.py
+      - name: Run fixed exploratory tests on training only
+        run: python tools/free_research_cycle.py
+      - name: Archive results (no commits, no API, no paid service)
+        uses: actions/upload-artifact@v4
+        with:
+          name: voynich-free-exploratory-${{ github.run_number }}
+          path: research-output/
+          retention-days: 30
