@@ -10,6 +10,9 @@ concurrency:
   cancel-in-progress: false
 jobs:
   agent:
+    # FAIL-CLOSED: do not run an AI agent while holdout bytes are accessible.
+    # Enable only after training-only artifact isolation is implemented and tested.
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     steps:
