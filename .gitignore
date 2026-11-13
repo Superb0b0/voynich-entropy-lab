@@ -216,3 +216,13 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Jupyter session and user-specific shell state
+.jupyter/
+.local/
+.jupyter-server-log.txt
+.bash*
+.profile
+.gitconfig
+Untitled.ipynb
+.ipynb_checkpoints/
