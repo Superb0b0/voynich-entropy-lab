@@ -1,0 +1,12 @@
+{
+  "attempt": "002-currier-header-interaction",
+  "protocol_sha256": "adb337c1a5f131b24b313c1bea21e4711a38d2826b08eb211fc94fd655cd1ab1",
+  "script_sha256": "96c48b10cc0260c1e0e55bb169d6802047ab720b07e8c31f520c4f45a2ae8e42",
+  "seed_permutation": 20261116,
+  "seed_bootstrap": 20261117,
+  "input_sha256": {
+    "corpus": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    "parser": "8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5",
+    "attempt001": "9abeb6c9ab9dde1c055f3432c0c4c93016f14e06edd8eabd8a3605027e8bc405"
+  }
+}

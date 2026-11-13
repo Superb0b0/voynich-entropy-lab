@@ -11,3 +11,6 @@
 
 ## Batch protocol bootstrap — 2026-11-13
 PROTOCOL.md committed on main. Current run BLOCKED before five qualifying scientific cycles: full SHA-256 verification of both corpora, prior attempts inventory and user-selected holdout provenance not completed; no new experiment counted. HOLDOUT.md intentionally not created. Next action: inspect full attempts/ and CI, verify complete input hashes and execute folio-split generator-rival tests on training only. Do not claim batch completed.
+
+## Tentativo 002 aggiunto da questa sessione, 2026-11-13
+Codice, risultati, hash e verdetto in attempts/002-currier-header-interaction/; p=0,539 e 0,131, H2 non sostenuta. Esperimento ESPLORATIVO non qualificante ai fini del nuovo PROTOCOL.md v1, creato in parallelo: calibrazione/controlli di confondimento non compiuti. Non sovrascrivere lo stato precedente del batch concorrente. Prossimo passo: voy_cal01 con input di generatori esterni verificati, o nuovo esperimento che soddisfi integralmente PROTOCOL.md e TESTS.md. HOLDOUT.md resta assente e non è stato creato.
