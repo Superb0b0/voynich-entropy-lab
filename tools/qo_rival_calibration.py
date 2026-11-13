@@ -64,17 +64,17 @@ def main():
     rng=random.Random(SEED)
     models={}
     for model in ("within_paragraph","within_folio"):
-        sims=[count(permute(groups,model,rng))[0] for _ in range(REPS)]
+        sims=[count(permute(groups,model,rng)) for _ in range(REPS)]\n        rates=sorted([n/d for n,d in sims if d>0])\n        if len(rates)!=REPS or den==0:raise SystemExit("FAIL CLOSED: zero qo denominator")\n        observed_rate=obs/den
         sims.sort()
         p=(1+sum(x<=obs for x in sims))/(REPS+1)
-        models[model]={"null_mean":sum(sims)/REPS,"null_95":[sims[49],sims[1949]],"p_depletion":p,
+        models[model]={"null_mean_rate":sum(rates)/REPS,"null_95_rate":[rates[49],rates[1949]],"observed_rate":observed_rate,"p_depletion":p,
                        "holm_2":None}
     ps=sorted(models,key=lambda x:models[x]["p_depletion"])
     models[ps[0]]["holm_2"]=min(1,2*models[ps[0]]["p_depletion"])
     models[ps[1]]["holm_2"]=max(models[ps[0]]["holm_2"],models[ps[1]]["p_depletion"])
     result={"classification":"EXPLORATORY_NOT_VALIDATED","preregistered_protocol":"research/qo-rival-protocol.md",
             "seed":SEED,"replicates_per_model":REPS,"input_sha256":SHA,
-            "metric":"count of consecutive P-line pairs with qo first word in both; denominator pairs whose first line begins qo",
+            "metric":"conditional rate P(next qo | current qo), among adjacent P lines; denominator recalculated per permutation",
             "training_groups":len(groups),"observed_qo_to_qo":obs,"eligible_qo_pairs":den,
             "null_models":models,"generated_at":datetime.now(timezone.utc).isoformat(),
             "holdout":"excluded from metrics; complete file read solely for SHA256; no holdout evaluation",
