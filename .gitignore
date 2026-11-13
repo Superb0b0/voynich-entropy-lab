@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Jupyter runtime and scratch files
+.jupyter/
+.local/share/jupyter/
+.jupyter-server-log.txt
+/Untitled.ipynb
+.ipynb_checkpoints/
