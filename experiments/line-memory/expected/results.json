@@ -1,0 +1,293 @@
+{
+  "experiment": "EXP_SEQ_LINE_MEMORY_01",
+  "date": "2026-11-12",
+  "status": "ESPLORATIVO",
+  "input_sha256": {
+    "ZL3b-n.txt": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    "zl3b_P_ms408.tsv": "41c3ea40b7f71ea612fbee49a65ebd253231a209ce2d5096131126c957bcd1f2"
+  },
+  "parser_sha256": "8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5",
+  "config": {
+    "seed": 20261112,
+    "permutations": 1999,
+    "bootstrap_resamples_folio": 2499,
+    "measures": [
+      "jaccard",
+      "exact_reuse",
+      "edit1_nonidentical"
+    ],
+    "nulls": [
+      "folio",
+      "para",
+      "para_endpoints"
+    ],
+    "equal_weight_per_adjacent_edge": true
+  },
+  "sample": {
+    "folios": 207,
+    "P_rows": 4130,
+    "P_tokens": 34323,
+    "paragraphs": 740,
+    "rows_in_para>=4": 3480,
+    "currier_folio_counts": {
+      "A": 114,
+      "B": 83,
+      "?": 10
+    }
+  },
+  "results": {
+    "folio": {
+      "edges": 3923,
+      "observed": {
+        "jaccard": 0.02940791508412579,
+        "exact_reuse": 0.06021526038968228,
+        "edit1_nonidentical": 0.18949434068898746
+      },
+      "null": {
+        "jaccard": {
+          "mean": 0.024650999276258415,
+          "sd": 0.000562299360512294,
+          "q025": 0.023533583923041567,
+          "q975": 0.025762324168869533
+        },
+        "exact_reuse": {
+          "mean": 0.04918170992217183,
+          "sd": 0.0011320271697227557,
+          "q025": 0.046955913200603105,
+          "q975": 0.05144988519130961
+        },
+        "edit1_nonidentical": {
+          "mean": 0.16191074770270522,
+          "sd": 0.0019408160356167343,
+          "q025": 0.15790568451620138,
+          "q975": 0.16563437323468017
+        }
+      },
+      "test": {
+        "jaccard": {
+          "diff": 0.004756915807867374,
+          "ratio": 1.1929705061672207,
+          "p_one_sided_above": 0.0005,
+          "p_one_sided_below": 1.0,
+          "bootstrap_diff_q025": 0.0035953125013212513,
+          "bootstrap_diff_q975": 0.005972090639044154
+        },
+        "exact_reuse": {
+          "diff": 0.01103355046751045,
+          "ratio": 1.224342555087463,
+          "p_one_sided_above": 0.0005,
+          "p_one_sided_below": 1.0,
+          "bootstrap_diff_q025": 0.008570015857016592,
+          "bootstrap_diff_q975": 0.013647741719815787
+        },
+        "edit1_nonidentical": {
+          "diff": 0.02758359298628224,
+          "ratio": 1.170362952291038,
+          "p_one_sided_above": 0.0005,
+          "p_one_sided_below": 1.0,
+          "bootstrap_diff_q025": 0.0231877657391041,
+          "bootstrap_diff_q975": 0.03207220717406646
+        }
+      }
+    },
+    "para": {
+      "edges": 3390,
+      "observed": {
+        "jaccard": 0.0315875818964036,
+        "exact_reuse": 0.06555027711642965,
+        "edit1_nonidentical": 0.20218448098583772
+      },
+      "null": {
+        "jaccard": {
+          "mean": 0.027423571186243115,
+          "sd": 0.000559808091174191,
+          "q025": 0.0262985834909763,
+          "q975": 0.028489062977286567
+        },
+        "exact_reuse": {
+          "mean": 0.054571956057120605,
+          "sd": 0.0011436685459786807,
+          "q025": 0.052255620694016194,
+          "q975": 0.056766570815076196
+        },
+        "edit1_nonidentical": {
+          "mean": 0.17325206174758295,
+          "sd": 0.0018739481670135478,
+          "q025": 0.1695114739830271,
+          "q975": 0.1768565033661188
+        }
+      },
+      "test": {
+        "jaccard": {
+          "diff": 0.004164010710160485,
+          "ratio": 1.1518405710868662,
+          "p_one_sided_above": 0.0005,
+          "p_one_sided_below": 1.0,
+          "bootstrap_diff_q025": 0.0030773422652927494,
+          "bootstrap_diff_q975": 0.00522893457230211
+        },
+        "exact_reuse": {
+          "diff": 0.010978321059309043,
+          "ratio": 1.2011714780356784,
+          "p_one_sided_above": 0.0005,
+          "p_one_sided_below": 1.0,
+          "bootstrap_diff_q025": 0.008673939345208737,
+          "bootstrap_diff_q975": 0.013276910603068398
+        },
+        "edit1_nonidentical": {
+          "diff": 0.028932419238254764,
+          "ratio": 1.1669961035177026,
+          "p_one_sided_above": 0.0005,
+          "p_one_sided_below": 1.0,
+          "bootstrap_diff_q025": 0.024484382750972505,
+          "bootstrap_diff_q975": 0.03298643966175901
+        }
+      }
+    },
+    "para_endpoints": {
+      "edges": 2981,
+      "observed": {
+        "jaccard": 0.032028877139041886,
+        "exact_reuse": 0.06558170486105977,
+        "edit1_nonidentical": 0.20437918566334187
+      },
+      "null": {
+        "jaccard": {
+          "mean": 0.030334346288594025,
+          "sd": 0.0006037636739316145,
+          "q025": 0.02917312154587112,
+          "q975": 0.03155424549985895
+        },
+        "exact_reuse": {
+          "mean": 0.061716419284377905,
+          "sd": 0.001244904619821274,
+          "q025": 0.05940283055405286,
+          "q975": 0.06415203208813347
+        },
+        "edit1_nonidentical": {
+          "mean": 0.1929642603119472,
+          "sd": 0.0020099012274500724,
+          "q025": 0.1889984751481003,
+          "q975": 0.19689098796945148
+        }
+      },
+      "test": {
+        "jaccard": {
+          "diff": 0.001694530850447861,
+          "ratio": 1.055861788954556,
+          "p_one_sided_above": 0.0025,
+          "p_one_sided_below": 0.998,
+          "bootstrap_diff_q025": 0.000483262794948848,
+          "bootstrap_diff_q975": 0.0028542331168544904
+        },
+        "exact_reuse": {
+          "diff": 0.003865285576681865,
+          "ratio": 1.0626297769945359,
+          "p_one_sided_above": 0.001,
+          "p_one_sided_below": 0.9995,
+          "bootstrap_diff_q025": 0.001376783828390387,
+          "bootstrap_diff_q975": 0.006344300938433826
+        },
+        "edit1_nonidentical": {
+          "diff": 0.011414925351394684,
+          "ratio": 1.0591556453663555,
+          "p_one_sided_above": 0.0005,
+          "p_one_sided_below": 1.0,
+          "bootstrap_diff_q025": 0.007053302177422018,
+          "bootstrap_diff_q975": 0.01568252766148187
+        }
+      }
+    },
+    "observed_boundaries": {
+      "para": {
+        "edges": 3390,
+        "jaccard": 0.0315875818964036,
+        "exact_reuse": 0.06555027711642965,
+        "edit1_nonidentical": 0.20218448098583772
+      },
+      "boundary": {
+        "edges": 533,
+        "jaccard": 0.015544743426298774,
+        "exact_reuse": 0.026283352878099592,
+        "edit1_nonidentical": 0.10878219133378611
+      },
+      "folio": {
+        "edges": 3923,
+        "jaccard": 0.02940791508412579,
+        "exact_reuse": 0.06021526038968228,
+        "edit1_nonidentical": 0.18949434068898746
+      }
+    },
+    "currier_observational": {
+      "A": {
+        "folio_count": 114,
+        "para": {
+          "edges": 1323,
+          "jaccard": 0.02532752304906209,
+          "exact_reuse": 0.05277473625579532,
+          "edit1_nonidentical": 0.15566521977512462
+        },
+        "boundary": {
+          "edges": 120,
+          "jaccard": 0.014708964582891438,
+          "exact_reuse": 0.025014591889591892,
+          "edit1_nonidentical": 0.09808809246309245
+        },
+        "folio": {
+          "edges": 1443,
+          "jaccard": 0.024444482843975133,
+          "exact_reuse": 0.05046620034176595,
+          "edit1_nonidentical": 0.15087710107973729
+        }
+      },
+      "B": {
+        "folio_count": 83,
+        "para": {
+          "edges": 1999,
+          "jaccard": 0.036355621979088426,
+          "exact_reuse": 0.07526651523090534,
+          "edit1_nonidentical": 0.23623278843098508
+        },
+        "boundary": {
+          "edges": 396,
+          "jaccard": 0.01604445916566568,
+          "exact_reuse": 0.02695440081803718,
+          "edit1_nonidentical": 0.11353620425590125
+        },
+        "folio": {
+          "edges": 2395,
+          "jaccard": 0.03299728357653501,
+          "exact_reuse": 0.0672783743927025,
+          "edit1_nonidentical": 0.21594558703919672
+        }
+      },
+      "?": {
+        "folio_count": 10,
+        "para": {
+          "edges": 68,
+          "jaccard": 0.013216195569136743,
+          "exact_reuse": 0.028480873701461937,
+          "edit1_nonidentical": 0.10633765744059864
+        },
+        "boundary": {
+          "edges": 17,
+          "jaccard": 0.00980392156862745,
+          "exact_reuse": 0.0196078431372549,
+          "edit1_nonidentical": 0.07352941176470588
+        },
+        "folio": {
+          "edges": 85,
+          "jaccard": 0.012533740769034886,
+          "exact_reuse": 0.02670626758862053,
+          "edit1_nonidentical": 0.09977600830542005
+        }
+      }
+    }
+  },
+  "warnings": [
+    "P-only rows include original ZL3b punctuation/glyph conventions. Editing distance is literal on normalized P TSV words.",
+    "Permutation tests reject local exchangeability only, not prove self-citation or meaning.",
+    "First and last fixed null contains fewer effective randomizations; para<=3 excluded for this null.",
+    "This is exploratory new analysis of an already studied corpus; must not be represented as unexposed validation."
+  ]
+}
