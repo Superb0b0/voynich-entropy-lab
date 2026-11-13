@@ -1,0 +1,39 @@
+{
+  "interpretation": "A rejection in a null with group heterogeneity or drift is a confounding false positive, not evidence for a true sequential mechanism.",
+  "replicates": 400,
+  "results": {
+    "anti": {
+      "below_threshold": 400,
+      "mean": -0.420553,
+      "rate": 1.0
+    },
+    "beta": {
+      "below_threshold": 0,
+      "mean": 0.196004,
+      "rate": 0.0
+    },
+    "drift": {
+      "below_threshold": 0,
+      "mean": 0.129349,
+      "rate": 0.0
+    },
+    "heterogeneous": {
+      "below_threshold": 0,
+      "mean": 0.318731,
+      "rate": 0.0
+    },
+    "iid": {
+      "below_threshold": 3,
+      "mean": 0.000188,
+      "rate": 0.0075
+    },
+    "persistent": {
+      "below_threshold": 0,
+      "mean": 0.454502,
+      "rate": 0.0
+    }
+  },
+  "seed": 20261113,
+  "status": "EXPLORATORY_STRESS_TEST",
+  "threshold": -0.08125490966221521
+}
