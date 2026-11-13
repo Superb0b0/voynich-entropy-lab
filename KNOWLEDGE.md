@@ -13,3 +13,8 @@ Nota sulla provenienza: creato il 2026-11-13 perché assente dai due branch indi
 - [FATTO VERIFICATO] 155 folii A/B eleggibili; tre esclusi per assenza di etichetta $L=A/B nella testata usata.
 - [ESPLORATIVO] Interazione Currier A/B non confermata, p=0,539 e 0,131, due split per folio. Non selezionare a posteriori lo split del 001.
 - [LIMITE] Non sono state eseguite calibrazione su generatori noti, correzione confondenti o trascrizione indipendente IT2a. Non contare come nuovo test qualificante per PROTOCOL.md v1.
+
+## 003–004 training-only comparison (2026-11-13)
+- [EXPLORATORY] Exact first-word repetition depletion fails two-split criterion.
+- [EXPLORATORY] qo->qo avoidance survives within-paragraph shuffling in two training folio splits, including page-shuffle and long-line controls; previous whole-corpus discovery means no independent validation.
+- [LIMIT] Rivals ms408/pykeedy not run; parser is simplified, not validated RC1.2. No translation inference.
