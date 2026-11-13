@@ -219,7 +219,12 @@ __marimo__/
 
 # Jupyter runtime and scratch files
 .jupyter/
-.local/share/jupyter/
+.local/
 .jupyter-server-log.txt
 /Untitled.ipynb
 .ipynb_checkpoints/
+# Also keep notebook scratch files out of version control.
+.bash*
+.profile
+.gitconfig
+Untitled.ipynb
