@@ -1,2 +1,6 @@
 # TESTS
-No scientific tests executed in this bootstrap cycle. Registry-wide multiplicity corrections cannot be calculated until prior tests are inventoried. Do not interpret unadjusted p-values as confirmatory.
+| ID | Date | Family | Outcome | p raw | p adjusted | Status |
+|---|---|---|---|---|---|---|
+| 001 | 2026-11-13 | synthetic smoke calibration | alternating 0.0, IID 0.49246231155778897, n=200, seed=20261113 | N/A | N/A | EXPLORATORY; not a Voynich test |
+
+No inferential p-values; registry-wide Holm/FDR correction pending complete historical inventory.
