@@ -1,0 +1,38 @@
+name: cal01-synthetic-reproduction
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research/voy-cal01-synthetic-20261113
+    paths:
+      - 'attempts/voy-cal01-synthetic-20261113/**'
+      - '.github/workflows/cal01-synthetic-reproduction.yml'
+permissions:
+  contents: read
+jobs:
+  reproduce:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reproduce two frozen synthetic reports exactly
+        run: |
+          python - <<'PY'
+          import pathlib,subprocess,sys,hashlib
+          base=pathlib.Path("attempts/voy-cal01-synthetic-20261113")
+          expected={
+            "calibrate.py":"cf192d482fd320c96cb22912ce131df3e1751fa667cf4435c014c3e6a50b496e",
+            "results.json":"2fb6dc9cf68c227687c6e577472bde3b5941860fa00bf7f4bf32bc2bd4acd8e9",
+            "stress.py":"dbc8f883fbc479e06d50da2fe583e223dff158ed92b5a35312c9ad6f5b44609a",
+            "stress_results.json":"b1317a164289a838714d73e702c875c51eabc52e9a186e3911619cbd3ee85b54",
+          }
+          for name,digest in expected.items():
+            actual=hashlib.sha256((base/name).read_bytes()).hexdigest()
+            if actual!=digest: raise SystemExit(f"SHA mismatch: {name}: {actual}")
+          for script,output in [("calibrate.py","results.json"),("stress.py","stress_results.json")]:
+            actual=subprocess.check_output([sys.executable,str(base/script)])
+            if actual!=(base/output).read_bytes(): raise SystemExit(f"Reproduction mismatch: {script}")
+          print("PASS: exact input hashes and byte-identical outputs, synthetic only")
+          PY
