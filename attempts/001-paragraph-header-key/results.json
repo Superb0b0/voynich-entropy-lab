@@ -1,0 +1,90 @@
+{
+  "config": {
+    "bootstrap_folios": 1999,
+    "permutations": 1999,
+    "rival_runs": 199,
+    "seeds": [
+      20261113,
+      20261114,
+      20261115
+    ]
+  },
+  "inputs": {
+    "ZL3b-n.txt": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    "ivtff_parser_rc1_2.py": "8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5"
+  },
+  "rival": {
+    "0": {
+      "q025_q975": [0.2636932829787391, 0.2931545052187047],
+      "token_within_folio_shuffle_mean": 0.2794688272928342
+    },
+    "1": {
+      "q025_q975": [0.2566014001578004, 0.28900457303165084],
+      "token_within_folio_shuffle_mean": 0.27238173379663844
+    }
+  },
+  "secondary": {
+    "0": {
+      "body_tokens_len_ge_3": 9031,
+      "folio_bootstrap_diff_ci95": [-0.00789160823295061, 0.004235534118974063],
+      "folio_count": 83,
+      "null_mean": 0.04315074157608092,
+      "null_q025_q975": [0.038085483335178826, 0.049053260989923596],
+      "obs_minus_null": -0.001959289909598802,
+      "obs_over_exp": 0.9545942934458196,
+      "observed": 0.041191451666482116,
+      "one_sided_p": 0.7375,
+      "paragraph_count": 330
+    },
+    "1": {
+      "body_tokens_len_ge_3": 7278,
+      "folio_bootstrap_diff_ci95": [-0.004686228969421136, 0.006255240151470824],
+      "folio_count": 75,
+      "null_mean": 0.038712953618881434,
+      "null_q025_q975": [0.03310662269854355, 0.04438032426490794],
+      "obs_minus_null": 0.0007209567960677274,
+      "obs_over_exp": 1.01862314105933,
+      "observed": 0.03943391041494916,
+      "one_sided_p": 0.4145,
+      "paragraph_count": 289
+    }
+  },
+  "source_audit": {
+    "P_rows": 4130,
+    "all_folios": 207,
+    "all_paragraphs": 740
+  },
+  "splits": {
+    "0": {
+      "body_tokens_len_ge_3": 9031,
+      "folio_bootstrap_diff_ci95": [-0.013442216179322742, 0.005844054608425548],
+      "folio_count": 83,
+      "null_mean": 0.225668919057026,
+      "null_q025_q975": [0.21426198649097553, 0.2356383567711217],
+      "obs_minus_null": -0.003766582660170714,
+      "obs_over_exp": 0.9833092537691515,
+      "observed": 0.22190233639685528,
+      "one_sided_p": 0.746,
+      "paragraph_count": 330
+    },
+    "1": {
+      "body_tokens_len_ge_3": 7278,
+      "folio_bootstrap_diff_ci95": [0.007493633349007735, 0.042442776798465955],
+      "folio_count": 75,
+      "null_mean": 0.2336459518574896,
+      "null_q025_q975": [0.21818494091783458, 0.24883209672987083],
+      "obs_minus_null": 0.024529371033414515,
+      "obs_over_exp": 1.1049852173273518,
+      "observed": 0.2581753228909041,
+      "one_sided_p": 0.002,
+      "paragraph_count": 289
+    }
+  },
+  "status": "ESPLORATIVO",
+  "summary": {
+    "body_tokens_len_ge_3": 16309,
+    "eligible_folios": 158,
+    "eligible_paragraphs": 619
+  },
+  "verdict": "H1 NON SOSTENUTA / SMENTITA DAL TEST PRIMARIO"
+}

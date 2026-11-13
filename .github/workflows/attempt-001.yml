@@ -1,0 +1,35 @@
+name: Attempt 001 reproducibility
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'attempts/001-paragraph-header-key/**'
+      - '.github/workflows/attempt-001.yml'
+permissions:
+  contents: read
+jobs:
+  reproduce:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install numpy==2.3.5
+      - name: Re-run with locked inputs
+        run: |
+          python attempts/001-paragraph-header-key/run.py \
+            --corpus experiments/line-memory/experiment/inputs/ZL3b-n.txt \
+            --parser experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py \
+            --out /tmp/attempt-001-results.json
+      - name: Compare parsed scientific results
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          expected=json.loads(Path('attempts/001-paragraph-header-key/results.json').read_text())
+          actual=json.loads(Path('/tmp/attempt-001-results.json').read_text())
+          assert expected==actual, 'RESULTS DIFFER: investigate runtime or code'
+          print('PASS: scientific output identical')
+          PY

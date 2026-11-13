@@ -1,0 +1,27 @@
+{
+  "attempt": "001-paragraph-header-key",
+  "status": "ESPLORATIVO",
+  "protocol_sha256": "9131d53d8757d67f2966ee6370cdc9932a6b1a5e7cd9eb00b5e6ad57afb6233d",
+  "executed_script_sha256": "9abeb6c9ab9dde1c055f3432c0c4c93016f14e06edd8eabd8a3605027e8bc405",
+  "inputs": {
+    "corpus": {
+      "path": "experiments/line-memory/experiment/inputs/ZL3b-n.txt",
+      "sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc"
+    },
+    "parser": {
+      "path": "experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py",
+      "sha256": "8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5"
+    },
+    "control": {
+      "path": "not redistributable in repo; available as Library IT2a-n.txt",
+      "sha256": "7f27a8b0feed8f6de0a99900df6bf912dd1d295c38e5f830bac8b41c3f536fb5",
+      "status": "NOT_RUN"
+    }
+  },
+  "method": {
+    "seed_perm": 20261113,
+    "seed_boot": 20261114,
+    "seed_rival": 20261115
+  },
+  "notes": "Protocollo fissato con SHA prima del run nella sessione; non equivale a timestamp esterno indipendente."
+}
