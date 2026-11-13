@@ -75,7 +75,7 @@ def main():
     result={"status":"EXPLORATORY_NOT_VALIDATED","generated_at":datetime.now(timezone.utc).isoformat(),
             "corpus_sha256":EXPECTED,"seed":SEED,"permutations":N,"unit":"consecutive P lines within training paragraph",
             "null":"within-paragraph first-word shuffle","splits":"SHA256(leaf:20261114) parity",
-            "heldout_folios_accessed":False,"groups":len(groups),"tests":tests,
+            "heldout_folios_included_in_metrics":False,"full_corpus_file_read_for_checksum":True,"groups":len(groups),"tests":tests,
             "warning":"Hypotheses previously investigated; NOT new qualifying attempts, NOT independent validation."}
     (OUT/"results.json").write_text(json.dumps(result,indent=2)+"\n")
     (OUT/"SUMMARY.md").write_text("# Automated exploratory training-only checks\n\n"
