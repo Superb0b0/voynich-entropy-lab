@@ -1,0 +1,2 @@
+# 004 — qo-to-qo avoidance
+Same locked preregistration as attempts/003-firstword-avoidance/PROTOCOL.md; qo-prefix of first token in two consecutive P rows within paragraph, training leaves only. Null 1000 within-paragraph shuffles per folio split; success O/E<0.5 and one-sided p<=0.01 in both. Seed 20261115. Controls: within-page shuffle, >=5-token rows. Exploratory because whole corpus previously inspected. Budget 120 seconds.
