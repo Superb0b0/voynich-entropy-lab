@@ -7,24 +7,7 @@
       "status": "quarantined",
       "reason": "missing attempt.yml; NON VERIFICATO in TESTS.md",
       "eligible_for_evidence_promotion": false
-    },
-    {
-      "attempt_id": "002-currier-header-interaction",
-      "status": "quarantined",
-      "reason": "legacy exploratory; NON VERIFICATO in TESTS.md; replay contract not established",
-      "eligible_for_evidence_promotion": false
-    },
-    {
-      "attempt_id": "003-first-word-repeat",
-      "status": "quarantined",
-      "reason": "legacy exploratory; NON VERIFICATO in TESTS.md; replay contract not established",
-      "eligible_for_evidence_promotion": false
-    },
-    {
-      "attempt_id": "004-qo-transition",
-      "status": "quarantined",
-      "reason": "legacy exploratory; NON VERIFICATO in TESTS.md; replay contract not established",
-      "eligible_for_evidence_promotion": false
     }
-  ]
+  ],
+  "note": "Only attempt 001 has a directly verified missing attempt.yml from CI logs. Inventory and other classifications pending; unknown attempts must fail closed."
 }
