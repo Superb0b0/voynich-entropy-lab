@@ -30,6 +30,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y strace
           python -m pip install 'PyYAML==6.0.2'
+      - name: Regression tests for verifier
+        run: python -m unittest discover -s tests -p 'test_verify_attempts.py' -v
       - name: Verify manifest, attempts and protected input isolation
         run: python tools/verify_attempts.py
       - name: Upload replay results even on failure
