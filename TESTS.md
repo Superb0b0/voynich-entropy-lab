@@ -39,4 +39,4 @@ Input principali: ZL3b-n.txt (bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c90
 - Split 1: 2/133 = 0.015038; shuffle null mean rate 0.117918; fixed-predecessor character-Markov null mean rate 0.100917.
 - All four Monte Carlo p=0.000999, Holm adjusted p=0.003996, 1000 draws per rival and split, zero null-denominator draws.
 - Threshold met on training data; **independent external rival generators not yet run** and protected holdout not accessed. No decipherment claim. Green CI means replay only.
-- CI status: **PENDING** for results commit `6f8e87e7` (run 43607233193); update only after checking completed result.
+- CI status: **REPRODUCED (engineering replay only)**. Run `43607317014` completed SUCCESS on commit `ebe4265c`; the first run `43607233193` failed on machine-roundoff (difference < 1e-15), and attempt.yml now declares numeric tolerance 1e-12. No scientific validation implied.
