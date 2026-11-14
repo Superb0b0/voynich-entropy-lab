@@ -29,3 +29,5 @@ Input principali: ZL3b-n.txt (bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c90
 - Split 1: observed 2/133; paragraph shuffle mean 15.371 (p=0.000999); internal character-Markov mean 13.319 (p=0.001998).
 - Holm across four comparisons: adjusted p=0.003996 for each. Prespecified exploratory threshold met; external rival packages and independent holdout still pending.
 - **CI status: NON VERIFICATO until the run for the committed `results.json` passes.** Green CI would mean reproducible, not scientifically validated.
+
+**006 methodological caveat (independent review):** character-Markov null varies the number of qo predecessors; its raw hit-count p-value does not condition on the observed denominator. The four-comparison criterion is numerically met but is **not sufficient evidence of an adequately controlled transition-rate effect**. A new preregistered conditional-rate comparison is required. Do not promote 006 to scientific validation.
