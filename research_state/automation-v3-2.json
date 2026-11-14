@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-11-15T00:54:14+01:00",
+  "source_branch": "research/v3-2-active-replay-20261114",
+  "source_head_verified": "c04f4c7ac0e4afe0be2d39b9f80e2de57abfb9cd",
+  "main_head_verified": "8b81f874a9944e88fe113b19460294a1b1c5a593",
+  "anchor_head_verified": "ab5871b0950290e76eae127b2e5323b6fc11761b",
+  "last_cycle": "V3.2-active-replay-technical",
+  "phase": "TECHNICAL_FIXTURE_REPLAY_ONLY",
+  "technical_ci_run": "https://github.com/Superb0b0/voynich-entropy-lab/actions/runs/43649345764",
+  "technical_ci_status": "SUCCESS_FOUR_JOBS",
+  "technical_fixture_result": "TECHNICAL_REPLAY_PASSED_SYNTHETIC_ONLY",
+  "scientific_attempt_id": null,
+  "scientific_result": "NONE",
+  "corpus_sha256_reverified_this_cycle": false,
+  "holdout_accessed": false,
+  "scientific_qualifying_tests_this_cycle": 0,
+  "consecutive_cycles_without_scientific_progress": 1,
+  "limitations": [
+    "Technical fixture is not a Voynich experiment",
+    "Independent role/permission isolation and indirect holdout exclusion not proven",
+    "Main PROTOCOL.md requires verified corpus SHA256 and qualifying attempt CI before scientific claim"
+  ],
+  "next_action": "Verify corpus SHA256 via accessible bytes, inspect allowed train-only input and freeze one rival-generator scientific protocol before executing; do not touch protected holdout",
+  "evidence": [
+    "https://github.com/Superb0b0/voynich-entropy-lab/actions/runs/43649345764",
+    "https://github.com/Superb0b0/voynich-entropy-lab/blob/main/PROTOCOL.md"
+  ]
+}
