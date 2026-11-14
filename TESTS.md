@@ -15,3 +15,7 @@ Input principali: ZL3b-n.txt (bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c90
 
 | 003 | First-word exact-repeat avoidance, training only, 2 folio splits, within-paragraph shuffled rival | NOT SUPPORTED | 0.017982; 0.177822 | EXPLORATORY; Holm across 2 splits 0.035964; 0.177822, not family-wide |
 | 004 | qo->qo first-word transition depletion, training only, 2 folio splits, within-paragraph shuffled rival | TRAINING SIGNAL, not independently confirmed | 0.000999; 0.000999 | EXPLORATORY; Holm across 2 splits 0.001998 each, not family-wide; prior whole-corpus leakage |
+
+## Engineering replay 005 (2026-11-14)
+
+`005-train-isolation-smoke` is **NOT A SCIENTIFIC ATTEMPT**. It only checks the filtered training input hash, bytes, lines and instrumented read isolation. Its successful CI run, if any, must not change the **NON VERIFICATO** status of scientific attempts 001–004, and must not be counted as a qualifying scientific experiment. The archived evidence in 001–004 is unchanged. See `research/audit-remediation-20261114.md`.
