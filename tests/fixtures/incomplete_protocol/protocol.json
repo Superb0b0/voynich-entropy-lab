@@ -1,0 +1,21 @@
+{
+  "experiment_id": "V32-SYNTH-01",
+  "hypothesis": "synthetic positional recurrence",
+  "primary_metric": "recurrence",
+  "decision_threshold": 0.2,
+  "null_model": "synthetic shuffle",
+  "data_version": "synthetic-v1",
+  "discovery_folia": [
+    "f1r",
+    "f1v"
+  ],
+  "test_folia": [
+    "f2r"
+  ],
+  "inputs": [
+    {
+      "path": "input.txt",
+      "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+    }
+  ]
+}
