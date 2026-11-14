@@ -1,0 +1,5 @@
+seed: 20261119
+tolerance: 0
+command:
+  - python
+  - run.py
