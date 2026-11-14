@@ -59,6 +59,20 @@ def compare(a,b,tol,path="$"):
         for i,(x,y) in enumerate(zip(a,b)):compare(x,y,tol,f"{path}[{i}]")
     elif a!=b:fail(f"{path}: mismatch")
 
+def audit_trace(log, folder, forbidden):
+    # Conservative policy: reject path operations whose resolution requires
+    # per-process cwd or directory-fd tracking. Never assume initial cwd.
+    if re.search(r"\b(?:chdir|fchdir)\(", log):
+        fail(f"{folder.name}: cwd change; path audit cannot safely continue")
+    if re.search(r"\b(?:openat|openat2|readlinkat)\((?!AT_FDCWD,)", log):
+        fail(f"{folder.name}: non-AT_FDCWD directory-fd access")
+    if "<unfinished ..." in log or "resumed>" in log:
+        fail(f"{folder.name}: split syscall; path audit cannot safely continue")
+    for raw in re.findall(r'(?:open|openat|openat2|readlink|readlinkat)\([^\n]*?"([^"\n]+)"',log):
+        candidate=(folder/raw).resolve() if not os.path.isabs(raw) else pathlib.Path(raw).resolve()
+        if candidate in forbidden or candidate==HOLDOUT.resolve():
+            fail(f"{folder.name}: protected input access: {candidate}")
+
 def verify_attempt(folder, safe_dir, forbidden):
     cfg_path=folder/"attempt.yml"
     if not cfg_path.is_file():fail(f"{folder.name}: missing attempt.yml; cannot infer execution contract")
@@ -88,18 +102,7 @@ def verify_attempt(folder, safe_dir, forbidden):
                             "-s","4096","-o",str(trace),"--",*cmd],cwd=folder,env=env,
                            timeout=600,capture_output=True,text=True)
         log=trace.read_text(errors="replace")
-        # Conservative policy: reject path operations whose resolution requires
-        # per-process cwd or directory-fd tracking. Never assume initial cwd.
-        if re.search(r"\b(?:chdir|fchdir)\(", log):
-            fail(f"{folder.name}: cwd change; path audit cannot safely continue")
-        if re.search(r"\b(?:openat|openat2|readlinkat)\((?!AT_FDCWD,)", log):
-            fail(f"{folder.name}: non-AT_FDCWD directory-fd access")
-        if "<unfinished ..." in log or "resumed>" in log:
-            fail(f"{folder.name}: split syscall; path audit cannot safely continue")
-        for raw in re.findall(r'(?:open|openat|openat2|readlink|readlinkat)\([^\n]*?"([^"\n]+)"',log):
-            candidate=(folder/raw).resolve() if not os.path.isabs(raw) else pathlib.Path(raw).resolve()
-            if candidate in forbidden or candidate==HOLDOUT.resolve():
-                fail(f"{folder.name}: protected input access: {candidate}")
+        audit_trace(log, folder, forbidden)
         if run.returncode:fail(f"{folder.name}: command failed ({run.returncode}): {run.stderr[-1200:]}")
     if not output.is_file():fail(f"{folder.name}: no results_ci.json produced")
     compare(json.loads(expected.read_text()),json.loads(output.read_text()),tol)
