@@ -1,0 +1,8 @@
+{
+  "classification": "ENGINEERING_SMOKE_TEST",
+  "train_sha256": "dea09c32de148c2bbf592b00e3042993cc57d967c615159ccef458e82270cbe9",
+  "train_bytes": 323741,
+  "train_lines": 6665,
+  "seed": 20261114,
+  "scientific_claim": false
+}
