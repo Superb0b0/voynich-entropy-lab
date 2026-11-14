@@ -1,0 +1,12 @@
+# 007 — preregistered conditional qo transition-rate check
+Date: 2026-11-14. This protocol is committed **before executing attempt 007**. Exploratory only, because qo was selected after inspection in historical 004/006. This is a correction of the denominator confound reported in 006, not independent confirmation.
+
+**Inputs and isolation:** read exclusively `VOYNICH_DATA_DIR/ZL3b-n.txt` SHA-256 `dea09c32de148c2bbf592b00e3042993cc57d967c615159ccef458e82270cbe9`; do not read full corpus or HOLDOUT.md. Same parser, folio splits and adjacency as 006. Both splits must independently meet the criteria.
+
+**Observed:** number of qo→qo adjacent first-word transitions divided by the number of eligible qo predecessors, not raw hit count.
+
+**Null A (paragraph shuffle):** shuffle all first words within each paragraph, preserving the paragraph's word multiset and numbered adjacency; recompute numerator AND denominator for each draw. Compare the **rate** (hit/den) to the observed rate, discarding draws with zero denominator. This is a positional-exchangeability null.
+
+**Null B (fixed-predecessor character Markov):** retain the observed predecessor words and their positions; replace only the successor at each eligible qo-predecessor transition with an independently generated word of that successor's observed length from a first-order character Markov model trained solely on training first words of the corresponding folio split. Denominator is **exactly fixed** to the observed value in each simulation. This tests successor propensity conditional on the actual qo predecessors. Overlapping adjacent pairs are evaluated independently under this null, a limitation disclosed in the verdict. This internal model is not ms408, Naibbe, or Timm–Schinner.
+
+1000 simulations per rival per split, `random.Random(20261119 + split*10 + rival_index)`. One-sided Monte Carlo p=(1+count(null_rate<=observed_rate))/1001. Report observed numerator, denominator, rate, null mean rate, null 2.5%/97.5% empirical quantiles, p, ratio observed_rate/null_mean_rate, zero-denominator draws. Correct four p-values by Holm. **Exploratory success** only if all four adjusted p<=0.01, all four ratios <0.5, and no zero-denominator draws. Otherwise NOT SUPPORTED or INCONCLUSIVE. Never upgrade to scientific VALIDATED without independent external rivals and untouched holdout approval. Run budget 600 s; seed fixed. CI exact numerical replay required.
