@@ -1,0 +1,41 @@
+name: Folio predictive benchmark (training-only)
+on:
+  push:
+    paths:
+      - 'experiments/folio-benchmark-20261114/**'
+      - '.github/workflows/folio-benchmark-20261114.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build ephemeral filtered corpora; never publish reserved folio identifiers
+        run: |
+          python - <<'PY'
+          import pathlib,tempfile,os
+          from tools.verify_attempts import hashes,protected,sanitize
+          hashes()
+          ids=protected()
+          d=pathlib.Path(os.environ["RUNNER_TEMP"])/"voynich_training_only"
+          d.mkdir(exist_ok=True)
+          for src in pathlib.Path("data").glob("*.txt"):
+              (d/src.name).write_text(sanitize(src.read_text(),ids))
+          print("Training-only corpora prepared; protected IDs not printed")
+          PY
+      - name: Run folio-heldout predictive benchmark
+        env:
+          VOYNICH_DATA_DIR: ${{ runner.temp }}/voynich_training_only
+        run: python experiments/folio-benchmark-20261114/benchmark.py | tee benchmark-results.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: folio-benchmark-results
+          path: benchmark-results.json
+          retention-days: 30
