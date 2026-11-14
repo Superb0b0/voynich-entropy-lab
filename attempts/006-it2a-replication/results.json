@@ -1,0 +1,170 @@
+{
+ "corpus": "IT2a-n.txt",
+ "criteria": {
+  "M1_qoqo_excluded_both_directions": true,
+  "M2_all_inside_both_directions": false,
+  "verdict": "NOT SUPPORTED"
+ },
+ "data_sha256": "a12879dfa02f8fc8f9a9c9bea5bf019283959ceca09a446abdd273baced9705c",
+ "directions": {
+  "fit0_pred1": {
+   "M1_theta_only": {
+    "qoqo": {
+     "hi": 11,
+     "inside": false,
+     "lo": 3,
+     "mean": 6.86,
+     "observed": 2
+    },
+    "repeat": {
+     "hi": 9,
+     "inside": true,
+     "lo": 1,
+     "mean": 4.55,
+     "observed": 5
+    },
+    "same_nonqo": {
+     "hi": 123,
+     "inside": false,
+     "lo": 89,
+     "mean": 104.9,
+     "observed": 128
+    }
+   },
+   "M2_theta_phi": {
+    "qoqo": {
+     "hi": 6,
+     "inside": true,
+     "lo": 0,
+     "mean": 3.01,
+     "observed": 2
+    },
+    "repeat": {
+     "hi": 8,
+     "inside": true,
+     "lo": 1,
+     "mean": 4.465,
+     "observed": 5
+    },
+    "same_nonqo": {
+     "hi": 127,
+     "inside": false,
+     "lo": 93,
+     "mean": 111.115,
+     "observed": 128
+    }
+   },
+   "observed_fit": {
+    "qoqo": 12,
+    "repeat": 7,
+    "same_nonqo": 161
+   },
+   "phi": 0.981579,
+   "theta_all": 0.959568,
+   "theta_nonqo": 0.868927
+  },
+  "fit1_pred0": {
+   "M1_theta_only": {
+    "qoqo": {
+     "hi": 38,
+     "inside": false,
+     "lo": 19,
+     "mean": 28.155,
+     "observed": 12
+    },
+    "repeat": {
+     "hi": 13,
+     "inside": true,
+     "lo": 3,
+     "mean": 7.24,
+     "observed": 7
+    },
+    "same_nonqo": {
+     "hi": 194,
+     "inside": true,
+     "lo": 148,
+     "mean": 168.355,
+     "observed": 161
+    }
+   },
+   "M2_theta_phi": {
+    "qoqo": {
+     "hi": 14,
+     "inside": true,
+     "lo": 4,
+     "mean": 8.11,
+     "observed": 12
+    },
+    "repeat": {
+     "hi": 11,
+     "inside": true,
+     "lo": 2,
+     "mean": 6.22,
+     "observed": 7
+    },
+    "same_nonqo": {
+     "hi": 199,
+     "inside": true,
+     "lo": 153,
+     "mean": 176.965,
+     "observed": 161
+    }
+   },
+   "observed_fit": {
+    "qoqo": 2,
+    "repeat": 5,
+    "same_nonqo": 128
+   },
+   "phi": 1.677419,
+   "theta_all": 0.766193,
+   "theta_nonqo": 0.691337
+  }
+ },
+ "groups": {
+  "0": {
+   "n_groups": 124,
+   "valid_pairs": 1871
+  },
+  "1": {
+   "n_groups": 82,
+   "valid_pairs": 1224
+  }
+ },
+ "seed": 20261121,
+ "settings": {
+  "burn": 10,
+  "classes": [
+   "qo",
+   "ch",
+   "sh",
+   "d",
+   "o",
+   "y",
+   "s",
+   "other"
+  ],
+  "grid_phi": [
+   0.0,
+   0.5,
+   1.0,
+   1.5,
+   2.0,
+   2.5,
+   3.0,
+   3.5,
+   4.0
+  ],
+  "grid_theta": [
+   0.0,
+   0.5,
+   1.0,
+   1.5,
+   2.0,
+   2.5,
+   3.0
+  ],
+  "r_fit": 30,
+  "r_pred": 200,
+  "thin": 3
+ }
+}
