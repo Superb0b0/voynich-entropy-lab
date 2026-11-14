@@ -14,6 +14,9 @@ on:
       - 'registry/**'
       - 'scripts/inventory_attempts.py'
       - 'tests/test_inventory_attempts.py'
+      - 'scripts/active_replay.py'
+      - 'tests/active_replay/**'
+      - 'tests/test_active_replay.py'
       - '.github/workflows/verify.yml'
   pull_request:
   workflow_dispatch:
@@ -87,5 +90,34 @@ jobs:
         with:
           name: v3-2-attempt-inventory
           path: output/attempt-inventory.json
+          if-no-files-found: error
+          retention-days: 7
+
+  active-replay-technical:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install access tracer
+        run: sudo apt-get update && sudo apt-get install -y strace
+      - name: Fail-closed negative replay tests
+        run: python -m unittest discover -s tests -p 'test_active_replay.py' -v
+      - name: Execute two clean synthetic technical replays
+        run: python scripts/active_replay.py
+      - name: Archive replay evidence and verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-2-active-replay-technical
+          path: |
+            output/active-replay-evidence.json
+            output/active-replay-report.json
           if-no-files-found: error
           retention-days: 7
