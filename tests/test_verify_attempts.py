@@ -27,6 +27,16 @@ class VerifyTests(unittest.TestCase):
         self.assertNotIn("secret",result)
         self.assertNotIn("<f2r>",result)
         self.assertIn("safeagain",result)
+    def test_legacy_attempts_never_auto_promoted(self):
+        self.assertEqual(len(v.LEGACY_EXPLORATORY), 4)
+        self.assertIn("004-qo-transition", v.LEGACY_EXPLORATORY)
+        self.assertNotIn("005-train-isolation-smoke", v.LEGACY_EXPLORATORY)
+
+    def test_sanitize_preserves_nonprotected_page(self):
+        raw="<f1r> <! page\n<f1r.1,@P0> train\n<f2r> <! page\n<f2r.1,@P0> held\n"
+        clean=v.sanitize(raw,{"f2r"})
+        self.assertEqual(clean, "<f1r> <! page\n<f1r.1,@P0> train\n")
+
     def test_manifest_mismatch_fails(self):
         with tempfile.TemporaryDirectory() as temp:
             root=pathlib.Path(temp)
