@@ -6,11 +6,11 @@ base=pathlib.Path(os.environ["VOYNICH_DATA_DIR"])
 def parse(path):
  pages={};page=None
  for line in path.read_text(encoding="utf-8").splitlines():
-  m=re.match(r"^<(f[0-9]+[rv][0-9]*)>\\s+<!",line)
+  m=re.match(r"^<(f[0-9]+[rv][0-9]*)>\s+<!",line)
   if m:
    page=m.group(1);pages.setdefault(page,[]);continue
   if page is None or not re.match(r"^<f[0-9]+[rv][0-9]*\\.",line):continue
-  if ";P" not in line.split(">",1)[0]:continue
+  if not re.match(r"^<f[0-9]+[rv][0-9]*\\.[^>]*[,@+]P[0-9]*>",line):continue
   if ">" not in line:continue
   body=line.split(">",1)[1].split("<!",1)[0]
   words=re.findall(r"[a-zA-Z]+",body.lower())
