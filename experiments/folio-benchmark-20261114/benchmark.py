@@ -9,8 +9,8 @@ def parse(path):
   m=re.match(r"^<(f[0-9]+[rv][0-9]*)>\s+<!",line)
   if m:
    page=m.group(1);pages.setdefault(page,[]);continue
-  if page is None or not re.match(r"^<f[0-9]+[rv][0-9]*\\.",line):continue
-  if not re.match(r"^<f[0-9]+[rv][0-9]*\\.[^>]*[,@+]P[0-9]*>",line):continue
+  if page is None or not re.match(r"^<f[0-9]+[rv][0-9]*\.",line):continue
+  if not re.match(r"^<f[0-9]+[rv][0-9]*\.[^>]*[,@+]P[0-9]*>",line):continue
   if ">" not in line:continue
   body=line.split(">",1)[1].split("<!",1)[0]
   words=re.findall(r"[a-zA-Z]+",body.lower())
