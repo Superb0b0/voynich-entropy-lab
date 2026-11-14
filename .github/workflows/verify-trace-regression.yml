@@ -1,0 +1,26 @@
+name: Verify synthetic trace-audit regression
+on:
+  push:
+    paths:
+      - 'tests/test_verify_chdir_regression.py'
+      - 'tools/verify_attempts.py'
+      - '.github/workflows/verify-trace-regression.yml'
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-trace-regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install verifier import dependency
+        run: python -m pip install 'PyYAML==6.0.2'
+      - name: Run five synthetic trace-audit tests
+        run: python -m unittest discover -s tests -p 'test_verify_chdir_regression.py' -v
