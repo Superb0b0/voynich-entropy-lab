@@ -1,0 +1,12 @@
+{
+  "conditional_phi": 0.063399,
+  "draws": 2000,
+  "folios": 80,
+  "per_section": 40,
+  "pooled_permutation_p": 0.0005,
+  "pooled_phi": 0.530907,
+  "protocol_sha256": "d2374348eea24a01871b759019fdb1fd15e7b2d474248edfcfbff3940609c67b",
+  "seed": 20261114,
+  "status": "SYNTHETIC_ONLY",
+  "stratified_permutation_p": 0.565717
+}
