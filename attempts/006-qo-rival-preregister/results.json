@@ -1,0 +1,68 @@
+{
+  "classification": "EXPLORATORY_TRAIN_ONLY",
+  "data_sha256": "dea09c32de148c2bbf592b00e3042993cc57d967c615159ccef458e82270cbe9",
+  "holm_adjusted": {
+    "0_char_markov": 0.003996003996003996,
+    "0_paragraph_shuffle": 0.003996003996003996,
+    "1_char_markov": 0.003996003996003996,
+    "1_paragraph_shuffle": 0.003996003996003996
+  },
+  "permutations": 1000,
+  "scientific_validation": false,
+  "seed": 20261118,
+  "splits": {
+    "0": {
+      "folios": 48,
+      "groups": 129,
+      "observed": 12,
+      "qo_predecessors": 263,
+      "rivals": {
+        "char_markov": {
+          "null95": [
+            22,
+            47
+          ],
+          "null_mean": 33.999,
+          "obs_over_null": 0.352951557398747,
+          "p_one_sided": 0.000999000999000999
+        },
+        "paragraph_shuffle": {
+          "null95": [
+            39,
+            59
+          ],
+          "null_mean": 49.011,
+          "obs_over_null": 0.24484299442982185,
+          "p_one_sided": 0.000999000999000999
+        }
+      }
+    },
+    "1": {
+      "folios": 30,
+      "groups": 82,
+      "observed": 2,
+      "qo_predecessors": 133,
+      "rivals": {
+        "char_markov": {
+          "null95": [
+            7,
+            22
+          ],
+          "null_mean": 13.319,
+          "obs_over_null": 0.15016142353029505,
+          "p_one_sided": 0.001998001998001998
+        },
+        "paragraph_shuffle": {
+          "null95": [
+            9,
+            21
+          ],
+          "null_mean": 15.371,
+          "obs_over_null": 0.13011515190943984,
+          "p_one_sided": 0.000999000999000999
+        }
+      }
+    }
+  },
+  "verdict": "EXPLORATORY_SIGNAL_ALL_RIVALS"
+}
