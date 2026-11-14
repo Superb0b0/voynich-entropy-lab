@@ -19,3 +19,13 @@ Input principali: ZL3b-n.txt (bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c90
 ## Engineering replay 005 (2026-11-14)
 
 `005-train-isolation-smoke` is **NOT A SCIENTIFIC ATTEMPT**. It only checks the filtered training input hash, bytes, lines and instrumented read isolation. Its successful CI run, if any, must not change the **NON VERIFICATO** status of scientific attempts 001–004, and must not be counted as a qualifying scientific experiment. The archived evidence in 001–004 is unchanged. See `research/audit-remediation-20261114.md`.
+
+## 006 — qo-to-qo, two rivals (2026-11-14)
+
+- Preregistration committed before execution: `attempts/006-qo-rival-preregister/PROTOCOL.md`.
+- **EXPLORATORY / NOT INDEPENDENTLY VALIDATED**: previously identified qo signal; protected holdout unopened.
+- Training-only SHA-256 `dea09c32de148c2bbf592b00e3042993cc57d967c615159ccef458e82270cbe9`; 1,000 simulations per split and rival; seed 20261118.
+- Split 0: observed 12/263; paragraph shuffle mean 49.011 (p=0.000999); internal character-Markov mean 33.999 (p=0.000999).
+- Split 1: observed 2/133; paragraph shuffle mean 15.371 (p=0.000999); internal character-Markov mean 13.319 (p=0.001998).
+- Holm across four comparisons: adjusted p=0.003996 for each. Prespecified exploratory threshold met; external rival packages and independent holdout still pending.
+- **CI status: NON VERIFICATO until the run for the committed `results.json` passes.** Green CI would mean reproducible, not scientifically validated.
