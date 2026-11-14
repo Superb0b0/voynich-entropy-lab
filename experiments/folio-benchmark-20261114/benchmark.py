@@ -32,8 +32,8 @@ def evaluate(pages):
  for folio in test:
   for line in pages[folio]:
    for prev,w in zip(["<s>"]+line[:-1],line):
-    p1=(uni[w]+.5)/(total+.5*V)
-    p2=(bi[(prev,w)]+.5)/(prefix[prev]+.5*V)
+    p1=(uni[w] + .5 if w in vocab else .5)/(total+.5*V)
+    p2=(bi[(prev,w)]+.5 if w in vocab else .5)/(prefix[prev]+.5*V)
     losses[0]-=math.log(p1);losses[1]-=math.log(p2);tokens+=1
  if not tokens:return {"status":"INSUFFICIENT_TEST_TOKENS"}
  return {"status":"EXPLORATORY_NOT_CI_VERIFIED","train_folios":len(train),"test_folios":len(test),"test_tokens":tokens,"unigram_nats_per_token":round(losses[0]/tokens,6),"bigram_nats_per_token":round(losses[1]/tokens,6),"bigram_gain_nats_per_token":round((losses[0]-losses[1])/tokens,6)}
