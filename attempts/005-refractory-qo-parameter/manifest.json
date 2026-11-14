@@ -1,0 +1,12 @@
+{
+ "attempt": "005-refractory-qo-parameter",
+ "corpus": "ZL3b-n.txt",
+ "corpus_full_sha256_expected": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+ "corpus_training_only_sha256": "dea09c32de148c2bbf592b00e3042993cc57d967c615159ccef458e82270cbe9",
+ "run_py_sha256": "c522868b488707d8fe87e5a1d78683e29de28e9663c6eb1144d232f773e0118e",
+ "results_json_sha256": "1dc84f8a7a6225281fd64726e10a5ef201a23523382f88baa93534e22e9607af",
+ "seed": 20261121,
+ "python_local": "3.12.3",
+ "ci_python": "3.11 (verify.yml)",
+ "local_verification": "replay entro tolleranza 1e-6 + isolamento strace OK con tools/verify_attempts.py::verify_attempt, solo per 005 e 006, 2026-11-14; verifier completo non eseguito (001-004 senza attempt.yml)"
+}
