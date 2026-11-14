@@ -84,12 +84,18 @@ def verify_attempt(folder, safe_dir, forbidden):
                 "VOYNICH_DATA_DIR":str(safe_dir),"VOYNICH_HOLDOUT_POLICY":"TRAIN_ONLY"})
     with tempfile.TemporaryDirectory() as td:
         trace=pathlib.Path(td)/"trace"
-        run=subprocess.run(["strace","-f","-qq","-e","trace=open,openat,openat2,readlink,readlinkat",
+        run=subprocess.run(["strace","-f","-qq","-e","trace=open,openat,openat2,readlink,readlinkat,chdir,fchdir",
                             "-s","4096","-o",str(trace),"--",*cmd],cwd=folder,env=env,
                            timeout=600,capture_output=True,text=True)
         log=trace.read_text(errors="replace")
-        # Fail closed on any attempt to access the original corpus or HOLDOUT.md.
-        # strace paths can be relative to cwd or absolute.
+        # Conservative policy: reject path operations whose resolution requires
+        # per-process cwd or directory-fd tracking. Never assume initial cwd.
+        if re.search(r"\b(?:chdir|fchdir)\(", log):
+            fail(f"{folder.name}: cwd change; path audit cannot safely continue")
+        if re.search(r"\b(?:openat|openat2|readlinkat)\((?!AT_FDCWD,)", log):
+            fail(f"{folder.name}: non-AT_FDCWD directory-fd access")
+        if "<unfinished ..." in log or "resumed>" in log:
+            fail(f"{folder.name}: split syscall; path audit cannot safely continue")
         for raw in re.findall(r'(?:open|openat|openat2|readlink|readlinkat)\([^\n]*?"([^"\n]+)"',log):
             candidate=(folder/raw).resolve() if not os.path.isabs(raw) else pathlib.Path(raw).resolve()
             if candidate in forbidden or candidate==HOLDOUT.resolve():
