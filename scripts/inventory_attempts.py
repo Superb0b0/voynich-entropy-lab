@@ -28,10 +28,17 @@ def inventory(root, registry):
                 problems.append(name + ": incomplete classification record")
             if entry.get("eligible_for_evidence_promotion") is not False:
                 problems.append(name + ": legacy/quarantine must prohibit evidence promotion")
+        if state == "legacy":
+            problems.append(name + ": legacy classification pending explicit quarantine or activation")
+        if state == "quarantined" and has_config:
+            problems.append(name + ": quarantine reason no longer matches missing attempt.yml; review required")
+        if state == "quarantined" and reason != "missing attempt.yml":
+            problems.append(name + ": unsupported quarantine reason")
         if state == "active" and not has_config:
             problems.append(name + ": active attempt missing attempt.yml")
         rows.append({"attempt_id": name, "state": state, "attempt_yml": "present" if has_config else "missing",
-                     "evidence_eligible": state == "active" and has_config, "reason": reason})
+                     "evidence_eligible": state == "active" and has_config, "reason": reason,
+                     "outcome": "QUARANTINED" if state == "quarantined" else ("PENDING_REPLAY" if state == "active" else "FAIL")})
     for name in sorted(set(entries) - {p.name for p in present}):
         problems.append(name + ": registry entry absent from disk")
     if not present:
