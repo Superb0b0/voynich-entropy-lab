@@ -1,0 +1,74 @@
+{
+  "classification": "EXPLORATORY_CONDITIONAL_RATE",
+  "data_sha256": "dea09c32de148c2bbf592b00e3042993cc57d967c615159ccef458e82270cbe9",
+  "holm_adjusted": {
+    "0_fixed_predecessor_char_markov": 0.003996003996003996,
+    "0_paragraph_shuffle_rate": 0.003996003996003996,
+    "1_fixed_predecessor_char_markov": 0.003996003996003996,
+    "1_paragraph_shuffle_rate": 0.003996003996003996
+  },
+  "scientific_validation": false,
+  "seed": 20261119,
+  "simulations": 1000,
+  "splits": {
+    "0": {
+      "folios": 48,
+      "groups": 129,
+      "observed_denominator": 263,
+      "observed_hits": 12,
+      "observed_rate": 0.045627376425855515,
+      "rivals": {
+        "fixed_predecessor_char_markov": {
+          "null95_rate": [
+            0.09505703422053231,
+            0.17490494296577946
+          ],
+          "null_mean_rate": 0.1324486692015209,
+          "obs_over_null_rate": 0.3444910145260378,
+          "p_one_sided": 0.000999000999000999,
+          "zero_denominator_draws": 0
+        },
+        "paragraph_shuffle_rate": {
+          "null95_rate": [
+            0.14615384615384616,
+            0.2277992277992278
+          ],
+          "null_mean_rate": 0.18850908902091276,
+          "obs_over_null_rate": 0.2420433765970495,
+          "p_one_sided": 0.000999000999000999,
+          "zero_denominator_draws": 0
+        }
+      }
+    },
+    "1": {
+      "folios": 30,
+      "groups": 82,
+      "observed_denominator": 133,
+      "observed_hits": 2,
+      "observed_rate": 0.015037593984962405,
+      "rivals": {
+        "fixed_predecessor_char_markov": {
+          "null95_rate": [
+            0.05263157894736842,
+            0.15037593984962405
+          ],
+          "null_mean_rate": 0.1009172932330827,
+          "obs_over_null_rate": 0.14900908955446282,
+          "p_one_sided": 0.000999000999000999,
+          "zero_denominator_draws": 0
+        },
+        "paragraph_shuffle_rate": {
+          "null95_rate": [
+            0.06870229007633588,
+            0.16541353383458646
+          ],
+          "null_mean_rate": 0.11791768309195544,
+          "obs_over_null_rate": 0.12752619955427447,
+          "p_one_sided": 0.000999000999000999,
+          "zero_denominator_draws": 0
+        }
+      }
+    }
+  },
+  "verdict": "EXPLORATORY_THRESHOLD_MET"
+}
