@@ -8,6 +8,11 @@ MANIFEST=ROOT/"MANIFEST.md"
 HOLDOUT=ROOT/"HOLDOUT.md"
 NUM=re.compile(r"^[0-9a-f]{64}$")
 ATTEMPT=re.compile(r"^[0-9]{3}-[^/]+$")
+# Explicitly grandfathered evidence, never certified under the newer protected-input gate.
+LEGACY_EXPLORATORY = frozenset({
+    "001-paragraph-header-key", "002-currier-header-interaction",
+    "003-firstword-avoidance", "004-qo-transition",
+})
 
 def fail(msg):
     raise RuntimeError(msg)
@@ -104,6 +109,10 @@ def main():
     if shutil.which("strace") is None:fail("strace unavailable; cannot audit reads")
     attempts=sorted(p for p in (ROOT/"attempts").glob("*") if p.is_dir() and ATTEMPT.fullmatch(p.name))
     if not attempts:fail("No attempts/NNN-*/ found; verification is NOT VERIFIED")
+    missing_legacy=LEGACY_EXPLORATORY - {p.name for p in attempts}
+    if missing_legacy:fail(f"Legacy evidence missing: {sorted(missing_legacy)}")
+    replay=[p for p in attempts if p.name not in LEGACY_EXPLORATORY]
+    if not replay:fail("No training-only replay configured; NOT VERIFIED")
     forbidden={p.resolve() for p in (ROOT/"data").glob("*.txt")}
     with tempfile.TemporaryDirectory() as td:
         safe_dir=pathlib.Path(td)/"data";safe_dir.mkdir()
@@ -113,8 +122,11 @@ def main():
             if not re.search(r"^<f\d+[rv]\d*>\s+<!",raw,re.M):
                 fail(f"{source.name}: cannot safely remove holdout pages")
             (safe_dir/source.name).write_text(sanitize(raw,pages))
-        for folder in attempts:verify_attempt(folder,safe_dir,forbidden)
-    print(f"VERIFIED: {len(attempts)} attempts, SHA256 manifest, traced holdout isolation")
+        for folder in replay:verify_attempt(folder,safe_dir,forbidden)
+    print(f"PASS: {len(replay)} protected-input engineering/scientific replays; "
+          f"{len(LEGACY_EXPLORATORY)} historical attempts EXCLUDED / NON VERIFICATO; "
+          "SHA256 manifest and traced original-corpus isolation. "
+          "No scientific validation implied.")
 
 if __name__=="__main__":
     try:main()
