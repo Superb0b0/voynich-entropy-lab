@@ -55,6 +55,7 @@ def main():
     try:
         e=execute()
         result=verify(e)
+        (ROOT/"output"/"active-replay-evidence.json").write_text(json.dumps(e,indent=2)+"\n")
     except Exception as exc:
         result=verdict("EXECUTION_OR_EVIDENCE_ERROR",{"error":str(exc)})
     target.write_text(json.dumps(result,indent=2)+"\n")
