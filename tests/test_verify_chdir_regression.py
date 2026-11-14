@@ -1,42 +1,46 @@
 #!/usr/bin/env python3
-"""Regression for verifier's strace relative-path resolution, synthetic only.
-
-Expected on current main: FAIL, because a chdir event is not tracked.
-No real corpus or holdout is opened.
-"""
+"""Synthetic fail-closed trace audit regression. No Voynich inputs."""
+import importlib.util
 import pathlib
-import re
 import tempfile
 import unittest
 
-PATH_RE = re.compile(r'(?:open|openat|openat2|readlink|readlinkat)\([^\n]*?"([^"\n]+)"')
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+spec = importlib.util.spec_from_file_location("verify_attempts", ROOT / "tools" / "verify_attempts.py")
+verify = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(verify)
 
-def current_verifier_detects(trace, attempt_dir, protected):
-    """Faithfully isolate the current verify_attempt trace path check."""
-    for raw in PATH_RE.findall(trace):
-        candidate = ((attempt_dir / raw).resolve() if not pathlib.Path(raw).is_absolute()
-                     else pathlib.Path(raw).resolve())
-        if candidate in protected:
-            return True
-    return False
+class TraceAuditRegression(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        root = pathlib.Path(self.tmp.name)
+        self.attempt = root / "attempts" / "001-synthetic"
+        self.attempt.mkdir(parents=True)
+        self.target = root / "data" / "SYNTHETIC_ONLY.txt"
+        self.target.parent.mkdir()
+        self.target.touch()
 
-class ChdirRegression(unittest.TestCase):
-    def test_open_after_chdir_must_be_detected(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = pathlib.Path(tmp)
-            attempt = root / "attempts" / "001-synthetic"
-            attempt.mkdir(parents=True)
-            target = root / "data" / "SYNTHETIC_ONLY.txt"
-            target.parent.mkdir()
-            target.touch()
-            # Real strace includes a PID prefix; this test does not parse
-            # that prefix because the current verifier ignores it too.
-            trace = ('123 chdir("../../data") = 0\n'
-                     '123 openat(AT_FDCWD, "SYNTHETIC_ONLY.txt", O_RDONLY) = 3\n')
-            self.assertTrue(
-                current_verifier_detects(trace, attempt, {target.resolve()}),
-                "FAIL CLOSED: verifier missed a protected relative open after chdir"
-            )
+    def test_absolute_protected_open_rejected(self):
+        with self.assertRaises(RuntimeError):
+            verify.audit_trace(f'123 open("{self.target}", O_RDONLY) = 3', self.attempt, {self.target})
+
+    def test_relative_protected_open_rejected(self):
+        with self.assertRaises(RuntimeError):
+            verify.audit_trace('123 open("../../data/SYNTHETIC_ONLY.txt", O_RDONLY) = 3', self.attempt, {self.target})
+
+    def test_chdir_then_relative_open_rejected(self):
+        trace = ('123 chdir("../../data") = 0\n'
+                 '123 openat(AT_FDCWD, "SYNTHETIC_ONLY.txt", O_RDONLY) = 3\n')
+        with self.assertRaisesRegex(RuntimeError, "cwd change"):
+            verify.audit_trace(trace, self.attempt, {self.target})
+
+    def test_dirfd_relative_open_rejected(self):
+        with self.assertRaisesRegex(RuntimeError, "directory-fd"):
+            verify.audit_trace('123 openat(3, "SYNTHETIC_ONLY.txt", O_RDONLY) = 4', self.attempt, {self.target})
+
+    def test_safe_relative_open_allowed(self):
+        verify.audit_trace('123 openat(AT_FDCWD, "notes.txt", O_RDONLY) = 3', self.attempt, {self.target})
 
 if __name__ == "__main__":
     unittest.main()
