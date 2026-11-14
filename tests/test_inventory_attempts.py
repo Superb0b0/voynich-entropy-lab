@@ -18,13 +18,17 @@ class InventoryTests(unittest.TestCase):
                 (folder / "attempt.yml").write_text("seed: 42\n")
             registry = {"attempts": {"001-example": item(state)} if registered else {}}
             return inventory(root, registry)
-    def test_known_legacy_missing_config_is_not_evidence(self):
-        rows, errors = self.check("legacy")
+    def test_known_quarantine_missing_config_is_not_evidence(self):
+        rows, errors = self.check("quarantined")
         self.assertFalse(errors)
         self.assertFalse(rows[0]["evidence_eligible"])
+        self.assertEqual(rows[0]["outcome"], "QUARANTINED")
     def test_unknown_fails(self):
-        _, errors = self.check("legacy", registered=False)
+        _, errors = self.check("quarantined", registered=False)
         self.assertTrue(any("unknown" in e for e in errors))
+    def test_unresolved_legacy_fails(self):
+        _, errors = self.check("legacy")
+        self.assertTrue(any("pending" in e for e in errors))
     def test_active_missing_config_fails(self):
         _, errors = self.check("active")
         self.assertTrue(any("missing attempt.yml" in e for e in errors))
