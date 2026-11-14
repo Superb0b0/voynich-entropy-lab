@@ -4,7 +4,7 @@ import unittest
 from scripts.inventory_attempts import inventory
 
 def item(state):
-    return {"state": state, "reason": "archived, not replayed", "evidence": "TESTS.md",
+    return {"state": state, "reason": "missing attempt.yml", "evidence": "TESTS.md",
             "classified_on": "2026-11-14", "decision_commit": "39de351",
             "decision_owner": "maintainer pending confirmation", "eligible_for_evidence_promotion": False}
 
