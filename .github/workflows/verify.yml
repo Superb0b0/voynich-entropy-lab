@@ -9,6 +9,8 @@ on:
       - 'TESTS.md'
       - 'attempts/**'
       - 'tools/verify_attempts.py'
+      - 'scripts/validate_experiment.py'
+      - 'tests/fixtures/**'
       - '.github/workflows/verify.yml'
   pull_request:
   workflow_dispatch:
@@ -42,3 +44,23 @@ jobs:
           path: attempts/**/results_ci.json
           if-no-files-found: ignore
           retention-days: 30
+
+  validate-fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: V3.2 acceptance fixtures (positive and negative)
+        run: python3 scripts/validate_experiment.py tests/fixtures --report output/validation-report.json
+      - name: Upload V3.2 acceptance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-2-acceptance-report
+          path: output/validation-report.json
+          if-no-files-found: error
+          retention-days: 7
