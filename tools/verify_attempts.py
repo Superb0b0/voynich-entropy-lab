@@ -46,7 +46,7 @@ def sanitize(data, pages):
 
 def compare(a,b,tol,path="$"):
     if isinstance(a,bool) or isinstance(b,bool):
-        if a!=b:fail(f"{path}: boolean mismatch")
+        if type(a) is not type(b) or a!=b:fail(f"{path}: boolean mismatch")
     elif isinstance(a,(int,float)) and isinstance(b,(int,float)):
         import math
         if not math.isfinite(a) or not math.isfinite(b) or abs(a-b)>tol:
