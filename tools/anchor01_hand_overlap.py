@@ -12,7 +12,7 @@ def metadata(source,forbidden):
         m=HEADER.match(line)
         if not m:continue
         fields=dict(FIELD.findall(m.group(2)))
-        if fields.get("H") in "12345" and fields.get("I") in ("H","Z","A","B","C","P","S","T"):
+        if fields.get("H") in ("1","2","3","4","5") and fields.get("I") in ("H","Z","A","B","C","P","S","T"):
             result[m.group(1)]=(fields["H"],fields["I"])
     return result
 def main():
