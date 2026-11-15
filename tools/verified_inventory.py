@@ -30,7 +30,7 @@ def attest(filtered_dir, protected_pages, source_names, output_path):
         if pages & protected_pages:
             raise RuntimeError("protected content remains in filtered input")
         if allowed is not None and pages != allowed:
-            raise RuntimeError('filtered page coverage mismatch')
+            raise RuntimeError('filtered page coverage mismatch: first_count=%d, current_count=%d, first_only=%d, current_only=%d; page IDs suppressed' % (len(allowed), len(pages), len(allowed - pages), len(pages - allowed)))
         allowed = pages
         digests[path.name] = hashlib.sha256(raw).hexdigest()
     if not allowed:
