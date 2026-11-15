@@ -128,7 +128,9 @@ def main():
         split=partition(inventory['eligible_page_ids'])
         (pathlib.Path(td)/'anchor01_split.json').write_text(json.dumps(split,sort_keys=True,indent=2)+'\n')
         print(f'FILTERED INVENTORY ATTESTED: {count} eligible pages; IDs not logged')
+        split_digest=hashlib.sha256(json.dumps(split,sort_keys=True,separators=(',',':')).encode()).hexdigest()
         print(f'ANCHOR01 SPLIT: {split["discovery_folio_count"]} discovery folios, {split["internal_test_folio_count"]} internal-test folios; IDs not logged')
+        print(f'ANCHOR01 SPLIT COMMITMENT SHA256: {split_digest}')
         for folder in attempts:verify_attempt(folder,safe_dir,forbidden)
     print(f"VERIFIED: {len(attempts)} attempts, SHA256 manifest, traced holdout isolation")
 
