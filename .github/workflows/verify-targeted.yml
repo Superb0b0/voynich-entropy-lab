@@ -1,0 +1,42 @@
+name: VERIFICA MIRATA (non CI completa)
+on:
+  pull_request:
+    paths:
+      - 'attempts/**'
+      - 'tools/verify_targeted.py'
+      - 'tools/targeted_fixtures/**'
+      - 'tests/test_verify_targeted.py'
+      - '.github/workflows/verify-targeted.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  targeted:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y strace
+          python -m pip install 'PyYAML==6.0.2'
+      - name: Unit tests of the trace parser
+        run: python -m unittest discover -s tests -p 'test_verify_targeted.py' -v
+      - name: VERIFICA MIRATA (self-test isolamento, poi replay per attempt)
+        run: python tools/verify_targeted.py --discover-min 5 --report targeted-report
+      - name: Job summary
+        if: always()
+        run: cat targeted-report/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: targeted-report
+          path: targeted-report
+          retention-days: 30
