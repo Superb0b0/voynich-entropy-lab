@@ -1,5 +1,13 @@
 name: QO-RIVAL-05 circular-shift null (exploratory)
 on:
+  push:
+    branches:
+      - experiment/qo-correction-audit-20261115
+    paths:
+      - 'tools/qo_rival_circular_shift.py'
+      - 'tools/qo_rival_calibration.py'
+      - 'tests/test_qo_rival.py'
+      - '.github/workflows/qo-rival-05.yml'
   workflow_dispatch:
 permissions:
   contents: read
