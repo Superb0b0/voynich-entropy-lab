@@ -8,7 +8,7 @@ def main():
     raw=(ROOT/"data/ZL3b-n.txt").read_bytes()
     if hashlib.sha256(raw).hexdigest()!="bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc": stop("corpus checksum")
     h=(ROOT/"HOLDOUT.md").read_text()
-    m=re.search(r"(?m)^- pagine riservate \(\d+\):\s*(\[[^\n]*\])",h)
+    m=re.search(r"(?m)^- pagine riservate \((\d+)\):\s*(\[[^\n]*\])",h)
     if not m: stop("protected pages not machine-readable")
     try: ids=ast.literal_eval(m.group(2))
     except (SyntaxError,ValueError): stop("protected pages syntax")
