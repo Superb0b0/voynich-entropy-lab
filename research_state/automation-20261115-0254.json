@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-11-15T02:54:45+01:00",
+  "cycle": "SEM-INPUT-GATE-20261115-0254",
+  "source_head": "00412e359b0b3f86c9d3911b38c300386c10ece3",
+  "phase": "INCONCLUSIVE_INPUT_GATE",
+  "scientific_tests_completed": 0,
+  "scientific_claims": 0,
+  "source_documents_checked": [
+    "experiments/SEM-ZOD-01/PREREGISTRATION_DRAFT.md@76547c572d0f",
+    "experiments/ZOD-34/ANOMALY_TRIANGULATION.md@af1a101662b6"
+  ],
+  "decision": "Do not duplicate zodiac semantic test; original image pixels and authorized prefiltered folio membership remain unverified. Switch to obtaining independently authorized training-only material or another non-overlapping structural question.",
+  "input_sha256_verified_this_cycle": false,
+  "holdout_accessed": false,
+  "ci_status": "NOT_VERIFIED",
+  "next_action": "Obtain verifiable authorized prefiltered training-only input without querying protected folio membership; preregister one distinct rival-generator test after hashes and split can be frozen."
+}
