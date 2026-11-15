@@ -14,6 +14,7 @@ import re
 from pathlib import Path
 
 LOCUS = re.compile(r'^<(?P<page>f(?:\d+[rv]\d*|Ros))\.(?P<line>\d+),(?P<locus>[^>]*)>\s*(?P<body>.*)$')
+LOCUS_CANDIDATE = re.compile(r'^<f(?:\d+[rv]\d*|Ros)\.')
 VARIANT = re.compile(r'\[([^:\]\n]+):([^\]\n]+)\]')
 COMMENT = re.compile(r'<!.*?>|<[^>]*>|\{[^}]*\}')
 SPLITS = {'space': re.compile(r'\s+'), 'dot_comma_space': re.compile(r'[.,\s]+')}
@@ -49,7 +50,7 @@ def analyze(raw, scope, source_sha):
         m = LOCUS.match(line)
         if m:
             entries.append((m['page'], m['locus'], m['body']))
-        elif re.match(r'^<f\d+[rv]\d*\.', line):
+        elif LOCUS_CANDIDATE.match(line):
             malformed_loci += 1
     rows = []
     for marker_name, matcher in MARKERS.items():
