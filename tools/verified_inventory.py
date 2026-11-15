@@ -29,7 +29,9 @@ def attest(filtered_dir, protected_pages, source_names, output_path):
             raise RuntimeError("missing page headers")
         if pages & protected_pages:
             raise RuntimeError("protected content remains in filtered input")
-        allowed = pages if allowed is None else allowed & pages
+        if allowed is not None and pages != allowed:
+            raise RuntimeError('filtered page coverage mismatch')
+        allowed = pages
         digests[path.name] = hashlib.sha256(raw).hexdigest()
     if not allowed:
         raise RuntimeError("no common allowed pages")
