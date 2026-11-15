@@ -16,6 +16,7 @@ on:
       - 'tools/anchor01_hand_overlap.py'
       - 'tools/anchor02_hand2_probe.py'
       - 'tools/anchor02_length_control.py'
+      - 'tools/anchor02_layout_folio.py'
   pull_request:
     paths:
       - 'tools/verified_inventory.py'
@@ -52,3 +53,5 @@ jobs:
         run: python tools/anchor02_hand2_probe.py
       - name: Control word length within hand 2
         run: python tools/anchor02_length_control.py
+      - name: Control line position and folio clustering within hand 2
+        run: python tools/anchor02_layout_folio.py
