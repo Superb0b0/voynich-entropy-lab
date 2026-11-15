@@ -1,0 +1,24 @@
+name: Private training preflight (no export)
+on:
+  push:
+    branches:
+      - research/private-training-preflight-20261115
+    paths:
+      - tools/private_training_preflight.py
+      - .github/workflows/private-training-preflight.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify isolation prerequisites without exporting protected data
+        run: python tools/private_training_preflight.py
