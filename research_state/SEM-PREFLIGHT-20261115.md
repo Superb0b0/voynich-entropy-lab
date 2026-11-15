@@ -31,3 +31,6 @@ Verified GitHub main HEAD 8b81f874a9944e88fe113b19460294a1b1c5a593, anchor HEAD 
 
 ## Next executable action
 Read already-existing zodiac research branches and their evidence/limitations; identify independently sourced image and transcription files on authorized non-protected material. Freeze complete protocol only after eligible inputs are confirmed; otherwise record INCONCLUSIVE, not a test.
+
+## Duplicate-prevention update after reading existing branches
+The selected zodiac direction is ALREADY documented in experiments/SEM-ZOD-01/PREREGISTRATION_DRAFT.md at commit 76547c572d0f19c5d3fdccef3b5a825fee42cf46. The image-count anomaly is ALREADY documented in experiments/ZOD-34/ANOMALY_TRIANGULATION.md at commit af1a101662b663c382799a603a95a7c1dfc9f7c6. Therefore this file is an administrative preflight cross-reference, NOT a new experiment, and must not be assigned a new scientific attempt ID. Do not repeat those proposals. The single unresolved technical prerequisite is independent pixel-level verification of original Yale images with frozen image hashes and two blind coders. If unavailable, switch to an independent already-authorized training-only structural question, not a duplicate zodiac proposal.
