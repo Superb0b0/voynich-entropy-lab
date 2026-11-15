@@ -35,7 +35,7 @@ jobs:
           for name in ('ZL3b-n.txt','IT2a-n.txt'):
               src=v.ROOT/'data'/name
               raw=src.read_text()
-              if not re.search(r'^<f\d+[rv]\d*>\\s+<!',raw,re.M):
+              if not re.search(r'^<f\d+[rv]\d*>\s+<!',raw,re.M):
                   v.fail(f'{name}: IVTFF page markers absent')
               filtered=v.sanitize(raw,pages)
               dst=tmp/name
