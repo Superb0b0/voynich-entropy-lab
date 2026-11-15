@@ -65,5 +65,33 @@ class QoRivalRegression(unittest.TestCase):
         self.assertCountEqual([w for _,w in out[("f3r", 1)]], ["qokai", "otedy"])
 
 
+    def test_circular_shift_preserves_word_multiset_and_cyclic_adjacency(self):
+        import importlib.util
+        script = Path(__file__).resolve().parents[1] / "tools" / "qo_rival_circular_shift.py"
+        spec = importlib.util.spec_from_file_location("qo_rival_circular_shift", script)
+        shift = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(shift)
+        groups = {("f1r", 1): [(1, "qoA"), (2, "qoB"), (3, "x"), (4, "qoC")]}
+        out = shift.rotate_groups(groups, random.Random(7))
+        before = [w for _, w in groups[("f1r", 1)]]
+        after = [w for _, w in out[("f1r", 1)]]
+        self.assertCountEqual(before, after)
+        self.assertEqual(len(before), len(after))
+        cyclic_before = sorted((before[i], before[(i+1) % len(before)]) for i in range(len(before)))
+        cyclic_after = sorted((after[i], after[(i+1) % len(after)]) for i in range(len(after)))
+        self.assertEqual(cyclic_before, cyclic_after)
+
+    def test_circular_shift_preserves_line_positions(self):
+        import importlib.util
+        script = Path(__file__).resolve().parents[1] / "tools" / "qo_rival_circular_shift.py"
+        spec = importlib.util.spec_from_file_location("qo_rival_circular_shift", script)
+        shift = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(shift)
+        groups = {("f1r", 1): [(2, "qoA"), (4, "x"), (7, "qoB")],
+                  ("f1v", 2): [(1, "z"), (3, "qoC")]}
+        out = shift.rotate_groups(groups, random.Random(11))
+        self.assertEqual({k: [i for i, _ in v] for k, v in groups.items()},
+                         {k: [i for i, _ in v] for k, v in out.items()})
+
 if __name__ == "__main__":
     unittest.main()
