@@ -9,6 +9,7 @@ on:
       - 'tests/test_anchor01_partition.py'
       - 'tests/test_verified_inventory.py'
       - '.github/workflows/inventory-gate.yml'
+      - 'tools/anchor01_semantic_probe.py'
   pull_request:
     paths:
       - 'tools/verified_inventory.py'
@@ -29,3 +30,5 @@ jobs:
         run: |
           python -m unittest discover -s tests -p 'test_verified_inventory.py' -v
           python -m unittest discover -s tests -p 'test_anchor01_partition.py' -v
+      - name: Execute exploratory section probe on permitted filtered pages
+        run: python tools/anchor01_semantic_probe.py
