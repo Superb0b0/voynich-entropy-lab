@@ -12,6 +12,7 @@ on:
       - 'tools/anchor01_semantic_probe.py'
       - 'tools/anchor01_robustness.py'
       - 'tools/anchor01_length_control.py'
+      - 'tools/anchor01_hand_gate.py'
   pull_request:
     paths:
       - 'tools/verified_inventory.py'
@@ -40,3 +41,5 @@ jobs:
         run: python tools/anchor01_robustness.py
       - name: Test length-standardized folio-level contrast
         run: python tools/anchor01_length_control.py
+      - name: Test scribal-hand identifiability fail-closed gate
+        run: python tools/anchor01_hand_gate.py
