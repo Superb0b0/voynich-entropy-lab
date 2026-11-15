@@ -1,0 +1,50 @@
+{
+  "schema": "voynich-key-candidate/0.1",
+  "candidate_id": "DECIPHER-CANDIDATE-001-CASPARI-FACCINI",
+  "status": "PROVISIONAL_PARTIAL_RECONSTRUCTION",
+  "source": {
+    "paper": "Gino Caspari and Agnese Faccini, A Key to the Voynich Manuscript",
+    "paper_url": "https://pure.mpg.de/rest/items/item_3644902_2/component/file_3644903/content",
+    "independent_reconstruction_url": "https://voynich.site/it/ipotesi/chiave-caspari-faccini/",
+    "reconstruction_method": "Addressed readings in the paper matched to EVA transcription examples, not direct image-to-EVA glyph audit."
+  },
+  "transcription": {
+    "edition": "EVA / IVTFF, exact line-level compatibility not independently audited",
+    "unit": "EVA token substrings",
+    "segmentation": "literal longest-match substring mapping; no inferred splitting or merging"
+  },
+  "mapping": [
+    {"input":"d","output":"T","source_example":"dorchory -> torpore","status":"PROVISIONAL"},
+    {"input":"o","output":"O","source_example":"dorchory -> torpore","status":"PROVISIONAL"},
+    {"input":"r","output":"R","source_example":"dorchory -> torpore","status":"PROVISIONAL"},
+    {"input":"ch","output":"P","source_example":"dorchory -> torpore","status":"PROVISIONAL"},
+    {"input":"y","output":"E","source_example":"dorchory -> torpore","status":"PROVISIONAL"},
+    {"input":"k","output":"D","source_example":"chkar -> p(er)d(e)n","status":"PROVISIONAL"},
+    {"input":"ar","output":"N","source_example":"chkar -> p(er)d(e)n","status":"PROVISIONAL"},
+    {"input":"s","output":"I","source_example":"s -> i(n)","status":"PROVISIONAL"},
+    {"input":"sh","output":"FI","source_example":"shor -> fior","status":"PROVISIONAL"},
+    {"input":"t","output":"C","source_example":"otchal -> o'c(e)fal","status":"PROVISIONAL"},
+    {"input":"ckh","output":"DF","source_example":"ckholsy -> d(e)folie","status":"PROVISIONAL_LIGATURE"},
+    {"input":"p","output":"X","source_example":"ypchaiin -> exf(a)mo","status":"PROVISIONAL"},
+    {"input":"aiin","output":"(a)MO","source_example":"ypchaiin -> exf(a)mo","status":"AMBIGUOUS_EXPANSION"}
+  ],
+  "rules": {
+    "vowel_insertion": "AUTHORS_ALLOW; exact algorithm NOT SPECIFIED HERE",
+    "ending_truncation": "AUTHORS_ALLOW; exact algorithm NOT SPECIFIED HERE",
+    "detachable_o_apostrophe": "AUTHORS_ALLOW; exact algorithm NOT SPECIFIED HERE",
+    "qo_particle": "AUTHORS_ALLOW; exact algorithm NOT SPECIFIED HERE",
+    "contextual_exceptions": "NOT FORMALIZED",
+    "unmapped_units": "PRESERVE_AS_UNKNOWN; never silently drop"
+  },
+  "limitations": [
+    "This is not the complete published glyph table.",
+    "Mapping is reconstructed from examples and is not a direct visual glyph-to-EVA alignment.",
+    "At least one mapping has unresolved expansion ambiguity.",
+    "No deterministic formal grammar for vowel insertion and truncation is encoded.",
+    "No candidate provenance ledger of all loci consulted by the authors is available.",
+    "No holdout has been accessed or evaluated."
+  ],
+  "eligibility": "INELIGIBLE_FOR_CONFIRMATORY_TEST",
+  "reason": "Partial example-derived mapping and informal expansion rules cannot define the complete candidate transformation grammar or matched rival search space.",
+  "scientific_claim": "NONE; this artifact records published claims and a partial reconstruction only."
+}

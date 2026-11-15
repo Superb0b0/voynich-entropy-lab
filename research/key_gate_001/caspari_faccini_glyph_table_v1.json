@@ -1,0 +1,67 @@
+{
+  "schema": "voynich-caspari-faccini-glyph-table/1.0",
+  "candidate_id": "DECIPHER-CANDIDATE-001-CASPARI-FACCINI",
+  "source": {
+    "title": "A Key to the Voynich Manuscript",
+    "authors": ["Gino Caspari", "Agnese Faccini"],
+    "url": "https://pure.mpg.de/rest/items/item_3644902_2/component/file_3644903/content",
+    "table": "Table 1",
+    "source_lines": "PDF extracted lines 54-269; accessed 2026-11-15"
+  },
+  "warning": "This is a transcription of the authors' glyph descriptions and proposed values. It is NOT an EVA mapping, not an independently verified glyph identification, and not a complete executable cipher grammar.",
+  "entries": [
+    {"glyph_description":"ꝛ","proposed_value":"A","example":"POLAR","certainty":"author-proposed"},
+    {"glyph_description":"ꝑ","proposed_value":"B","example":"arbor","certainty":"author-proposed; rare; contractions obscure"},
+    {"glyph_description":"ꝓ","proposed_value":"C","example":"color","certainty":"author-proposed"},
+    {"glyph_description":"ꝗ","proposed_value":"D","example":"odore","certainty":"author-proposed"},
+    {"glyph_description":"9","proposed_value":"E","example":"piente","certainty":"author-proposed; mirrored e"},
+    {"glyph_description":"ꝙ","proposed_value":"F/P","example":"o'c(e)fal; polar; porpor","certainty":"author-proposed; context-dependent sound"},
+    {"glyph_description":"Ꝛ","proposed_value":"G","example":"o'g(a)mo","certainty":"author says uncertain; rare"},
+    {"glyph_description":"2","proposed_value":"I","example":"p(er)vivi","certainty":"author-proposed; potentially confused with r/g"},
+    {"glyph_description":"lambda-like glyph","proposed_value":"L","example":"oliar","certainty":"author-proposed"},
+    {"glyph_description":"M-like glyph","proposed_value":"M","example":"compie","certainty":"author-proposed; may be split into 2-3 parts"},
+    {"glyph_description":"N-like glyph; often read as a-r when divider obscured","proposed_value":"N","example":"fornare","certainty":"author-proposed; segmentation ambiguity"},
+    {"glyph_description":"o","proposed_value":"O","example":"sorore","certainty":"author-proposed"},
+    {"glyph_description":"Greek-p-like glyph","proposed_value":"P/F","example":"porpor","certainty":"author-proposed; context-dependent"},
+    {"glyph_description":"4","proposed_value":"Q","example":"qo exfoliare; qo sorore","certainty":"author-proposed; usually followed by o"},
+    {"glyph_description":"left-tilted small r","proposed_value":"R","example":"o'dolor","certainty":"author-proposed"},
+    {"glyph_description":"ꝛ-like glyph with one upper loop","proposed_value":"S","example":"o'sole","certainty":"author-proposed"},
+    {"glyph_description":"8","proposed_value":"T","example":"torpore","certainty":"author-proposed"},
+    {"glyph_description":"c-like glyph","proposed_value":"U","example":"o'cute; quo","certainty":"author-proposed"},
+    {"glyph_description":"double c-like glyph","proposed_value":"V","example":"ovui","certainty":"author-proposed"},
+    {"glyph_description":"ꝛ-like glyph with two upper loops","proposed_value":"X/SS","example":"exfoli(e)","certainty":"author-proposed"},
+    {"glyph_description":"m with added stroke","proposed_value":"M~ (syllable mo)","example":"palmo","certainty":"author-proposed; frequent verb ending"},
+    {"glyph_description":"n with added stroke","proposed_value":"N~ (syllable no)","example":"c(a)nolle","certainty":"author-proposed"},
+    {"glyph_description":"ã","proposed_value":"P/F + i-related syllable (pi/fi)","example":"fiore","certainty":"author-proposed"},
+    {"glyph_description":"§ ligature, first form","proposed_value":"RE","example":"o'colore","certainty":"author-proposed"},
+    {"glyph_description":"§ ligature, rounded-left variant","proposed_value":"TE","example":"alte","certainty":"author-proposed"},
+    {"glyph_description":"m-like ligature","proposed_value":"CP","example":"c(e)pol","certainty":"author-proposed"},
+    {"glyph_description":"m-like ligature","proposed_value":"DP/DF","example":"de folie","certainty":"author-proposed"},
+    {"glyph_description":"m-like ligature","proposed_value":"SP","example":"s(e)parare","certainty":"author-proposed"},
+    {"glyph_description":"m-like ligature","proposed_value":"XP","example":"expuimo","certainty":"author-proposed"}
+  ],
+  "explicit_absences_or_substitutions": {
+    "H":"authors say not required and no glyph identified",
+    "J":"may be represented by I",
+    "K":"may be represented by C",
+    "W":"authors say absent from Latin and vernacular Italian",
+    "Y":"authors say only in Greek loanwords in Latin",
+    "Z":"authors say often written as T in vernacular texts"
+  },
+  "reported_shorthand_hypotheses_not_executable_rules": [
+    {"rule":"vowel omission/insertion","description":"Authors say words are contracted and vowels may be supplied contextually; no deterministic insertion algorithm or budget specified."},
+    {"rule":"word-final truncation","description":"Authors say endings may be cut off; no deterministic truncation grammar or budget specified."},
+    {"rule":"attached o'","description":"o may function as article/pronoun attached to following word; exact token-boundary rule unspecified."},
+    {"rule":"qo prefix","description":"Authors propose qo as an agglutinated particle; exact segmentation/semantics unspecified."},
+    {"rule":"other prefixes","description":"de, ex, ol are described as possible agglutinations; explicitly tentative."},
+    {"rule":"contextual resolution","description":"Authors state context is needed to resolve shorthand ambiguity; this is not formalized and risks post-hoc interpretation."}
+  ],
+  "compatibility": {
+    "EVA_alignment": "NOT PROVIDED",
+    "image_to_glyph_audit": "NOT PERFORMED",
+    "supplementary_400_word_list": "NOT ACQUIRED IN THIS ARTIFACT",
+    "machine_executable_key": false
+  },
+  "eligibility": "INELIGIBLE_FOR_CONFIRMATORY_TEST",
+  "reason": "The source supplies visual glyph descriptions, not a deterministic EVA alignment or a complete formal rule set for contractions and contextual readings."
+}
