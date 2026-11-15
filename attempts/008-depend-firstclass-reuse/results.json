@@ -1,0 +1,97 @@
+{
+ "criteria": {
+  "calibration_ok": true,
+  "numerosity_ok": true,
+  "verdict": "NOT SUPPORTED"
+ },
+ "data_sha256": "dea09c32de148c2bbf592b00e3042993cc57d967c615159ccef458e82270cbe9",
+ "seed": 20261122,
+ "settings": {
+  "n_cal": 60,
+  "plant_q": 0.25,
+  "r_cal": 199,
+  "r_main": 1999
+ },
+ "splits": {
+  "0": {
+   "all_pairs_descriptive": {
+    "loo_folio_same_sign": 1.0,
+    "mean_y_x0": 0.064863,
+    "n_folios": 48,
+    "n_pairs": 1854,
+    "n_x1": 171,
+    "p_two_sided": 0.4645,
+    "rel_effect": -0.075679,
+    "s_adj": -0.004909,
+    "s_raw": -0.005051
+   },
+   "calibration": {
+    "power_rate": 1.0,
+    "size_rate": 0.05
+   },
+   "parser_B_descriptive": {
+    "loo_folio_same_sign": 1.0,
+    "mean_y_x0": 0.067112,
+    "n_folios": 48,
+    "n_pairs": 1613,
+    "n_x1": 157,
+    "p_two_sided": 0.294,
+    "rel_effect": -0.11091,
+    "s_adj": -0.007443,
+    "s_raw": -0.008126
+   },
+   "primary": {
+    "loo_folio_same_sign": 1.0,
+    "mean_y_x0": 0.066827,
+    "n_folios": 48,
+    "n_pairs": 1613,
+    "n_x1": 155,
+    "p_two_sided": 0.2185,
+    "rel_effect": -0.128386,
+    "s_adj": -0.00858,
+    "s_raw": -0.009176
+   },
+   "qo_qo_interior_pairs": 12
+  },
+  "1": {
+   "all_pairs_descriptive": {
+    "loo_folio_same_sign": 1.0,
+    "mean_y_x0": 0.060984,
+    "n_folios": 30,
+    "n_pairs": 1219,
+    "n_x1": 128,
+    "p_two_sided": 0.5945,
+    "rel_effect": 0.064433,
+    "s_adj": 0.003929,
+    "s_raw": 0.00698
+   },
+   "calibration": {
+    "power_rate": 1.0,
+    "size_rate": 0.0
+   },
+   "parser_B_descriptive": {
+    "loo_folio_same_sign": 1.0,
+    "mean_y_x0": 0.062245,
+    "n_folios": 30,
+    "n_pairs": 1060,
+    "n_x1": 117,
+    "p_two_sided": 0.4525,
+    "rel_effect": 0.093861,
+    "s_adj": 0.005842,
+    "s_raw": 0.010674
+   },
+   "primary": {
+    "loo_folio_same_sign": 1.0,
+    "mean_y_x0": 0.061966,
+    "n_folios": 30,
+    "n_pairs": 1060,
+    "n_x1": 118,
+    "p_two_sided": 0.6145,
+    "rel_effect": 0.06661,
+    "s_adj": 0.004128,
+    "s_raw": 0.008428
+   },
+   "qo_qo_interior_pairs": 2
+  }
+ }
+}
