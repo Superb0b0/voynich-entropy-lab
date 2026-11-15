@@ -37,5 +37,19 @@ class VerifyTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError,"SHA256 mismatch"):
                     v.hashes()
 
+    def test_active_attempt_without_v32_evidence_fails_before_execution(self):
+        with tempfile.TemporaryDirectory() as temp:
+            folder=pathlib.Path(temp)/"005-synthetic"
+            folder.mkdir()
+            with self.assertRaisesRegex(RuntimeError, "missing v32_evidence.json"):
+                v.verify_attempt(folder, pathlib.Path(temp), set())
+    def test_active_attempt_incomplete_v32_registration_fails_before_execution(self):
+        with tempfile.TemporaryDirectory() as temp:
+            folder=pathlib.Path(temp)/"005-synthetic"
+            folder.mkdir()
+            (folder/"v32_evidence.json").write_text("{}")
+            with self.assertRaisesRegex(RuntimeError, "V3.2 registration gate failed"):
+                v.verify_attempt(folder, pathlib.Path(temp), set())
+
 if __name__=="__main__":
     unittest.main()
