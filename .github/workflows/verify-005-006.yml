@@ -1,0 +1,68 @@
+name: Verify attempts 005 and 006 only
+on:
+  push:
+    branches:
+      - attempts-005-006
+    paths:
+      - 'attempts/005-refractory-qo-parameter/**'
+      - 'attempts/006-it2a-replication/**'
+      - 'tools/verify_attempts.py'
+      - '.github/workflows/verify-005-006.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/verify-005-006.yml'
+      - 'attempts/005-refractory-qo-parameter/**'
+      - 'attempts/006-it2a-replication/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-005-006:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install verifier dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y strace
+          python -m pip install 'PyYAML==6.0.2'
+      - name: Verify corpus hashes, protected-page filter and replay only 005 and 006
+        run: |
+          python - <<'PY'
+          import pathlib, re, shutil, tempfile
+          from tools import verify_attempts as v
+
+          v.hashes()
+          pages = v.protected()
+          if shutil.which("strace") is None:
+              v.fail("strace unavailable")
+          forbidden = {p.resolve() for p in (v.ROOT / "data").glob("*.txt")}
+          with tempfile.TemporaryDirectory() as td:
+              safe_dir = pathlib.Path(td) / "data"
+              safe_dir.mkdir()
+              for source in (v.ROOT / "data").glob("*.txt"):
+                  raw = source.read_text()
+                  if not re.search(r"^<f\d+[rv]\d*>\s+<!", raw, re.M):
+                      v.fail(f"{source.name}: cannot safely remove holdout pages")
+                  (safe_dir / source.name).write_text(v.sanitize(raw, pages))
+              for name in ("005-refractory-qo-parameter", "006-it2a-replication"):
+                  v.verify_attempt(v.ROOT / "attempts" / name, safe_dir, forbidden)
+                  print(f"REPLAY PASSED: {name}")
+          print("005/006 isolated CI replay passed; does not validate 001-004 or prove complete isolation")
+          PY
+      - name: Upload replay outputs even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: replay-005-006
+          path: |
+            attempts/005-refractory-qo-parameter/results_ci.json
+            attempts/006-it2a-replication/results_ci.json
+          if-no-files-found: ignore
+          retention-days: 30
