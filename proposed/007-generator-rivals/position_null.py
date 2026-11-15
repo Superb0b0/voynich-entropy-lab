@@ -6,15 +6,15 @@ def die(s): raise SystemExit("FAIL_CLOSED: "+s)
 def parse(raw):
     rows=collections.defaultdict(list); page=None; leaf=None; para=0
     for line in raw.splitlines():
-        m=re.match(r"^<(f\\d+[rv]\\d*)>",line)
-        if m: page=m[1]; leaf=int(re.match(r"f(\\d+)",page)[1]); para=0; continue
-        m=re.match(r"^<(f\\d+[rv]\\d*)\\.(\\d+),([^>]*)>\\s*(.*)",line)
+        m=re.match(r"^<(f\d+[rv]\d*)>",line)
+        if m: page=m[1]; leaf=int(re.match(r"f(\d+)",page)[1]); para=0; continue
+        m=re.match(r"^<(f\d+[rv]\d*)\.(\d+),([^>]*)>\s*(.*)",line)
         if not m or m[1]!=page: continue
         n,loc,s=int(m[2]),m[3],m[4]
         if "P" not in loc: continue
         if "*P" in loc or "@P" in loc: para+=1
-        s=re.sub(r"<!.*?>|<[^>]*>|\\{[^}]*\\}|\\[[^]]*\\]","",s)
-        tok=[re.sub(r"[^a-z]","",t.lower()) for t in re.split(r"[.,\\s]+",s.strip())]
+        s=re.sub(r"<!.*?>|<[^>]*>|\{[^}]*\}|\[[^]]*\]","",s)
+        tok=[re.sub(r"[^a-z]","",t.lower()) for t in re.split(r"[.,\s]+",s.strip())]
         tok=[t for t in tok if t]
         if tok: rows[(leaf,page,para)].append((n,tok[0]))
     return rows
@@ -67,6 +67,6 @@ def main():
     for k,m in enumerate(metrics):
         v=sorted(s[k] for s in sims)
         out["metrics"][m]={"observed":observed[k],"null_mean":sum(v)/len(v),"null_95pct":[v[24],v[974]],"null_min":v[0],"null_max":v[-1]}
-    pathlib.Path(a.output).write_text(json.dumps(out,indent=2,sort_keys=True)+"\\n")
+    pathlib.Path(a.output).write_text(json.dumps(out,indent=2,sort_keys=True)+"\n")
     print(json.dumps(out,sort_keys=True))
 if __name__=="__main__":main()
