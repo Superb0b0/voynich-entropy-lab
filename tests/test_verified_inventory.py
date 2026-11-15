@@ -43,22 +43,22 @@ class InventoryTests(unittest.TestCase):
 
     def test_two_transcriptions_equal_pass(self):
         with tempfile.TemporaryDirectory() as td:
-            root = self.setup_case(td, "<f1r> <!\\n<f3v> <!\\n")
-            (root / "safe" / "b.txt").write_text("<f3v> <!\\n<f1r> <!\\n")
+            root = self.setup_case(td, "<f1r> <!\n<f3v> <!\n")
+            (root / "safe" / "b.txt").write_text("<f3v> <!\n<f1r> <!\n")
             self.assertEqual(attest(root / "safe", {"f2r"}, ["a.txt", "b.txt"], root / "out.json"), 2)
 
     def test_two_transcriptions_mismatch_rejected(self):
         with tempfile.TemporaryDirectory() as td:
-            root = self.setup_case(td, "<f1r> <!\\n<f3v> <!\\n")
-            (root / "safe" / "b.txt").write_text("<f1r> <!\\n")
+            root = self.setup_case(td, "<f1r> <!\n<f3v> <!\n")
+            (root / "safe" / "b.txt").write_text("<f1r> <!\n")
             with self.assertRaisesRegex(RuntimeError, "coverage mismatch"):
                 attest(root / "safe", {"f2r"}, ["a.txt", "b.txt"], root / "out.json")
             self.assertFalse((root / "out.json").exists())
 
     def test_protected_in_second_transcription_rejected(self):
         with tempfile.TemporaryDirectory() as td:
-            root = self.setup_case(td, "<f1r> <!\\n")
-            (root / "safe" / "b.txt").write_text("<f1r> <!\\n<f2r> <!\\n")
+            root = self.setup_case(td, "<f1r> <!\n")
+            (root / "safe" / "b.txt").write_text("<f1r> <!\n<f2r> <!\n")
             with self.assertRaisesRegex(RuntimeError, "protected content"):
                 attest(root / "safe", {"f2r"}, ["a.txt", "b.txt"], root / "out.json")
             self.assertFalse((root / "out.json").exists())
