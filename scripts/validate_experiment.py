@@ -10,7 +10,7 @@ REQUIRED = ("experiment_id", "hypothesis", "falsifiable_prediction",
             "primary_metric", "decision_threshold", "null_model",
             "data_version", "discovery_folia", "test_folia", "inputs")
 
-def validate(root):
+def validate(root, results_filename="results.json"):
     issues = []
     try:
         p = json.loads((root / "protocol.json").read_text(encoding="utf-8"))
@@ -52,7 +52,7 @@ def validate(root):
             if digest != item["sha256"].lower():
                 integrity.append("SHA-256 mismatch: " + str(rel))
     promotion = []
-    result_file = root / "results.json"
+    result_file = root / results_filename
     if result_file.exists():
         try:
             result = json.loads(result_file.read_text(encoding="utf-8"))
