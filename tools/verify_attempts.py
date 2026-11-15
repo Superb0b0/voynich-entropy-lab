@@ -4,6 +4,7 @@ import hashlib, json, os, pathlib, re, shlex, shutil, subprocess, sys, tempfile
 import yaml
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "scripts"))
 from inventory_attempts import inventory
+from validate_experiment import validate as validate_v32
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 MANIFEST=ROOT/"MANIFEST.md"
@@ -62,6 +63,12 @@ def compare(a,b,tol,path="$"):
     elif a!=b:fail(f"{path}: mismatch")
 
 def verify_attempt(folder, safe_dir, forbidden):
+    # Active attempts require a frozen V3.2 registration before execution.
+    if not (folder / "v32_evidence.json").is_file():
+        fail(f"{folder.name}: missing v32_evidence.json")
+    issues = validate_v32(folder, results_filename="v32_evidence.json")
+    if any(issues.values()):
+        fail(f"{folder.name}: V3.2 registration gate failed: {issues}")
     cfg_path=folder/"attempt.yml"
     if not cfg_path.is_file():fail(f"{folder.name}: missing attempt.yml; cannot infer execution contract")
     cfg=yaml.safe_load(cfg_path.read_text())
