@@ -6,6 +6,10 @@ on:
     paths:
       - tools/private_training_preflight.py
       - .github/workflows/private-training-preflight.yml
+  pull_request:
+    paths:
+      - tools/private_training_preflight.py
+      - .github/workflows/private-training-preflight.yml
   workflow_dispatch:
 permissions:
   contents: read
