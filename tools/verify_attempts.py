@@ -2,6 +2,14 @@
 """Fail-closed CI verifier. Uses Linux strace to audit attempt file reads."""
 import hashlib, json, os, pathlib, re, shlex, shutil, subprocess, sys, tempfile
 import yaml
+try:
+    from tools.verified_inventory import attest
+    from tools.anchor01_partition import partition
+except ModuleNotFoundError as exc:
+    if exc.name != 'tools':
+        raise
+    from verified_inventory import attest
+    from anchor01_partition import partition
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 MANIFEST=ROOT/"MANIFEST.md"
@@ -64,6 +72,15 @@ def verify_attempt(folder, safe_dir, forbidden):
     if not cfg_path.is_file():fail(f"{folder.name}: missing attempt.yml; cannot infer execution contract")
     cfg=yaml.safe_load(cfg_path.read_text())
     if not isinstance(cfg,dict):fail(f"{folder.name}: invalid attempt.yml")
+    # Historical exploratory archives are retained but are not replay-qualifying.
+    # Explicitly mark them archival-only; never fabricate a replay contract or
+    # compare their old whole-corpus result against filtered training data.
+    if cfg.get("status") == "archival_nonqualifying":
+        reason=cfg.get("reason")
+        if cfg.get("qualifying") is not False or not isinstance(reason,str) or len(reason.strip()) < 20:
+            fail(f"{folder.name}: invalid archival-only declaration")
+        print(f"ARCHIVAL ONLY / NOT QUALIFYING: {folder.name}; {reason.strip()}")
+        return
     seed=cfg.get("seed")
     if not isinstance(seed,int) or isinstance(seed,bool):fail(f"{folder.name}: explicit integer seed required")
     tol=cfg.get("tolerance")
@@ -113,6 +130,16 @@ def main():
             if not re.search(r"^<f\d+[rv]\d*>\s+<!",raw,re.M):
                 fail(f"{source.name}: cannot safely remove holdout pages")
             (safe_dir/source.name).write_text(sanitize(raw,pages))
+        # Inventory is generated only inside this trusted filtered-data lifetime.
+        inventory_path=pathlib.Path(td)/'eligible_pages.json'
+        count=attest(safe_dir,pages,[p.name for p in (ROOT/'data').glob('*.txt')],inventory_path,quarantine_single_unmatched=True)
+        inventory=json.loads(inventory_path.read_text())
+        split=partition(inventory['eligible_page_ids'])
+        (pathlib.Path(td)/'anchor01_split.json').write_text(json.dumps(split,sort_keys=True,indent=2)+'\n')
+        print(f'FILTERED INVENTORY ATTESTED: {count} eligible pages; IDs not logged')
+        split_digest=hashlib.sha256(json.dumps(split,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+        print(f'ANCHOR01 SPLIT: {split["discovery_folio_count"]} discovery folios, {split["internal_test_folio_count"]} internal-test folios; IDs not logged')
+        print(f'ANCHOR01 SPLIT COMMITMENT SHA256: {split_digest}')
         for folder in attempts:verify_attempt(folder,safe_dir,forbidden)
     print(f"VERIFIED: {len(attempts)} attempts, SHA256 manifest, traced holdout isolation")
 

@@ -1,0 +1,24 @@
+name: ANCHOR01 exploratory zodiac probe
+on:
+  push:
+    paths:
+      - 'tools/anchor01_semantic_probe.py'
+      - '.github/workflows/anchor01-probe.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  exploratory-probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install parser dependency
+        run: python -m pip install 'PyYAML==6.0.2'
+      - name: Execute on internally filtered training only
+        run: python tools/anchor01_semantic_probe.py

@@ -1,0 +1,3 @@
+status: archival_nonqualifying
+qualifying: false
+reason: Historical exploratory result is preserved as recorded, but no replay-safe run contract or independently verified parser exists; the preregistered criterion failed and prior whole-corpus inspection prevents confirmatory status.

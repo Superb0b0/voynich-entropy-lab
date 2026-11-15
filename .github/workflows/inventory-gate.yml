@@ -1,0 +1,57 @@
+name: Inventory gate isolated tests
+on:
+  push:
+    branches:
+      - experiment/anchor01-safe-inventory-20261115
+    paths:
+      - 'tools/verified_inventory.py'
+      - 'tools/anchor01_partition.py'
+      - 'tests/test_anchor01_partition.py'
+      - 'tests/test_verified_inventory.py'
+      - '.github/workflows/inventory-gate.yml'
+      - 'tools/anchor01_semantic_probe.py'
+      - 'tools/anchor01_robustness.py'
+      - 'tools/anchor01_length_control.py'
+      - 'tools/anchor01_hand_gate.py'
+      - 'tools/anchor01_hand_overlap.py'
+      - 'tools/anchor02_hand2_probe.py'
+      - 'tools/anchor02_length_control.py'
+      - 'tools/anchor02_layout_folio.py'
+  pull_request:
+    paths:
+      - 'tools/verified_inventory.py'
+      - 'tests/test_verified_inventory.py'
+      - '.github/workflows/inventory-gate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inventory-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test inventory gate without opening original corpora or holdout
+        run: |
+          python -m unittest discover -s tests -p 'test_verified_inventory.py' -v
+          python -m unittest discover -s tests -p 'test_anchor01_partition.py' -v
+      - name: Install probe dependency
+        run: python -m pip install 'PyYAML==6.0.2'
+      - name: Execute exploratory section probe on permitted filtered pages
+        run: python tools/anchor01_semantic_probe.py
+      - name: Check folio-level and token-length robustness
+        run: python tools/anchor01_robustness.py
+      - name: Test length-standardized folio-level contrast
+        run: python tools/anchor01_length_control.py
+      - name: Test scribal-hand identifiability fail-closed gate
+        run: python tools/anchor01_hand_gate.py
+      - name: Find same-hand section overlap from source metadata
+        run: python tools/anchor01_hand_overlap.py
+      - name: Test within-hand biological versus botanical qo contrast
+        run: python tools/anchor02_hand2_probe.py
+      - name: Control word length within hand 2
+        run: python tools/anchor02_length_control.py
+      - name: Control line position and folio clustering within hand 2
+        run: python tools/anchor02_layout_folio.py
