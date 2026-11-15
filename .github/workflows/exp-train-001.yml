@@ -1,0 +1,25 @@
+name: EXP-TRAIN-001 preregistered experiment
+on:
+  pull_request:
+    paths:
+      - research/exp_train_001.py
+      - research/EXP-TRAIN-001-PROTOCOL.md
+      - .github/workflows/exp-train-001.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run training-only experiment, print aggregate results only
+        run: |
+          umask 077
+          python research/exp_train_001.py
