@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-11-15T01:39:34+01:00",
+  "branch": "research/semantic-anchor-preflight-20261115",
+  "source_head": "068f8312d6a8057374d3b68c23f05b3bc0e31cb7",
+  "main_head": "8b81f874a9944e88fe113b19460294a1b1c5a593",
+  "anchor_head": "ab5871b0950290e76eae127b2e5323b6fc11761b",
+  "cycle": "SEM-PREFLIGHT-20261115",
+  "phase": "BLOCKED_INPUT_PROVENANCE",
+  "scientific_attempts_completed": 0,
+  "scientific_claims": 0,
+  "corpus_sha256_verified_this_cycle": false,
+  "holdout_accessed": false,
+  "duplicate_avoided": [
+    "SEM-ZOD-01",
+    "ZOD-34"
+  ],
+  "next_action": "Obtain independently verifiable authorized non-protected image/transcription bytes and full SHA256, then freeze a nonduplicative protocol before any test.",
+  "evidence": [
+    "research_state/SEM-PREFLIGHT-20261115.md",
+    "experiments/SEM-ZOD-01/PREREGISTRATION_DRAFT.md on research/semantic-first-zodiac-20261114",
+    "experiments/ZOD-34/ANOMALY_TRIANGULATION.md on research/zod-34-anomaly-triangulation-20261114"
+  ],
+  "ci_status": "NOT_VERIFIED_FOR_THIS_COMMIT",
+  "classification": "NO_SCIENTIFIC_TEST"
+}
