@@ -2,7 +2,12 @@
 """Fail-closed CI verifier. Uses Linux strace to audit attempt file reads."""
 import hashlib, json, os, pathlib, re, shlex, shutil, subprocess, sys, tempfile
 import yaml
-from verified_inventory import attest
+try:
+    from tools.verified_inventory import attest
+except ModuleNotFoundError as exc:
+    if exc.name != 'tools':
+        raise
+    from verified_inventory import attest
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 MANIFEST=ROOT/"MANIFEST.md"
