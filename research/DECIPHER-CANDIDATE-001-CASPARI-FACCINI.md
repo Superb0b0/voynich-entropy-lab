@@ -1,6 +1,6 @@
 # DECIPHER-CANDIDATE-001: Caspari–Faccini Italian shorthand key (external hypothesis)
 
-Status: CANDIDATE_IDENTIFIED / NOT VALIDATED / NO TRANSLATION.
+Status: EXTERNALLY_CHALLENGED / REPLICATION_PENDING / NOT VALIDATED / NO TRANSLATION.
 
 Source: Gino Caspari and Agnese Faccini, *A Key to the Voynich Manuscript*, https://pure.mpg.de/rest/items/item_3644902_2/component/file_3644903/content .
 
@@ -21,3 +21,8 @@ Their paper explicitly states that the proposed decipherment was developed from 
 No independent glyph alignment, locked machine-readable key, blind reading, or successful held-out translation has been produced by this project. Previous EXP-TRAIN-001/002 prefix-adjacency effects neither verify nor falsify the candidate.
 
 Constraints: preserve protected holdout; no protected text or IDs in outputs; no changes to historical attempts, frozen public dataset or main.
+
+## External falsification report discovered 2026-11-15
+An independent published numerical critique (2026-08-04) reports that, under the proposed vowel-insertion/truncation freedoms, Italian lexical coverage is 69.7% and shuffled pseudo-Italian lexical coverage 67.9%; a volume-matched Latin comparison reportedly scores 90.3% against 65.8% for Italian. The critique also reports strict lexical coverage of 17.5% vs 1.2% for random keys. Source: https://voynich.site/it/ipotesi/chiave-caspari-faccini/ .
+
+**Provenance:** these are third-party reported results, NOT independently rerun or verified by this project. Their critique weakens the candidate and makes replication of their code/data a prerequisite to further investment. Status: EXTERNALLY_CHALLENGED / REPLICATION_PENDING / NOT VALIDATED. Do not call this key deciphered, and do not silently promote their suggested alternative mechanism (verbose homophonic cipher) as proven.
