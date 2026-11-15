@@ -51,7 +51,32 @@ def validate(root):
             digest = hashlib.sha256(target.read_bytes()).hexdigest()
             if digest != item["sha256"].lower():
                 integrity.append("SHA-256 mismatch: " + str(rel))
-    return {"protocol": issues, "data_split": split, "integrity": integrity}
+    promotion = []
+    result_file = root / "results.json"
+    if result_file.exists():
+        try:
+            result = json.loads(result_file.read_text(encoding="utf-8"))
+            if not isinstance(result, dict):
+                raise ValueError("results must be an object")
+            if result.get("status") in ("VALIDATED", "REPLICATED", "SCIENTIFIC_EVIDENCE"):
+                promotion.append("automatic scientific promotion forbidden")
+            deviations = result.get("deviations", [])
+            if not isinstance(deviations, list):
+                promotion.append("deviations must be a list")
+            else:
+                for i, item in enumerate(deviations):
+                    if not isinstance(item, dict) or not all(k in item for k in
+                            ("timestamp", "reason", "after_results")):
+                        promotion.append(f"deviation {i}: missing audit fields")
+                    elif item["after_results"] is not False:
+                        promotion.append(f"deviation {i}: post-result change")
+            digest = hashlib.sha256((root / "protocol.json").read_bytes()).hexdigest()
+            if result.get("protocol_sha256") != digest:
+                promotion.append("results protocol SHA-256 mismatch")
+        except (ValueError, OSError) as exc:
+            promotion.append("invalid results.json: " + str(exc))
+    return {"protocol": issues, "data_split": split, "integrity": integrity,
+            "promotion": promotion}
 
 def main():
     parser = argparse.ArgumentParser()
