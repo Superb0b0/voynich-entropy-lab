@@ -11,6 +11,7 @@ on:
       - '.github/workflows/inventory-gate.yml'
       - 'tools/anchor01_semantic_probe.py'
       - 'tools/anchor01_robustness.py'
+      - 'tools/anchor01_length_control.py'
   pull_request:
     paths:
       - 'tools/verified_inventory.py'
@@ -37,3 +38,5 @@ jobs:
         run: python tools/anchor01_semantic_probe.py
       - name: Check folio-level and token-length robustness
         run: python tools/anchor01_robustness.py
+      - name: Test length-standardized folio-level contrast
+        run: python tools/anchor01_length_control.py
