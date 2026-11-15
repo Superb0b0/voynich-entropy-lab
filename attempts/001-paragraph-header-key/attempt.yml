@@ -1,0 +1,3 @@
+status: archival_nonqualifying
+qualifying: false
+reason: Historical exploratory result predates the current holdout-safe replay contract; its original script requires the full corpus and cannot be replayed against filtered training-only inputs without changing the experiment.
