@@ -72,6 +72,15 @@ def verify_attempt(folder, safe_dir, forbidden):
     if not cfg_path.is_file():fail(f"{folder.name}: missing attempt.yml; cannot infer execution contract")
     cfg=yaml.safe_load(cfg_path.read_text())
     if not isinstance(cfg,dict):fail(f"{folder.name}: invalid attempt.yml")
+    # Historical exploratory archives are retained but are not replay-qualifying.
+    # Explicitly mark them archival-only; never fabricate a replay contract or
+    # compare their old whole-corpus result against filtered training data.
+    if cfg.get("status") == "archival_nonqualifying":
+        reason=cfg.get("reason")
+        if cfg.get("qualifying") is not False or not isinstance(reason,str) or len(reason.strip()) < 20:
+            fail(f"{folder.name}: invalid archival-only declaration")
+        print(f"ARCHIVAL ONLY / NOT QUALIFYING: {folder.name}; {reason.strip()}")
+        return
     seed=cfg.get("seed")
     if not isinstance(seed,int) or isinstance(seed,bool):fail(f"{folder.name}: explicit integer seed required")
     tol=cfg.get("tolerance")
