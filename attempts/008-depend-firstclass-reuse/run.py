@@ -91,6 +91,7 @@ def plant(paras,rng):
    if p.cls[pi]==p.cls[pi+1] and rng.random()<PLANT_Q:
     src=q.bodies[pi];q.bodies[pi+1][int(rng.random()*len(q.bodies[pi+1]))]=src[int(rng.random()*len(src))]
   q.compute();out.append(q)
+ return out
 rng=random.Random(SEED);res=dict(seed=SEED,data_sha256=EXPECTED,settings=dict(r_main=R_MAIN,r_cal=R_CAL,n_cal=N_CAL,plant_q=PLANT_Q),splits={})
 A=parse('A');B=parse('B')
 for sp in (0,1):
