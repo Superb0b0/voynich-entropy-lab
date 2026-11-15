@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+"""Attempt 011: frozen M1 vs M2 on IT2a."""
+import ast,hashlib,json,math,os,pathlib,random,re,sys,tempfile
+ROOT=pathlib.Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT/"tools"))
+from verify_attempts import protected,sanitize
+source=ROOT/"data/IT2a-n.txt"
+# Filter protected pages before loading any observations into the model.
+with tempfile.TemporaryDirectory() as td:
+ safe=pathlib.Path(td)
+ (safe/"IT2a-n.txt").write_text(sanitize(source.read_text(),protected()))
+ digest=hashlib.sha256((safe/"IT2a-n.txt").read_bytes()).hexdigest()
+ expected="a12879dfa02f8fc8f9a9c9bea5bf019283959ceca09a446abdd273baced9705c"
+ if digest!=expected:sys.exit("STOP: filtered training SHA mismatch "+digest)
+ os.environ["VOYNICH_DATA_DIR"]=str(safe)
+ os.environ["VOYNICH_SEED"]="20261121"
+ sys.argv=["run.py","IT2a-n.txt"]
+ path=ROOT/"attempts/005-refractory-qo-parameter/run.py"
+ tree=ast.parse(path.read_text())
+ cut=next(i for i,n in enumerate(tree.body) if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=="rng" for t in n.targets))
+ env={"__name__":"__009__"}
+ exec(compile(ast.Module(body=tree.body[:cut],type_ignores=[]),str(path),"exec"),env)
+ groups=env["groups"]
+ def novel(w,c,v,idx):
+  run3=lag2=0
+  for p in range(len(v)-1):
+   if v[p] and v[p+1]:
+    if c[idx[p]]==c[idx[p+1]]==c[idx[p+2]]:run3+=1
+    if c[idx[p]]==c[idx[p+2]]:lag2+=1
+  sn,qq,rp=env["stats"](w,c,v,idx)
+  return sn,qq,rp,run3,lag2
+ def observed(sp):
+  out=[0,0,0,0,0]
+  for w,c,v in groups[sp]:
+   z=novel(w,c,v,list(range(len(w))))
+   out=[a+b for a,b in zip(out,z)]
+  return out
+ def predict(sp,theta,phi,R,rng):
+  wt=[theta+phi]+[theta]*7
+  out=[[0,0,0,0,0] for _ in range(R)]
+  for w,c,valid in groups[sp]:
+   n=len(w);idx=list(range(n))
+   for i in range(n-1,0,-1):
+    j=int(rng.random()*(i+1));idx[i],idx[j]=idx[j],idx[i]
+   def pe(p):
+    if 0<=p<n-1 and valid[p]:
+     x=c[idx[p]]
+     if x==c[idx[p+1]]:return wt[x]
+    return 0.
+   def step(k):
+    for _ in range(k):
+     a=int(rng.random()*n);b=int(rng.random()*(n-1))
+     if b>=a:b+=1
+     ps=sorted({a-1,a,b-1,b});old=sum(pe(p) for p in ps)
+     idx[a],idx[b]=idx[b],idx[a]
+     d=sum(pe(p) for p in ps)-old
+     if d>0 and rng.random()>=math.exp(-d):idx[a],idx[b]=idx[b],idx[a]
+   step(env["BURN"]*n)
+   for r in range(R):
+    step(env["THIN"]*n)
+    z=novel(w,c,valid,idx)
+    for j in range(5):out[r][j]+=z[j]
+  return out
+ fitted=json.loads((ROOT/"attempts/005-refractory-qo-parameter/results.json").read_text())
+ result={"status":"EXPLORATORY","filtered_training_sha256":digest,"directions":{}}
+ for fit,pred in [(0,1),(1,0)]:
+  name=f"fit{fit}_pred{pred}"
+  d=fitted["directions"][name]
+  theta=d["theta_nonqo"];phi=d["phi"]
+  rng=random.Random(20261121+100*fit+pred)
+  obs=observed(pred)
+  models={}
+  for model,t,p in [("M2",theta,phi),("M1",d["theta_all"],0.0)]:
+   rng=random.Random(20261121+100*fit+pred)
+   sims=predict(pred,t,p,200,rng)
+   metrics={}
+   for k,key in enumerate(["same_nonqo","qoqo","repeat","triple_windows_sameclass","lag2_sameclass"]):
+    v=sorted(row[k] for row in sims)
+    lo,hi=v[5],v[194]
+    metrics[key]={"observed":obs[k],"predicted_mean":round(sum(v)/len(v),5),"lo":lo,"hi":hi,"inside":lo<=obs[k]<=hi}
+   models[model]={"theta":t,"phi":p,"metrics":metrics}
+  result["directions"][name]=models
+ result["discrimination"]=all(d["M2"]["metrics"]["qoqo"]["inside"] and not d["M1"]["metrics"]["qoqo"]["inside"] for d in result["directions"].values())
+ result["verdict"]="M2_DISCRIMINATES_M1" if result["discrimination"] else "NOT_SUPPORTED"
+ print(json.dumps(result,indent=2),flush=True)
+ (ROOT/"results_ci_011.json").write_text(json.dumps(result,indent=2)+"\n")

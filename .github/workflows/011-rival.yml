@@ -1,0 +1,25 @@
+name: 011 frozen M1 versus M2
+on:
+  pull_request:
+    branches: [attempt-010]
+    paths:
+      - 'attempts/011-frozen-m1-m2/**'
+      - '.github/workflows/011-rival.yml'
+  workflow_dispatch:
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install 'PyYAML==6.0.2'
+      - run: python attempts/011-frozen-m1-m2/run.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results-ci-011
+          path: results_ci_011.json
+          if-no-files-found: ignore
