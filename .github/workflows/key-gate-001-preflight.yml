@@ -1,0 +1,31 @@
+name: KEY-GATE-001 safe preflight tests
+on:
+  push:
+    branches: [research/private-training-preflight-20261115]
+    paths:
+      - 'research/key_gate_001/**'
+      - '.github/workflows/key-gate-001-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Unit tests (no holdout mounted)
+        working-directory: research/key_gate_001
+        run: python -m unittest discover -v -p 'test_*.py'
+      - name: Check for forbidden holdout access references
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          src=Path('research/key_gate_001/evaluator.py').read_text()
+          for bad in ('HOLDOUT.md', 'ZL3b-n.txt', 'holdout_path', 'holdout_data'):
+              assert bad not in src, f'Forbidden access reference: {bad}'
+          print('PASS: evaluator has no corpus/holdout references')
+          PY
