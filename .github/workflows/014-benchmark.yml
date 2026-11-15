@@ -1,0 +1,32 @@
+name: 014 result-blind feasibility benchmark
+on:
+  pull_request:
+    branches: [attempt-014]
+    paths:
+      - 'attempts/014-m2-bootstrap-stability/benchmark.py'
+      - '.github/workflows/014-benchmark.yml'
+  workflow_dispatch:
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq strace
+      - name: Trusted preparation
+        run: python tools/prepare_012.py "$RUNNER_TEMP/training-only" ZL3b-n.txt
+      - name: Result-blind timing only
+        env:
+          VOYNICH_DATA_DIR: ${{ runner.temp }}/training-only
+        run: |
+          strace -f -qq -e trace=open,openat,openat2,readlink,readlinkat -s 4096 -o "$RUNNER_TEMP/014-benchmark.trace" python attempts/014-m2-bootstrap-stability/benchmark.py
+          python tools/audit_012_trace.py "$RUNNER_TEMP/014-benchmark.trace"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-014
+          path: benchmark_014.json
+          if-no-files-found: ignore
