@@ -9,6 +9,12 @@ on:
       - 'TESTS.md'
       - 'attempts/**'
       - 'tools/verify_attempts.py'
+      - 'scripts/validate_experiment.py'
+      - 'tests/fixtures/**'
+      - 'registry/**'
+      - 'scripts/inventory_attempts.py'
+      - 'tests/test_inventory_attempts.py'
+      - 'tests/test_v32_gate.py'
       - '.github/workflows/verify.yml'
   pull_request:
   workflow_dispatch:
@@ -42,3 +48,47 @@ jobs:
           path: attempts/**/results_ci.json
           if-no-files-found: ignore
           retention-days: 30
+
+  validate-fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: V3.2 synthetic regression tests (including tampered hash and post-result promotion)
+        run: python3 -m unittest discover -s tests -p 'test_v32_gate.py' -v
+      - name: V3.2 acceptance fixtures (positive and negative)
+        run: python3 scripts/validate_experiment.py tests/fixtures --report output/validation-report.json
+      - name: Upload V3.2 acceptance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-2-acceptance-report
+          path: output/validation-report.json
+          if-no-files-found: error
+          retention-days: 7
+
+  inventory-attempts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test inventory fail-closed behavior
+        run: python3 -m unittest discover -s tests -p 'test_inventory_attempts.py' -v
+      - name: Inventory all attempt directories against explicit registry
+        run: python3 scripts/inventory_attempts.py attempts registry/attempt_status.json --report output/attempt-inventory.json
+      - name: Upload attempt inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-2-attempt-inventory
+          path: output/attempt-inventory.json
+          if-no-files-found: error
+          retention-days: 7

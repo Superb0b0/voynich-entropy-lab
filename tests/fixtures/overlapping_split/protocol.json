@@ -1,0 +1,23 @@
+{
+  "experiment_id": "V32-SYNTH-01",
+  "hypothesis": "synthetic positional recurrence",
+  "falsifiable_prediction": "held-out synthetic folia exceed threshold",
+  "primary_metric": "recurrence",
+  "decision_threshold": 0.2,
+  "null_model": "synthetic shuffle",
+  "data_version": "synthetic-v1",
+  "discovery_folia": [
+    "f1r",
+    "f1v"
+  ],
+  "test_folia": [
+    "f1v",
+    "f2r"
+  ],
+  "inputs": [
+    {
+      "path": "input.txt",
+      "sha256": "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03"
+    }
+  ]
+}

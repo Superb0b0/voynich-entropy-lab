@@ -2,6 +2,8 @@
 """Fail-closed CI verifier. Uses Linux strace to audit attempt file reads."""
 import hashlib, json, os, pathlib, re, shlex, shutil, subprocess, sys, tempfile
 import yaml
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "scripts"))
+from inventory_attempts import inventory
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 MANIFEST=ROOT/"MANIFEST.md"
@@ -104,6 +106,12 @@ def main():
     if shutil.which("strace") is None:fail("strace unavailable; cannot audit reads")
     attempts=sorted(p for p in (ROOT/"attempts").glob("*") if p.is_dir() and ATTEMPT.fullmatch(p.name))
     if not attempts:fail("No attempts/NNN-*/ found; verification is NOT VERIFIED")
+    registry_path=ROOT/"registry"/"attempt_status.json"
+    if not registry_path.is_file():fail("Missing explicit attempt classification registry")
+    registry=json.loads(registry_path.read_text())
+    rows, problems=inventory(ROOT/"attempts",registry)
+    if problems:fail("Attempt inventory gate: "+"; ".join(problems))
+    states={row["attempt_id"]:row["state"] for row in rows}
     forbidden={p.resolve() for p in (ROOT/"data").glob("*.txt")}
     with tempfile.TemporaryDirectory() as td:
         safe_dir=pathlib.Path(td)/"data";safe_dir.mkdir()
@@ -113,8 +121,16 @@ def main():
             if not re.search(r"^<f\d+[rv]\d*>\s+<!",raw,re.M):
                 fail(f"{source.name}: cannot safely remove holdout pages")
             (safe_dir/source.name).write_text(sanitize(raw,pages))
-        for folder in attempts:verify_attempt(folder,safe_dir,forbidden)
-    print(f"VERIFIED: {len(attempts)} attempts, SHA256 manifest, traced holdout isolation")
+        verified=0
+        for folder in attempts:
+            if states[folder.name]=="quarantined":
+                print(f"QUARANTINED: {folder.name}: {registry['attempts'][folder.name]['reason']}; not evidence")
+                continue
+            if states[folder.name]!="active":fail(f"{folder.name}: state is not eligible for replay")
+            verify_attempt(folder,safe_dir,forbidden)
+            verified+=1
+            print(f"PASS: {folder.name}: replay and protected-input isolation")
+    print(f"VERIFIED: {verified} active attempts; QUARANTINED: {len(attempts)-verified}; corpus SHA256 and holdout isolation checked")
 
 if __name__=="__main__":
     try:main()

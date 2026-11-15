@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "policy": "Explicit classifications only; unknown attempts fail closed. Legacy and quarantined are not evidence.",
+  "attempts": {
+    "001-paragraph-header-key": {
+      "state": "quarantined",
+      "reason": "missing attempt.yml",
+      "evidence": "CI run 43647267405; repository inventory",
+      "classified_on": "2026-11-14",
+      "decision_commit": "eff10c1",
+      "decision_owner": "project owner: explicit authorization in conversation 2026-11-14",
+      "eligible_for_evidence_promotion": false,
+      "data_modified": false
+    },
+    "002-currier-header-interaction": {
+      "state": "quarantined",
+      "reason": "missing attempt.yml",
+      "evidence": "Repository inventory at eff10c1; TESTS.md",
+      "classified_on": "2026-11-14",
+      "decision_commit": "eff10c1",
+      "decision_owner": "project owner: explicit authorization in conversation 2026-11-14",
+      "eligible_for_evidence_promotion": false,
+      "data_modified": false
+    },
+    "003-firstword-avoidance": {
+      "state": "quarantined",
+      "reason": "missing attempt.yml",
+      "evidence": "Repository inventory at eff10c1; TESTS.md",
+      "classified_on": "2026-11-14",
+      "decision_commit": "eff10c1",
+      "decision_owner": "project owner: explicit authorization in conversation 2026-11-14",
+      "eligible_for_evidence_promotion": false,
+      "data_modified": false
+    },
+    "004-qo-transition": {
+      "state": "quarantined",
+      "reason": "missing attempt.yml",
+      "evidence": "Repository inventory at eff10c1; TESTS.md",
+      "classified_on": "2026-11-14",
+      "decision_commit": "eff10c1",
+      "decision_owner": "project owner: explicit authorization in conversation 2026-11-14",
+      "eligible_for_evidence_promotion": false,
+      "data_modified": false
+    }
+  }
+}

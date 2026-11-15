@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "policy": "explicit legacy quarantine; no automatic classification; never eligible as evidence",
+  "entries": [
+    {
+      "attempt_id": "001-paragraph-header-key",
+      "status": "quarantined",
+      "reason": "missing attempt.yml; NON VERIFICATO in TESTS.md",
+      "eligible_for_evidence_promotion": false
+    }
+  ],
+  "note": "Only attempt 001 has a directly verified missing attempt.yml from CI logs. Inventory and other classifications pending; unknown attempts must fail closed."
+}
