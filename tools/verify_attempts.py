@@ -126,7 +126,7 @@ def main():
         count=attest(safe_dir,pages,[p.name for p in (ROOT/'data').glob('*.txt')],inventory_path)
         inventory=json.loads(inventory_path.read_text())
         split=partition(inventory['eligible_page_ids'])
-        (pathlib.Path(td)/'anchor01_split.json').write_text(json.dumps(split,sort_keys=True,indent=2)+'\\n')
+        (pathlib.Path(td)/'anchor01_split.json').write_text(json.dumps(split,sort_keys=True,indent=2)+'\n')
         print(f'FILTERED INVENTORY ATTESTED: {count} eligible pages; IDs not logged')
         print(f'ANCHOR01 SPLIT: {split["discovery_folio_count"]} discovery folios, {split["internal_test_folio_count"]} internal-test folios; IDs not logged')
         for folder in attempts:verify_attempt(folder,safe_dir,forbidden)
