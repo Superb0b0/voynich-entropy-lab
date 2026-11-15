@@ -13,11 +13,12 @@ import hashlib
 import re
 from pathlib import Path
 
-LOCUS = re.compile(r'^<(?P<page>f\d+[rv]\d*)\.(?P<line>\d+),(?P<locus>[^>]*)>\s*(?P<body>.*)$')
+LOCUS = re.compile(r'^<(?P<page>f(?:\d+[rv]\d*|Ros))\.(?P<line>\d+),(?P<locus>[^>]*)>\s*(?P<body>.*)$')
 VARIANT = re.compile(r'\[([^:\]\n]+):([^\]\n]+)\]')
 COMMENT = re.compile(r'<!.*?>|<[^>]*>|\{[^}]*\}')
 SPLITS = {'space': re.compile(r'\s+'), 'dot_comma_space': re.compile(r'[.,\s]+')}
 MARKERS = {
+    'numeric_P': re.compile(r'^[*@+=]P[0-9]+$'),
     'anchor_P': re.compile(r'^[@*]P[0-9]*$'),
     'family_P': re.compile(r'^[*@+=]P'),
     'contains_P': re.compile(r'P'),
@@ -56,7 +57,7 @@ def analyze(raw, scope, source_sha):
                   if (matcher.search(locus) if marker_name == 'contains_P'
                       else matcher.match(locus))]
         pages = {p for p, _, _ in chosen}
-        folios = {re.match(r'f\d+', p).group() for p in pages}
+        folios = {(re.match(r'f\d+', p).group() if re.match(r'f\d+', p) else p) for p in pages}
         starts = sum(l.startswith(('@P', '*P')) for _, l, _ in chosen)
         for variant_rule in ('first', 'second', 'remove'):
             clean = [sanitize(body, variant_rule) for _, _, body in chosen]
