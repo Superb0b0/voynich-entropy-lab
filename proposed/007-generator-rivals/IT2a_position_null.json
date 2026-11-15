@@ -1,0 +1,11 @@
+{
+  "corpus": "IT2a-n.txt",
+  "filtered_sha256": "a12879dfa02f8fc8f9a9c9bea5bf019283959ceca09a446abdd273baced9705c",
+  "metrics": {
+    "qoqo": {"null_95pct":[43,65],"null_max":70,"null_mean":54.261,"null_min":37,"observed":14},
+    "repeat": {"null_95pct":[11,27],"null_max":33,"null_mean":18.631,"null_min":8,"observed":12},
+    "same_nonqo": {"null_95pct":[422,484],"null_max":507,"null_mean":450.952,"null_min":413,"observed":289}
+  },
+  "null":"within-paragraph position-tercile shuffle",
+  "paragraph_groups":206,"replicates":1000,"seed":20261116,"status":"DESCRIPTIVE_ONLY","valid_pairs":3095
+}
