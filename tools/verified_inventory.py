@@ -20,6 +20,8 @@ def attest(filtered_dir, protected_pages, source_names, output_path):
         raise RuntimeError("filtered input set mismatch")
     allowed = None
     digests = {}
+    unmatched = set()
+    all_pages = []
     for path in files:
         if path.is_symlink() or not path.is_file():
             raise RuntimeError("unsafe input")
@@ -29,12 +31,14 @@ def attest(filtered_dir, protected_pages, source_names, output_path):
             raise RuntimeError("missing page headers")
         if pages & protected_pages:
             raise RuntimeError("protected content remains in filtered input")
-        if allowed is not None and pages != allowed:
-            raise RuntimeError('filtered page coverage mismatch: first_count=%d, current_count=%d, first_only=%d, current_only=%d; page IDs suppressed' % (len(allowed), len(pages), len(allowed - pages), len(pages - allowed)))
-        allowed = pages
+        all_pages.append(pages)
+        allowed = pages if allowed is None else allowed & pages
         digests[path.name] = hashlib.sha256(raw).hexdigest()
     if not allowed:
         raise RuntimeError("no common allowed pages")
+    unmatched = set().union(*all_pages) - allowed
+    if unmatched:
+        raise RuntimeError('filtered page coverage mismatch: common=%d, unmatched=%d; quarantined pending explicit preregistered exclusion; IDs suppressed' % (len(allowed), len(unmatched)))
     output = {
         "schema": "voynich-safe-inventory-v1",
         "status": "FILTERED_ATTESTED_IN_PROCESS",
