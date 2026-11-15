@@ -1,0 +1,28 @@
+name: 007 calibration gate (not full CI)
+on:
+  pull_request:
+    branches: [attempt-008]
+    paths:
+      - 'attempts/007-timm-schinner/**'
+      - '.github/workflows/007-calibration.yml'
+  workflow_dispatch:
+jobs:
+  calibration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Calibration on known synthetic parameters (no holdout, no TS)
+        env:
+          VOYNICH_DATA_DIR: ${{ github.workspace }}/data
+          VOYNICH_SEED: '20261121'
+        run: python attempts/007-timm-schinner/calibrate.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calibration-007
+          path: calibration_007.json
+          if-no-files-found: ignore

@@ -1,0 +1,29 @@
+name: 007 independent TS reproduction
+on:
+  pull_request:
+    branches: [attempt-008]
+    paths:
+      - 'attempts/007-timm-schinner/**'
+      - '.github/workflows/007-reproduce.yml'
+  workflow_dispatch:
+jobs:
+  reproduce:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Rebuild all 30 and verify hashes, then test preregistered thresholds
+        run: python attempts/007-timm-schinner/reproduce_ci.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results-ci-007
+          path: results_ci_007.json
+          if-no-files-found: ignore
