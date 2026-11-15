@@ -114,7 +114,11 @@ def main():
             if not re.search(r"^<f\d+[rv]\d*>\s+<!",raw,re.M):
                 fail(f"{source.name}: cannot safely remove holdout pages")
             (safe_dir/source.name).write_text(sanitize(raw,pages))
-        # Inventory is generated only inside this trusted filtered-data lifetime.\n        inventory_path=pathlib.Path(td)/'eligible_pages.json'\n        count=attest(safe_dir,pages,[p.name for p in (ROOT/'data').glob('*.txt')],inventory_path)\n        print(f'FILTERED INVENTORY ATTESTED: {count} eligible pages; IDs not logged')\n        for folder in attempts:verify_attempt(folder,safe_dir,forbidden)
+        # Inventory is generated only inside this trusted filtered-data lifetime.
+        inventory_path=pathlib.Path(td)/'eligible_pages.json'
+        count=attest(safe_dir,pages,[p.name for p in (ROOT/'data').glob('*.txt')],inventory_path)
+        print(f'FILTERED INVENTORY ATTESTED: {count} eligible pages; IDs not logged')
+        for folder in attempts:verify_attempt(folder,safe_dir,forbidden)
     print(f"VERIFIED: {len(attempts)} attempts, SHA256 manifest, traced holdout isolation")
 
 if __name__=="__main__":
