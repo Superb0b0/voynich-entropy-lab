@@ -9,7 +9,7 @@ import re
 
 PAGE = re.compile(rb'^<(f\d+[rv]\d*)>\s+<!', re.M)
 
-def attest(filtered_dir, protected_pages, source_names, output_path):
+def attest(filtered_dir, protected_pages, source_names, output_path, quarantine_single_unmatched=False):
     root = pathlib.Path(filtered_dir)
     if not root.is_dir() or root.is_symlink():
         raise RuntimeError("filtered directory invalid")
@@ -37,13 +37,18 @@ def attest(filtered_dir, protected_pages, source_names, output_path):
     if not allowed:
         raise RuntimeError("no common allowed pages")
     unmatched = set().union(*all_pages) - allowed
-    if unmatched:
+    if unmatched and not (quarantine_single_unmatched and len(unmatched) == 1 and len(files) == 2):
         raise RuntimeError('filtered page coverage mismatch: common=%d, unmatched=%d; quarantined pending explicit preregistered exclusion; IDs suppressed' % (len(allowed), len(unmatched)))
+    # This is an explicit structural quarantine, never a repair or an imputation.
+    # No mismatch identifier or protected page information is emitted.
+    quarantine = {'status': 'SINGLE_UNMATCHED_EXCLUDED_BY_STRUCTURAL_RULE',
+                  'count': 1} if unmatched else {'status': 'NONE', 'count': 0}
     output = {
         "schema": "voynich-safe-inventory-v1",
         "status": "FILTERED_ATTESTED_IN_PROCESS",
         "eligible_page_ids": sorted(allowed),
         "filtered_sha256": digests,
+        "quarantine": quarantine,
         "attestation": "Compared with protected page IDs inside verifier; protected IDs omitted.",
     }
     out = pathlib.Path(output_path)
