@@ -1,0 +1,27 @@
+name: 009 M2 falsification (training only)
+on:
+  pull_request:
+    branches: [attempt-008]
+    paths:
+      - 'attempts/009-m2-falsification/**'
+      - '.github/workflows/009-m2.yml'
+  workflow_dispatch:
+jobs:
+  falsify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install parser dependency
+        run: python -m pip install 'PyYAML==6.0.2'
+      - name: Run fixed M2 predictive checks
+        run: python attempts/009-m2-falsification/run.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results-ci-009
+          path: results_ci_009.json
+          if-no-files-found: ignore
