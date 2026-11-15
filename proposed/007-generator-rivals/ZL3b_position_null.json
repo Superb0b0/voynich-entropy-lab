@@ -1,0 +1,11 @@
+{
+  "corpus": "ZL3b-n.txt",
+  "filtered_sha256": "dea09c32de148c2bbf592b00e3042993cc57d967c615159ccef458e82270cbe9",
+  "metrics": {
+    "qoqo": {"null_95pct":[44,65],"null_max":75,"null_mean":54.668,"null_min":38,"observed":14},
+    "repeat": {"null_95pct":[12,28],"null_max":34,"null_mean":19.805,"null_min":9,"observed":13},
+    "same_nonqo": {"null_95pct":[419,480],"null_max":490,"null_mean":449.234,"null_min":405,"observed":289}
+  },
+  "null":"within-paragraph position-tercile shuffle",
+  "paragraph_groups":206,"replicates":1000,"seed":20261116,"status":"DESCRIPTIVE_ONLY","valid_pairs":3097
+}
