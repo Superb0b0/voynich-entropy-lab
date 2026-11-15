@@ -8,8 +8,8 @@ SOURCE=ROOT/"data/ZL3b-n.txt"
 PARSER=ROOT/"experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py"
 EXPECTED="bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc"
 PARSER_SHA="8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5"
-PAGE=re.compile(r"^<(f[0-9]+[rv][0-9]*)>\\s+<!")
-HOLD=re.compile(r"(?m)^- pagine riservate \\((\\d+)\\):\\s*(\\[[^\\n]*\\])")
+PAGE=re.compile(r"^<(f[0-9]+[rv][0-9]*)>\s+<!")
+HOLD=re.compile(r"(?m)^- pagine riservate \((\d+)\):\s*(\[[^\n]*\])")
 
 def require(ok):
     if not ok: raise RuntimeError("fail-closed validation")
