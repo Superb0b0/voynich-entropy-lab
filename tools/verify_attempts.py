@@ -123,7 +123,7 @@ def main():
             (safe_dir/source.name).write_text(sanitize(raw,pages))
         # Inventory is generated only inside this trusted filtered-data lifetime.
         inventory_path=pathlib.Path(td)/'eligible_pages.json'
-        count=attest(safe_dir,pages,[p.name for p in (ROOT/'data').glob('*.txt')],inventory_path)
+        count=attest(safe_dir,pages,[p.name for p in (ROOT/'data').glob('*.txt')],inventory_path,quarantine_single_unmatched=True)
         inventory=json.loads(inventory_path.read_text())
         split=partition(inventory['eligible_page_ids'])
         (pathlib.Path(td)/'anchor01_split.json').write_text(json.dumps(split,sort_keys=True,indent=2)+'\n')
