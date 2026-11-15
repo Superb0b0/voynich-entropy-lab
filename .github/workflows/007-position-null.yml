@@ -1,0 +1,71 @@
+name: 007 TRAIN_ONLY position-stratified null
+on:
+  push:
+    branches:
+      - research/007-generator-rivals-prereg-20261115
+    paths:
+      - 'proposed/007-generator-rivals/position_null.py'
+      - 'proposed/007-generator-rivals/POSITION_STRATIFIED_NULL_SPEC.md'
+      - '.github/workflows/007-position-null.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  position-null:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install verifier dependency
+        run: python -m pip install 'PyYAML==6.0.2'
+      - name: Verify source corpus and create TRAIN_ONLY inputs
+        run: |
+          python - <<'PY'
+          import pathlib, re, hashlib
+          from tools import verify_attempts as v
+          v.hashes()
+          pages=v.protected()
+          tmp=pathlib.Path('/tmp/voynich-train-only')
+          tmp.mkdir(exist_ok=True)
+          for name in ('ZL3b-n.txt','IT2a-n.txt'):
+              src=v.ROOT/'data'/name
+              raw=src.read_text()
+              if not re.search(r'^<f\d+[rv]\d*>\s+<!',raw,re.M):
+                  v.fail(f'{name}: IVTFF page markers absent')
+              filtered=v.sanitize(raw,pages)
+              dst=tmp/name
+              dst.write_text(filtered)
+              print(name, hashlib.sha256(dst.read_bytes()).hexdigest(), dst.stat().st_size)
+          PY
+      - name: Remove Git metadata and prove negative access control
+        run: |
+          rm -rf .git
+          mkdir -p /tmp/007-position-sandbox
+          cp proposed/007-generator-rivals/position_null.py /tmp/007-position-sandbox/position_null.py
+          cd /tmp/007-position-sandbox
+          if git show HEAD:data/ZL3b-n.txt >/tmp/007-position-git-show.out 2>/tmp/007-position-git-show.err; then
+            echo 'FAIL: git show unexpectedly succeeded'
+            exit 1
+          fi
+          echo 'PASS: git show blocked without .git'
+          test ! -e .git
+      - name: Run frozen position-tercile null, 1000 permutations each
+        working-directory: /tmp/007-position-sandbox
+        env:
+          VOYNICH_DATA_DIR: /tmp/voynich-train-only
+        run: |
+          python position_null.py --corpus ZL3b-n.txt --expected-sha256 dea09c32de148c2bbf592b00e3042993cc57d967c615159ccef458e82270cbe9 --replicates 1000 --seed 20261116 --output ZL3b_position_null.json
+          python position_null.py --corpus IT2a-n.txt --expected-sha256 a12879dfa02f8fc8f9a9c9bea5bf019283959ceca09a446abdd273baced9705c --replicates 1000 --seed 20261116 --output IT2a_position_null.json
+      - name: Upload position-null results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 007-position-null-results
+          path: /tmp/007-position-sandbox/*_position_null.json
+          if-no-files-found: ignore
+          retention-days: 30
