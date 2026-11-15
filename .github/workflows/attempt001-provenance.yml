@@ -1,0 +1,30 @@
+name: Historical attempt 001 provenance (no corpus)
+on:
+  push:
+    branches:
+      - experiment/anchor01-safe-inventory-20261115
+    paths:
+      - 'tools/audit_attempt001_provenance.py'
+      - '.github/workflows/attempt001-provenance.yml'
+      - 'attempts/001-paragraph-header-key/**'
+  pull_request:
+    paths:
+      - 'tools/audit_attempt001_provenance.py'
+      - '.github/workflows/attempt001-provenance.yml'
+      - 'attempts/001-paragraph-header-key/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  provenance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify original archived files only, no corpus reads
+        run: python tools/audit_attempt001_provenance.py
