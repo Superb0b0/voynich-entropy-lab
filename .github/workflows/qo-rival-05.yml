@@ -1,0 +1,29 @@
+name: QO-RIVAL-05 circular-shift null (exploratory)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qo-rival-05:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/qo-correction-audit-20261115
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run synthetic regression tests
+        run: python -m unittest tests.test_qo_rival -v
+      - name: Execute preregistered exploratory circular-shift rival
+        run: python tools/qo_rival_circular_shift.py | tee qo-rival-05-result.json
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: qo-rival-05-result
+          path: |
+            qo-rival-05-result.json
+            research-output/qo-rival-circular-shift.json
+          retention-days: 30
