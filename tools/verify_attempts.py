@@ -4,10 +4,12 @@ import hashlib, json, os, pathlib, re, shlex, shutil, subprocess, sys, tempfile
 import yaml
 try:
     from tools.verified_inventory import attest
+    from tools.anchor01_partition import partition
 except ModuleNotFoundError as exc:
     if exc.name != 'tools':
         raise
     from verified_inventory import attest
+    from anchor01_partition import partition
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 MANIFEST=ROOT/"MANIFEST.md"
@@ -122,7 +124,11 @@ def main():
         # Inventory is generated only inside this trusted filtered-data lifetime.
         inventory_path=pathlib.Path(td)/'eligible_pages.json'
         count=attest(safe_dir,pages,[p.name for p in (ROOT/'data').glob('*.txt')],inventory_path)
+        inventory=json.loads(inventory_path.read_text())
+        split=partition(inventory['eligible_page_ids'])
+        (pathlib.Path(td)/'anchor01_split.json').write_text(json.dumps(split,sort_keys=True,indent=2)+'\\n')
         print(f'FILTERED INVENTORY ATTESTED: {count} eligible pages; IDs not logged')
+        print(f'ANCHOR01 SPLIT: {split["discovery_folio_count"]} discovery folios, {split["internal_test_folio_count"]} internal-test folios; IDs not logged')
         for folder in attempts:verify_attempt(folder,safe_dir,forbidden)
     print(f"VERIFIED: {len(attempts)} attempts, SHA256 manifest, traced holdout isolation")
 
