@@ -15,6 +15,7 @@ on:
       - 'tools/anchor01_hand_gate.py'
       - 'tools/anchor01_hand_overlap.py'
       - 'tools/anchor02_hand2_probe.py'
+      - 'tools/anchor02_length_control.py'
   pull_request:
     paths:
       - 'tools/verified_inventory.py'
@@ -49,3 +50,5 @@ jobs:
         run: python tools/anchor01_hand_overlap.py
       - name: Test within-hand biological versus botanical qo contrast
         run: python tools/anchor02_hand2_probe.py
+      - name: Control word length within hand 2
+        run: python tools/anchor02_length_control.py
