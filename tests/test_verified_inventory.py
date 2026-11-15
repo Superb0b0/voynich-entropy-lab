@@ -55,6 +55,24 @@ class InventoryTests(unittest.TestCase):
                 attest(root / "safe", {"f2r"}, ["a.txt", "b.txt"], root / "out.json")
             self.assertFalse((root / "out.json").exists())
 
+    def test_explicit_single_unmatched_quarantine(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = self.setup_case(td, "<f1r> <!\n<f3v> <!\n")
+            (root / "safe" / "b.txt").write_text("<f1r> <!\n")
+            self.assertEqual(attest(root / "safe", {"f2r"}, ["a.txt", "b.txt"], root / "out.json",
+                                    quarantine_single_unmatched=True), 1)
+            data=json.loads((root / "out.json").read_text())
+            self.assertEqual(data["quarantine"]["count"], 1)
+            self.assertEqual(data["eligible_page_ids"], ["f1r"])
+
+    def test_explicit_quarantine_rejects_two_mismatches(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = self.setup_case(td, "<f1r> <!\n<f3v> <!\n<f4r> <!\n")
+            (root / "safe" / "b.txt").write_text("<f1r> <!\n")
+            with self.assertRaisesRegex(RuntimeError, "coverage mismatch"):
+                attest(root / "safe", {"f2r"}, ["a.txt", "b.txt"], root / "out.json",
+                       quarantine_single_unmatched=True)
+
     def test_protected_in_second_transcription_rejected(self):
         with tempfile.TemporaryDirectory() as td:
             root = self.setup_case(td, "<f1r> <!\n")
