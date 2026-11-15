@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Install verifier dependency
+        run: python -m pip install 'PyYAML==6.0.2'
       - name: Verify original corpus hashes and create TRAIN_ONLY inputs
         id: prepare
         run: |
