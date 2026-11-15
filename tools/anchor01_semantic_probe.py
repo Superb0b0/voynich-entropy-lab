@@ -3,8 +3,8 @@
 import hashlib, json, math, pathlib, random, re, statistics, tempfile
 from verify_attempts import ROOT, hashes, protected, sanitize
 
-PAGE=re.compile(r"^<(f(\\d+)[rv]\\d*)>\\s+<!")
-LINE=re.compile(r"^<f\\d+[rv]\\d*\\.[^>]+>\\s+(.*)")
+PAGE=re.compile(r"^<(f(\d+)[rv]\d*)>\s+<!")
+LINE=re.compile(r"^<f\d+[rv]\d*\.[^>]+>\s+(.*)")
 TOKEN=re.compile(r"[a-z]+",re.I)
 SEED=20261115
 def read_pages(source,excluded):
@@ -34,7 +34,7 @@ def test():
     # Both are rough codicological proxies, not independent iconographic labels.
     groups={}
     for page in sorted(common):
-        n=int(re.match(r"f(\\d+)",page).group(1))
+        n=int(re.match(r"f(\d+)",page).group(1))
         label="zodiac" if 70<=n<=73 else "herbal" if 1<=n<=57 else None
         if label is None:continue
         tokens=page_sets[0][page]
