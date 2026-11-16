@@ -1,0 +1,22 @@
+name: VOY-FUNCTION-01 IIIF access audit (manual)
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch public British Library IIIF manifest and inventory canvases
+        run: python3 research/vo_function/iiif_inventory.py --out iiif-audit-output
+      - name: Upload audit outputs even if manifest fetch fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vo-function-iiif-inventory
+          path: iiif-audit-output/
+          if-no-files-found: warn
