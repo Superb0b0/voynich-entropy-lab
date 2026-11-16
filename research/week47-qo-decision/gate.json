@@ -21,5 +21,17 @@
     "commit": "",
     "sha256": ""
   },
-  "input_isolation": "PENDING"
+  "input_isolation": "PENDING",
+  "preparer": {
+    "status": "PENDING",
+    "path": "research/week47-qo-decision/training_preflight.py",
+    "commit": "",
+    "sha256": ""
+  },
+  "partition_policy": {
+    "status": "PENDING",
+    "path": "tools/qo_rival_calibration.py",
+    "commit": "",
+    "sha256": ""
+  }
 }
