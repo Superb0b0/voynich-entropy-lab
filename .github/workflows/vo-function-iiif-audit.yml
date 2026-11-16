@@ -21,6 +21,8 @@ jobs:
         run: python3 research/vo_function/iiif_fetch_pilot.py --inventory iiif-audit-output/canvas_inventory.csv --out iiif-audit-output
       - name: Inventory Wellcome MS.22 IIIF using catalogue-provided manifest
         run: python3 research/vo_function/wellcome_inventory.py
+      - name: Fetch Wellcome MS22 ten deterministic previews (no coding)
+        run: python3 research/vo_function/wellcome_fetch_pilot.py
       - name: Upload documentary audit outputs
         if: always()
         uses: actions/upload-artifact@v4
