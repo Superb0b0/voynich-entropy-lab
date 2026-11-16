@@ -3,11 +3,11 @@
 import csv,hashlib,json,urllib.request,datetime
 from pathlib import Path
 ROOT=Path("wellcome-audit-output");ROOT.mkdir(exist_ok=True)
-URL="https://api.wellcomecollection.org/catalogue/v2/works/akn92u5z?include=items"
+URL="https://api.wellcomecollection.org/catalogue/v2/works/ugn23v6p?include=items"
 def fetch(url):
     req=urllib.request.Request(url,headers={"User-Agent":"VOY-FUNCTION-01-documentary-audit/0.1","Accept":"application/json"})
     with urllib.request.urlopen(req,timeout=35) as resp:return resp.read()
-audit={"work":"akn92u5z","checked_at_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),"images_inspected":0,"annotations_executed":0}
+audit={"work":"ugn23v6p","checked_at_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),"images_inspected":0,"annotations_executed":0}
 try:
     data=fetch(URL);work=json.loads(data);audit["catalogue_sha256"]=hashlib.sha256(data).hexdigest()
     candidates=[loc["url"] for item in work.get("items",[]) for loc in item.get("locations",[]) if loc.get("locationType",{}).get("id")=="iiif-presentation" and loc.get("url","").startswith("https://")]
