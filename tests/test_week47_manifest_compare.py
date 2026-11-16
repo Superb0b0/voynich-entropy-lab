@@ -76,6 +76,50 @@ class ManifestCompareTests(unittest.TestCase):
         del b["loci"][0]["physical_index"]
         self.assertEqual(m.compare(a, b)["status"], "DIFFERENCES")
 
+    def test_dangling_block_reference_rejected_even_when_both_sides_match(self):
+        a, b = fixture(), fixture()
+        a["loci"][0]["block_id"] = "missing"
+        b["loci"][0]["block_id"] = "missing"
+        result = m.compare(a, b)
+        self.assertEqual(result["status"], "DIFFERENCES")
+        self.assertTrue(any(d["error"] == "unknown_block_reference"
+                            for d in result["differences"]))
+
+    def test_block_page_mismatch_rejected_even_when_both_sides_match(self):
+        a, b = fixture(), fixture()
+        a["blocks"][0]["page"] = "other-page"
+        b["blocks"][0]["page"] = "other-page"
+        result = m.compare(a, b)
+        self.assertEqual(result["status"], "DIFFERENCES")
+        self.assertTrue(any(d["error"] == "block_page_mismatch"
+                            for d in result["differences"]))
+
+    def test_dangling_next_locus_reference_rejected_even_when_both_sides_match(self):
+        a, b = fixture(), fixture()
+        a["loci"][0]["next_locus_id"] = "missing"
+        b["loci"][0]["next_locus_id"] = "missing"
+        result = m.compare(a, b)
+        self.assertEqual(result["status"], "DIFFERENCES")
+        self.assertTrue(any(d["error"] == "unknown_locus_reference"
+                            for d in result["differences"]))
+
+    def test_next_locus_must_be_physical_neighbor_in_same_block(self):
+        a, b = fixture(), fixture()
+        a["loci"][0]["next_locus_id"] = "l2"
+        b["loci"][0]["next_locus_id"] = "l2"
+        a["loci"][1]["physical_index"] = 4
+        b["loci"][1]["physical_index"] = 4
+        result = m.compare(a, b)
+        self.assertEqual(result["status"], "DIFFERENCES")
+        self.assertTrue(any(d["error"] == "invalid_adjacency_reference"
+                            for d in result["differences"]))
+
+    def test_non_object_manifest_fails_closed_without_exception(self):
+        result = m.compare([], {})
+        self.assertEqual(result["status"], "DIFFERENCES")
+        self.assertTrue(any(d["error"] == "invalid_top_level_object"
+                            for d in result["differences"]))
+
 
 if __name__ == "__main__":
     unittest.main()
