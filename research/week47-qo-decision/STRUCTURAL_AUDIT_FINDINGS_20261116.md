@@ -61,3 +61,10 @@ The current branch head also records [run 43869742449](https://github.com/Superb
 ## Updated evidence, run 43866559030
 
 Artifact [14226800088](https://github.com/Superb0b0/voynich-entropy-lab/actions/runs/43866559030/artifacts/14226800088): all 13 ZL3b P loci outside blocks have a nonempty first word and lack both an opening and closing marker on their own line. This does **not** prove the reason for their exclusion. The updated comparison scopes pair identity to the containing block and gives 384 ZL3b-only, 410 IT2a-only, 2,897 shared pairs; the former 50/76 comparison did not include block identity and is superseded. No scientific gate is changed.
+
+
+## Supplementary parity JSON reviewed (16 November 2026)
+
+Two Library files, `W47_canonical_parity_report.json` and `W47_canonical_parity_report(1).json`, contain identical 1,711-byte JSON. They claim ZL3b status `VERIFIED`, 0 token mismatches, 0 block-boundary mismatches, 740 matched blocks and 4,130 matched loci, and repeat the canonical corpus/parser SHA-256 values. Their own limitations say `matched_pair_eligibility=false` and `it2a_pair_mapping_checked=false`; the report also says the full corpus was read only for structural/token parity. The duplicate is not an independent corroboration.
+
+The JSON is not tied to a repository commit, workflow run, audit-script SHA, or retrievable per-locus/block manifests in this record. Its `adjacency_mismatches=0` field therefore does not establish pair-eligibility parity, and its `VERIFIED` label cannot satisfy the fail-closed preflight. I did not rerun the full-corpus check or inspect corpus/protected-page content. Treat this as a reported aggregate, not a gate attestation; parser/mapping and IT2a gates remain `PENDING`.
