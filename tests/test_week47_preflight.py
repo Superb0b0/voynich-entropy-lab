@@ -110,7 +110,7 @@ class TestW47Guard(unittest.TestCase):
             root=pathlib.Path(directory)
             path=root / g.GATE_PATH
             path.parent.mkdir(parents=True)
-            content=(json.dumps(approved,sort_keys=True)+'\\n').encode()
+            content=(json.dumps(approved,sort_keys=True)+chr(10)).encode()
             path.write_bytes(content)
             def git_for(timestamp):
                 def read(*args):
