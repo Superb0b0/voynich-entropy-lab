@@ -5,6 +5,7 @@ on:
       - 'research/week47-qo-decision/**'
       - '.github/workflows/week47-qo-gated.yml'
       - 'tests/test_week47_preflight.py'
+      - 'tests/test_week47_synthetic_primitives.py'
   workflow_dispatch:
     inputs:
       run_experiment:
@@ -31,6 +32,8 @@ jobs:
           python-version: '3.11'
       - name: Verify fail-closed guard with synthetic fixtures
         run: python -m unittest discover -s tests -p 'test_week47_preflight.py' -v
+      - name: Run synthetic-only null and adjacency regression tests
+        run: python -m unittest discover -s tests -p 'test_week47_synthetic_primitives.py' -v
       - name: Assert real preflight rejects missing parser evidence
         run: |
           set -euo pipefail
