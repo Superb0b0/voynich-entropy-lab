@@ -7,6 +7,7 @@ on:
       - 'tests/test_week47_preflight.py'
       - 'tests/test_week47_synthetic_primitives.py'
       - 'tests/test_week47_manifest_compare.py'
+      - 'tests/test_week47_locked_runner.py'
   workflow_dispatch:
     inputs:
       run_experiment:
@@ -37,6 +38,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_week47_synthetic_primitives.py' -v
       - name: Verify synthetic structural manifest comparator
         run: python -m unittest discover -s tests -p 'test_week47_manifest_compare.py' -v
+      - name: Verify locked runner with synthetic-only null fixtures
+        run: python -m unittest discover -s tests -p 'test_week47_locked_runner.py' -v
       - name: Verify negative preflight fixture without coupling to live gate status
         run: |
           set -euo pipefail
