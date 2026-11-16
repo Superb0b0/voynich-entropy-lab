@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "study_id": "W47-EXACT-FIRSTWORD-NULL-01",
+  "status": "FROZEN_EXPLORATORY",
+  "question_type": "NULL_ONLY",
+  "question": "Does exact repetition of the first RC1.2 alphabetical word across consecutive P lines within a single IVTFF block deviate from a within-block first-word permutation null?",
+  "scientific_status": "EXPLORATORY_ALREADY_EXPOSED_CORPUS",
+  "source_corpora": {
+    "ZL3b": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    "IT2a": "7f27a8b0feed8f6de0a99900df6bf912dd1d295c38e5f830bac8b41c3f536fb5"
+  },
+  "parser": {
+    "name": "RC1.2",
+    "source_sha256": "8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5",
+    "full_corpus_structural_blocks": 740,
+    "full_corpus_P_loci": 4130,
+    "full_corpus_tokens": 35492,
+    "full_corpus_types": 6980,
+    "block_rule": "IVTFF <%>...<$> within a single page; page boundary resets; enumerate all incomplete and divergent blocks",
+    "first_word_rule": "First alphabetical [A-Za-z]+ token after RC1.2 cleanup; strip comments, join brace content and exclude whole square-bracket alternatives"
+  },
+  "scope": {
+    "population": "AUTHORIZED_TRAINING_ONLY",
+    "page_policy": "No protected folios used in a scientific evaluation; canonical full-corpus totals apply only to structural provenance, never to training population",
+    "currier": "Currier A/B from page $L, other and mixed blocks excluded and counted",
+    "unit": "P lines with nonempty RC1.2 first token within one IVTFF block",
+    "pair_denominator": "One ordered pair of immediately consecutive physical P lines with no missing/intervening locus, within the same page and block; no cross-boundary adjacency",
+    "endpoint": "EXACT_FIRST_WORD_REPETITION",
+    "endpoint_formula": "O=sum(1[first_word_i==first_word_next]) over eligible pairs; E=mean of O from 10000 within-block permutations; O/E; E==0 => NOT VERIFIABLE",
+    "strata": "Pooled common allowed folios primary; A/B descriptive only"
+  },
+  "null_model": {
+    "kind": "WITHIN_IVTFF_BLOCK_PERMUTE_FIRST_WORDS",
+    "method": "Permute first words across eligible P lines independently in each block; preserve line positions, inventory, row and block geometries; same number of eligible pairs",
+    "replicates": 10000,
+    "seed": 20261116,
+    "p_value": "One-sided depletion Monte Carlo (1 + count(null_O <= O)) / 10001",
+    "negative_controls": "Synthetic identical-first-word and shuffled-first-word block fixtures; verify deterministic replay and boundary exclusion"
+  },
+  "uncertainty": {
+    "cluster_unit": "Physical folio f<digits>, merge recto/verso and panels; report exceptional nonnumeric units separately",
+    "bootstrap_replicates": 10000,
+    "bootstrap_seed": 20261116,
+    "quantiles": [
+      0.025,
+      0.975
+    ],
+    "quantile_method": "linear interpolation of sorted bootstrap replicates",
+    "uncertainty_limit": "Does not model correlated hands/quires or post-selection history"
+  },
+  "decision_thresholds": {
+    "SUPPORTED": "Both mapped comparable ZL3b and IT2a training analyses: O/E <=0.5, permutation p <=0.01 and cluster-bootstrap 95% upper bound O/E <1, with >=20 physical folio clusters each. Exploratory relative to null only.",
+    "FALSIFIED": "Both mapped comparable analyses: cluster-bootstrap 95% lower bound O/E >0.5, contradicting prespecified strong-depletion threshold only, not every possible qo mechanism.",
+    "INCONCLUSIVE": "Parser and sample gates passed, but neither SUPPORT nor FALSIFICATION criteria satisfied; includes discordance between otherwise comparable ZL3b and IT2a.",
+    "NOT VERIFIABLE": "Missing input, protocol, proven parser/block and adjacency mapping, permitted training isolation, matched ZL3b/IT2a, nonzero denominators and E, >=20 clusters, frozen prior commit, runner, or deadline prerequisites."
+  },
+  "cross_transcription_rule": "IT2a is the same manuscript, not an independent replication; restrict both to identically eligible allowed physical folios, validate block and pair mapping before running; valid outcome discordance => INCONCLUSIVE; missing mapping => NOT VERIFIABLE.",
+  "multiplicity": "One pooled primary endpoint with joint support criterion across both transcriptions. Currier A/B strictly descriptive, not unreported additional inferential tests.",
+  "deadline_utc": "2026-11-20T17:00:00Z",
+  "do_not_mix_with": [
+    "QO-POSITIONAL-J3-J4",
+    "QO-TO-QO-TRANSITIONS",
+    "TIMM-SCHINNER-GENERATOR-COMPARISON"
+  ],
+  "provenance_caveat": "Prior Voynich patterns, filters and competing O/E estimates already inspected; this timestamped freeze improves traceability but is not independent confirmation. No Timm–Schinner generator claims under NULL_ONLY."
+}
