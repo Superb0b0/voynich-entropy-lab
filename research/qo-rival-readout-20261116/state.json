@@ -1,0 +1,44 @@
+{
+  "schema": "voynich-research-cycle-v1",
+  "version": 1,
+  "date_utc": "2026-11-16",
+  "source_repo": "Superb0b0/voynich-entropy-lab",
+  "verified_main_head": "8b81f874a9944e88fe113b19460294a1b1c5a593",
+  "verified_experiment_head": "ffb31426f93a288fd6f63f9d3ef677ddbd9e600c",
+  "audit_branch": "research/qo-rival-readout-20261116",
+  "verified_audit_parent_head": "c38d8e21926e01f57cfaf3c5140073848ecbd9c3",
+  "experiment_id": "QO-RIVAL-01-READOUT",
+  "phase": "CONCLUSO_AUDIT_NEXT_PENDING",
+  "scientific_status": "EXPLORATORY_NOT_VALIDATED",
+  "protocol_git_blob_sha1": "906ec20620e324306eba0efc065f8a8700c5bf89",
+  "protocol_sha256": null,
+  "source_sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+  "training_sha256": "aba161811f3400c6810d43803f7a3ced5243ea29dd862eeb8c9b1ad144a9e38d",
+  "consecutive_unproductive_cycles": 0,
+  "run_verified": {
+    "id": 43777619545,
+    "conclusion": "success",
+    "url": "https://github.com/Superb0b0/voynich-entropy-lab/actions/runs/43777619545"
+  },
+  "global_verify_ci": "not_checked_in_this_audit",
+  "results": {
+    "observed_qo_qo": 14,
+    "eligible_qo_followups": 396,
+    "observed_rate": 0.03535353535353535,
+    "shuffle_paragraph_p": 0.0004997501249375312,
+    "shuffle_folio_p": 0.0004997501249375312,
+    "circular_shift_p": 0.5577211394302849
+  },
+  "source_result_artifact": {
+    "id": 14186638018,
+    "sha256": "f2f1c4bc97fa6c8657b4021caaea5c5975427ab04bb9a2c85ba4ebb68426cf24"
+  },
+  "new_tests_executed": 0,
+  "independent_replications": 0,
+  "protected_data_opened_by_audit": false,
+  "next_executable_action": "Locate verified generator benchmark inputs and hashes outside holdout; then preregister new generator comparison with folio split, parser and controls; do not recycle this result as confirmation.",
+  "evidence": [
+    "research/qo-rival-readout-20261116/VERDICT.md",
+    "https://github.com/Superb0b0/voynich-entropy-lab/actions/runs/43777619545"
+  ]
+}
