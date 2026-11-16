@@ -26,7 +26,7 @@
     "solo_RC12": 1,
     "union_denominator": 3098
   },
-  "audit_script_sha256": "49ca388d8092a7c2cf2836ad233cce19702f3980d67d3398ec0f326b998afe03",
+  "audit_script_sha256": "c7dbfcde850989030f7d133cb0e15a25e914fc07e567a45d31f5ca252c640460",
   "common_locus_comparison": {
     "delta_signs_RC12_minus_M2": {
       "<0": 0,
@@ -77,6 +77,14 @@
   },
   "split_total_A_B": {
     "A": {
+      "P_candidates": {
+        "M2": 1276,
+        "RC12": 1276
+      },
+      "P_skipped_after_cleaning": {
+        "M2": 0,
+        "RC12": 0
+      },
       "arcs": {
         "M2": 1155,
         "RC12": 1088,
@@ -109,9 +117,31 @@
       "token_delta_signs": {
         "=0": 856,
         ">0": 420
+      },
+      "token_totals": {
+        "M2_first_token_observations": 1276,
+        "M2_first_token_types": 749,
+        "M2_full_tokens_before_tok0": 8835,
+        "M2_full_types": 2961,
+        "RC12_full_tokens": 9386,
+        "RC12_types": 2855
+      },
+      "units": {
+        "M2_tag_paragraphs": 120,
+        "M2_with_valid_pair": 120,
+        "RC12_IVTFF_blocks": 186,
+        "RC12_with_valid_pair": 186
       }
     },
     "ALL": {
+      "P_candidates": {
+        "M2": 3319,
+        "RC12": 3319
+      },
+      "P_skipped_after_cleaning": {
+        "M2": 0,
+        "RC12": 0
+      },
       "arcs": {
         "M2": 3097,
         "RC12": 2655,
@@ -144,9 +174,31 @@
       "token_delta_signs": {
         "=0": 2564,
         ">0": 755
+      },
+      "token_totals": {
+        "M2_first_token_observations": 3319,
+        "M2_first_token_types": 1570,
+        "M2_full_tokens_before_tok0": 27681,
+        "M2_full_types": 6305,
+        "RC12_full_tokens": 28638,
+        "RC12_types": 6081
+      },
+      "units": {
+        "M2_tag_paragraphs": 211,
+        "M2_with_valid_pair": 206,
+        "RC12_IVTFF_blocks": 601,
+        "RC12_with_valid_pair": 600
       }
     },
     "B": {
+      "P_candidates": {
+        "M2": 1999,
+        "RC12": 1999
+      },
+      "P_skipped_after_cleaning": {
+        "M2": 0,
+        "RC12": 0
+      },
       "arcs": {
         "M2": 1906,
         "RC12": 1534,
@@ -179,9 +231,31 @@
       "token_delta_signs": {
         "=0": 1677,
         ">0": 322
+      },
+      "token_totals": {
+        "M2_first_token_observations": 1999,
+        "M2_first_token_types": 991,
+        "M2_full_tokens_before_tok0": 18543,
+        "M2_full_types": 4237,
+        "RC12_full_tokens": 18933,
+        "RC12_types": 4154
+      },
+      "units": {
+        "M2_tag_paragraphs": 83,
+        "M2_with_valid_pair": 78,
+        "RC12_IVTFF_blocks": 407,
+        "RC12_with_valid_pair": 406
       }
     },
     "UNKNOWN": {
+      "P_candidates": {
+        "M2": 44,
+        "RC12": 44
+      },
+      "P_skipped_after_cleaning": {
+        "M2": 0,
+        "RC12": 0
+      },
       "arcs": {
         "M2": 36,
         "RC12": 33,
@@ -214,6 +288,20 @@
       "token_delta_signs": {
         "=0": 31,
         ">0": 13
+      },
+      "token_totals": {
+        "M2_first_token_observations": 44,
+        "M2_first_token_types": 41,
+        "M2_full_tokens_before_tok0": 303,
+        "M2_full_types": 238,
+        "RC12_full_tokens": 319,
+        "RC12_types": 245
+      },
+      "units": {
+        "M2_tag_paragraphs": 8,
+        "M2_with_valid_pair": 8,
+        "RC12_IVTFF_blocks": 8,
+        "RC12_with_valid_pair": 8
       }
     }
   },
