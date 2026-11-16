@@ -49,6 +49,20 @@ class SyntheticW47Tests(unittest.TestCase):
         self.assertEqual(list(m.eligible_pairs(rows)), [])
         self.assertEqual(m.repeat_count(rows), 0)
 
+    def test_reject_duplicate_physical_locus(self):
+        rows = [line("p", "b", 1, "aa"), line("p", "b", 1, "bb")]
+        with self.assertRaisesRegex(ValueError, "physical locus"):
+            m.repeat_count(rows)
+
+    def test_reject_out_of_order_physical_locus(self):
+        rows = [line("p", "b", 2, "aa"), line("p", "b", 1, "bb")]
+        with self.assertRaisesRegex(ValueError, "physical locus"):
+            m.permutation_counts(rows, replicates=2)
+
+    def test_reject_invalid_locus_index(self):
+        with self.assertRaises(ValueError):
+            m.repeat_count([line("p", "b", True, "aa")])
+
     def test_invalid_replicates(self):
         with self.assertRaises(ValueError):
             m.permutation_counts([line("p", "b", 1, "aa")], replicates=0)
