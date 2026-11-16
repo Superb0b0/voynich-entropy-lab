@@ -44,11 +44,9 @@ def main():
             filename = f"canvas_{i:03d}.jpg"
             path = target / filename
             path.write_bytes(data)
-            from PIL import Image
-            dimensions = Image.open(path).size
             item.update(status="DOWNLOADED", filename=f"apparatus_candidates/{filename}",
                         bytes=len(data), sha256=hashlib.sha256(data).hexdigest(),
-                        dimensions=list(dimensions), content_type=mime)
+                        content_type=mime)
         except Exception as exc:
             item.update(status="FETCH_FAILED", error_type=type(exc).__name__, error=str(exc)[:300])
         report.append(item)
