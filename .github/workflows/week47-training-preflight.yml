@@ -1,0 +1,80 @@
+name: W47 training-only alignment preflight (no science)
+on:
+  pull_request:
+    paths:
+      - 'research/week47-qo-decision/training_preflight.py'
+      - '.github/workflows/week47-training-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            data/ZL3b-n.txt
+            data/IT2a-n.txt
+            tools/qo_rival_calibration.py
+            research/week47-qo-decision/training_preflight.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reject protected policy file and verify originals before filtering
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test -f data/ZL3b-n.txt
+          test -f data/IT2a-n.txt
+      - name: Prepare training-only snapshots for BOTH transcriptions
+        run: |
+          set -euo pipefail
+          python research/week47-qo-decision/training_preflight.py prepare \
+            --held-module tools/qo_rival_calibration.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: w47-authorized-training-snapshot
+          path: training-snapshot/
+          retention-days: 5
+          if-no-files-found: error
+  verify:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            research/week47-qo-decision/training_preflight.py
+            experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: w47-authorized-training-snapshot
+          path: training-snapshot/
+      - name: Assert original and protected data absent in evaluation job
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test ! -e data/ZL3b-n.txt
+          test ! -e data/IT2a-n.txt
+      - name: Verify cross-transcription training geometry ONLY, not endpoint
+        run: |
+          set -euo pipefail
+          python research/week47-qo-decision/training_preflight.py verify \
+            --parser experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: w47-training-structural-report
+          path: research-output/w47-training-shape.json
+          if-no-files-found: warn
+          retention-days: 14
