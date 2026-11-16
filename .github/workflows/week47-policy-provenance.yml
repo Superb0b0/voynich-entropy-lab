@@ -1,0 +1,69 @@
+name: W47 policy provenance (no science; no holdout file)
+on:
+  pull_request:
+    paths:
+      - 'research/week47-qo-decision/partition_policy_provenance.py'
+      - 'tests/test_week47_partition_provenance.py'
+      - '.github/workflows/week47-policy-provenance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            research/week47-qo-decision/partition_policy_provenance.py
+            tests/test_week47_partition_provenance.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reject all originals and any holdout file
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test ! -e data/ZL3b-n.txt
+      - name: Synthetic-only independent selector logic
+        run: python -m unittest discover -s tests -p 'test_week47_partition_provenance.py' -v
+  policy-provenance:
+    needs: synthetic-tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            data/ZL3b-n.txt
+            tools/make_holdout.py
+            tools/qo_rival_calibration.py
+            research/week47-qo-decision/partition_policy_provenance.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Assert protected inventory itself is absent
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+      - name: Independently derive selection from frozen original algorithm
+        run: |
+          set -euo pipefail
+          python research/week47-qo-decision/partition_policy_provenance.py \
+            --selector tools/make_holdout.py \
+            --policy tools/qo_rival_calibration.py \
+            --corpus data/ZL3b-n.txt \
+            --output research-output/w47-partition-provenance.json
+      - name: Archive aggregate counts and pass/fail only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: w47-partition-provenance-aggregate
+          path: research-output/w47-partition-provenance.json
+          if-no-files-found: warn
+          retention-days: 14
