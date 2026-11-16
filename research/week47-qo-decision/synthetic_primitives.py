@@ -10,9 +10,21 @@ import random
 def eligible_pairs(lines):
     """Yield immediately adjacent physical P lines in the same page/block.
 
-    Each record: page, block, locus_index (physical sequential index),
-    first_word (nonempty string), folio. Never bridge a missing locus.
+    Input must be in physical source order. Within a page/block, locus_index
+    must increase strictly. Reject duplicate/out-of-order loci rather than
+    silently changing the pair denominator.
     """
+    seen = set()
+    previous_index = {}
+    for line in lines:
+        key = (line["page"], line["block"])
+        index = line["locus_index"]
+        if (not isinstance(index, int) or isinstance(index, bool) or index < 1
+                or (key, index) in seen
+                or (key in previous_index and index <= previous_index[key])):
+            raise ValueError("Duplicate, invalid or out-of-order physical locus")
+        seen.add((key, index))
+        previous_index[key] = index
     for left, right in zip(lines, lines[1:]):
         if (left["page"] == right["page"]
                 and left["block"] == right["block"]
