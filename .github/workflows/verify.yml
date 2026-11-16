@@ -11,6 +11,16 @@ on:
       - 'tools/verify_attempts.py'
       - '.github/workflows/verify.yml'
   pull_request:
+    paths:
+      - 'data/**'
+      - 'MANIFEST.md'
+      - 'HOLDOUT.md'
+      - 'PROTOCOL.md'
+      - 'TESTS.md'
+      - 'attempts/**'
+      - 'tools/verify_attempts.py'
+      - '.github/workflows/verify.yml'
+      - 'tests/**'
   workflow_dispatch:
 permissions:
   contents: read
