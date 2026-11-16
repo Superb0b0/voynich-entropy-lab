@@ -32,6 +32,22 @@ def compare(reference, candidate):
                 indexed[row["id"]] = row
             return indexed
         a, b = index(left, "reference"), index(right, "candidate")
+        for side, indexed in (("reference", a), ("candidate", b)):
+            for record_id, record in indexed.items():
+                for field in fields:
+                    if field not in record:
+                        differences.append({"kind": kind, "side": side, "id": record_id,
+                                            "field": field, "error": "missing_required_field"})
+                if kind == "loci" and "tokens" in record and (
+                        not isinstance(record["tokens"], list)
+                        or any(not isinstance(token, str) for token in record["tokens"])):
+                    differences.append({"kind": kind, "side": side, "id": record_id,
+                                        "error": "invalid_token_stream"})
+                if kind == "loci" and "physical_index" in record and (
+                        type(record["physical_index"]) is not int
+                        or record["physical_index"] < 1):
+                    differences.append({"kind": kind, "side": side, "id": record_id,
+                                        "error": "invalid_physical_index"})
         for key in sorted(set(a) | set(b)):
             if key not in a or key not in b:
                 differences.append({"kind": kind, "id": key, "error": "missing_id",
