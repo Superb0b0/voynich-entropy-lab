@@ -68,3 +68,10 @@ Artifact [14226800088](https://github.com/Superb0b0/voynich-entropy-lab/actions/
 Two Library files, `W47_canonical_parity_report.json` and `W47_canonical_parity_report(1).json`, contain identical 1,711-byte JSON. They claim ZL3b status `VERIFIED`, 0 token mismatches, 0 block-boundary mismatches, 740 matched blocks and 4,130 matched loci, and repeat the canonical corpus/parser SHA-256 values. Their own limitations say `matched_pair_eligibility=false` and `it2a_pair_mapping_checked=false`; the report also says the full corpus was read only for structural/token parity. The duplicate is not an independent corroboration.
 
 The JSON is not tied to a repository commit, workflow run, audit-script SHA, or retrievable per-locus/block manifests in this record. Its `adjacency_mismatches=0` field therefore does not establish pair-eligibility parity, and its `VERIFIED` label cannot satisfy the fail-closed preflight. I did not rerun the full-corpus check or inspect corpus/protected-page content. Treat this as a reported aggregate, not a gate attestation; parser/mapping and IT2a gates remain `PENDING`.
+
+
+## Synthetic RC1.2 mapping check (16 November 2026)
+
+Added two corpus-free cases to `tests/test_week47_manifest_compare.py`: canonical locus/folio/line-index mapping with header line offsets, `fRos`, and token cleaning for braces/square alternatives; and fail-closed rejection of a malformed locus ID. Local focused run: 17 tests **PASS**. The square-alternative fixture confirms RC1.2 outputs two surviving tokens (`zha`, `o`), which is now asserted explicitly. Commit: `4043a2e31afde57f5d19c3ae3d8653a95a4f1887`.
+
+No workflow run or commit status is attached to this commit at report time. The available GitHub Actions interface here exposes run lookup/rerun but not workflow dispatch; therefore remote CI for this added fixture is **PENDING**. This synthetic check does not verify full-corpus locus mapping, parser provenance, or ZL3b/IT2a parity. The scientific gate remains **PENDING**.
