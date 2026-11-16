@@ -98,3 +98,30 @@ Prima di qualsiasi nuovo risultato di confronto, **congelare e rendere verificab
 - Nessun task orario GPT, nuova CI di test o replay numerico può attivarsi in forza di questo piano: attivazione solo dopo gate verificati. `main`, baseline G0 e RC1.4.2 restano immutati.
 
 **Stato al 16/11/2026:** `QO-MECH-01 VS RC1.2 = NON COMPARABILE`; `PARSER_COMPATIBLE = PENDING`; `RIVALS_ATTESTED_AND_COMPARABLE = PENDING`; `PRECOMMIT_VALID = PENDING`; `NEW_EXPERIMENT = BLOCKED`.
+
+
+## ADDENDUM W47-AUTO-02 | Un solo nullo, precommit congelato, gate Actions verificato (16 novembre 2026)
+
+**Questa decisione prevale sull'obiettivo storico di confronto immediato fra generatori rivali.** Il primo esperimento W47, se i gate vengono superati, è solo **Voynich contro un nullo predefinito**. Non è una competizione contro Timm–Schinner, che rimane un possibile esperimento distinto, NON ATTESTATO, da eseguire soltanto con fonte/versione/geometria verificate e un proprio protocollo precedente al run. Il precedente contrasto O/E ≈0,08 contro ≈3 resta storico ed esplorativo; non è un risultato nuovo.
+
+**Protocollo congelato senza nuovi esiti del manoscritto:** `research/week47-qo-decision/PROTOCOL.json`, commit `69b32db1126c99cb4230b05c7bb33e5292aa6d45`, SHA-256 `22b4a8bc3951f6ccf06aeffffc9e45a016e33847ee51d3fe67f1d35751494f90`. È un congelamento tramite commit Git, non un timestamp esterno certificato né una preregistrazione scientificamente indipendente su dati nuovi.
+
+Cinque scelte codificate, non lasciate all'operatore:
+1. **Nullo:** 10.000 permutazioni (seed `20261116`) dei primi token alfabetici *entro lo stesso blocco IVTFF*, preservando i token presenti e la geometria di ciascun blocco. Non shuffle fra folii, non stime storiche Timm–Schinner.
+2. **Denominatore:** coppie di righe P fisicamente consecutive, con primo token RC1.2 non vuoto, nella *stessa pagina* e nello *stesso blocco* `<%>…<$>`; nessun attraversamento di confini, intervalli mancanti o loci esclusi. `O/E` = numero di ripetizioni esatte della prima parola diviso la media delle ripetizioni permutate, purché E>0.
+3. **Quattro verdetti:** `SUPPORTED` solo se entrambe le traslitterazioni comparabili hanno O/E≤0,5, p permutazionale unilaterale≤0,01 e limite superiore IC bootstrap O/E <1, con ≥20 cluster validi; `FALSIFIED` solo se in entrambe il limite inferiore IC bootstrap O/E è >0,5 (smentisce esclusivamente l'ipotesi di forte deplezione); `INCONCLUSIVE` negli altri risultati eseguibili, incluse discordanze; `NOT VERIFIABLE` se falliscono provenienza, parsificazione, mapping, campione, isolamento o precommit. Tutti i verdetti del protocollo sono **ESPLORATIVI**.
+4. **Bootstrap:** folio fisico (`f\\d+`, recto/verso uniti, unità speciali non numeriche dichiarate separatamente), 10.000 campioni, percentili 2,5–97,5, seed `20261116`; non corregge mano/fascicolo o storia post-hoc.
+5. **ZL3b/IT2a:** esclusivamente folii *di training* consentiti con mapping valido di blocchi e coppie. Contraddizione sui dati comparabili = `INCONCLUSIVE`; mapping mancante = `NOT VERIFIABLE`. IT2a è lo stesso manoscritto, non una replica indipendente. A/B restano descrittive.
+
+### Interblocco tecnico implementato (PR draft #26, non main)
+- Workflow `.github/workflows/week47-qo-gated.yml`, sorgente `research/week47-qo-decision/preflight.py`, manifest `research/week47-qo-decision/gate.json`, regressioni sintetiche `tests/test_week47_preflight.py`.
+- Il job **`experiment` dipende dal `preflight`** e verifica `needs.preflight.outputs.ready == 'true'` oltre a richiesta manuale esplicita. In `preflight` si controllano SHA-256 dell'originale protocollo e degli attestati, commit antenati e antecedenti al run, data di commit non successiva alle ore 18:00 Europe/Rome del 20/11, allineamento strutturale RC1.2/740/4130/35492/6980, tre manifest di differenze e mapping IT2a, identità del runner e isolamento training-only. Nessun testo del manoscritto o dei folii protetti è letto dal preflight.
+- **[GitHub Actions run #43864295356](https://github.com/Superb0b0/voynich-entropy-lab/actions/runs/43864295356) SUCCESS** sul commit `ed513af15927550f0e34c015e715a3bcc291d87c`: `guard-tests` PASS (regressioni sintetiche); test *negativo sul gate reale* PASS perché manca il report parser; `preflight` e `experiment` SKIPPED (trigger PR). **Questa NON è CI di un esperimento scientifico.**
+- Stato iniziale intenzionale: `PARSER_EVIDENCE=PENDING`, `RUNNER=PENDING`, `INPUT_ISOLATION=PENDING`, `RIVALS=NOT_APPLICABLE_NULL_ONLY`; `EXPERIMENT=BLOCKED`. Il runner `run_locked.py` non è presente: nessuna esecuzione possibile anche per errore di operatore.
+- La PR #26 resta DRAFT; `workflow_dispatch` diventa utilizzabile dal ramo predefinito soltanto dopo revisione/merge autorizzato. **Non esiste ancora una pubblicazione automatica del verdetto alle 18:00 del 20/11**: il codice impone il blocco quando viene invocato, mentre un controllo pianificato richiederebbe attivazione sul branch predefinito. Non dichiarare un timer autonomo già attivo.
+- Il preflight controlla hash, commit e *attestazioni*: queste, da sole, **non provano** l'equivalenza empirica fra parser. Serve produrre e verificare con codice indipendente i mapping e i registri citati. Nessuna attivazione prima.
+- La vecchia `verify.yml` globale resta FAILED per il legacy `001` privo di `attempt.yml`. Non falsificare contratto storico, non presentare il PASS dei soli guard-tests come CI globale verde.
+
+**Decisione entro il 20/11 ore 18:00 Roma:** mancando qualsiasi prerequisito, il nuovo esperimento non parte; esito da registrare `NOT VERIFIABLE`, senza cambiare domanda, statistiche o rivali dopo aver visto risultati.
+
+---
