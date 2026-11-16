@@ -80,36 +80,6 @@ jobs:
           set -euo pipefail
           python research/week47-qo-decision/preflight.py
           echo 'ready=true' >> "$GITHUB_OUTPUT"
-  prepare_training:
-    if: github.event_name == 'workflow_dispatch' && inputs.run_experiment == true && needs.preflight.outputs.ready == 'true'
-    needs: [guard-tests, preflight]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-          sparse-checkout: |
-            data/ZL3b-n.txt
-            data/IT2a-n.txt
-            tools/qo_rival_calibration.py
-            research/week47-qo-decision/training_preflight.py
-          sparse-checkout-cone-mode: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Prepare only permitted training pages
-        run: |
-          set -euo pipefail
-          test ! -e HOLDOUT.md
-          python research/week47-qo-decision/training_preflight.py prepare \
-            --held-module tools/qo_rival_calibration.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: w47-gated-training-snapshot
-          path: training-snapshot/
-          retention-days: 5
-          if-no-files-found: error
   prepare-input:
     if: github.event_name == 'workflow_dispatch' && inputs.run_experiment == true && needs.preflight.outputs.ready == 'true'
     needs: [guard-tests, preflight]
