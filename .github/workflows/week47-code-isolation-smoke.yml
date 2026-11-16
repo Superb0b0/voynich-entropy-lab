@@ -76,7 +76,11 @@ jobs:
             'research/week47-qo-decision/PROTOCOL.json':
                 '22b4a8bc3951f6ccf06aeffffc9e45a016e33847ee51d3fe67f1d35751494f90',
             'experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py':
-                '8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5'
+                '8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5',
+            'research/week47-qo-decision/run_locked.py':
+                '9240b4fcf33da44f11570940ca951322f620de53edb37c69637f3c25befa2d78',
+            'research/week47-qo-decision/training_preflight.py':
+                '15e059fcce13d02db892435139902b526f61117b3211a3a8949d4e0bb3b2c438'
           }
           for name, expected_sha in hashes.items():
               if hashlib.sha256(Path(name).read_bytes()).hexdigest() != expected_sha:
