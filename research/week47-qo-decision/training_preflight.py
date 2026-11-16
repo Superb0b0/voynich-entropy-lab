@@ -11,12 +11,24 @@ from pathlib import Path
 SOURCES={'ZL3b-n.txt':'bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc',
          'IT2a-n.txt':'7f27a8b0feed8f6de0a99900df6bf912dd1d295c38e5f830bac8b41c3f536fb5'}
 RC12='8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5'
+# Identity of the previously audited W47 training snapshots, NOT proof of
+# independent protected-page provenance. Changes require explicit audit.
+EXPECTED_TRAINING_SHA={
+ 'ZL3b-n.txt':'aba161811f3400c6810d43803f7a3ced5243ea29dd862eeb8c9b1ad144a9e38d',
+ 'IT2a-n.txt':'44891f0545382e51a09a607d1f62b88dbfb34acb44b4ca7db56001d54b0e1bd3'
+}
 PAGE=re.compile(r'^<(?P<page>f(?:\d+[rv]\d*|Ros))>[ \t]*<!')
 ANY_PAGE_HEADER=re.compile(r'^<(?P<page>f[^>,]*)>')
 ANY_LOCUS_HEADER=re.compile(r'^<(?P<locus>f[^>,]+),(?P<tag>[^>]+)>')
 LOCUS=re.compile(r'^<(?P<locus>f(?:\d+[rv]\d*|Ros)\.\d+),(?P<tag>[^>]+)>[ \t]*(?P<body>.*)$')
 LEAF=re.compile(r'^f(\d+)[rv]\d*$')
 def sha(b):return hashlib.sha256(b).hexdigest()
+def require_frozen_training_digest(name,digest):
+ expected=EXPECTED_TRAINING_SHA.get(name)
+ if expected is None or digest!=expected:
+  raise RuntimeError('W47 snapshot digest differs from frozen technical baseline; independent provenance audit required')
+ return digest
+
 def module(path,label):
  spec=importlib.util.spec_from_file_location(label,path)
  if not spec or not spec.loader:raise RuntimeError('Missing source module')
@@ -73,8 +85,9 @@ def prepare(args):
   raw=(args.root/'data'/name).read_bytes()
   if sha(raw)!=expected:raise RuntimeError('Full original SHA mismatch:'+name)
   subset,counts=slice_pages(raw,held)
+  snapshot_digest=require_frozen_training_digest(name,sha(subset))
   (target/name).write_bytes(subset)
-  report['source'][name]=dict(original_sha256=expected,training_sha256=sha(subset),
+  report['source'][name]=dict(original_sha256=expected,training_sha256=snapshot_digest,
                                training_bytes=len(subset),**counts)
  output=args.root/'training-snapshot/report/input-manifest.json'
  output.parent.mkdir(parents=True,exist_ok=True)
@@ -130,6 +143,7 @@ def verify(args):
   local=args.root/'training-snapshot/data'/name
   if sha(local.read_bytes())!=info['training_sha256']:
    raise RuntimeError('Training artifact integrity mismatch')
+  require_frozen_training_digest(name,info['training_sha256'])
   b,parsed=blocks(local,parser);allblocks[name]=b
   table[name]=dict(training_sha256=info['training_sha256'],
                    P_loci=parsed['counts']['canonical_loci'],
