@@ -62,6 +62,14 @@ class TestW47TrainingSlicer(unittest.TestCase):
                      '<f2r> <! $L=B>', '<f2r.1,*P0> forbidden')
         with self.assertRaisesRegex(RuntimeError,'Malformed locus header'):
             mod.slice_pages(raw,{2})
+    def test_frozen_training_snapshot_hashes_cannot_drift(self):
+        for name,digest in mod.EXPECTED_TRAINING_SHA.items():
+            with self.subTest(name=name):
+                self.assertEqual(mod.require_frozen_training_digest(name,digest),digest)
+                with self.assertRaisesRegex(RuntimeError,'digest differs'):
+                    mod.require_frozen_training_digest(name,'0'*64)
+        with self.assertRaises(RuntimeError):
+            mod.require_frozen_training_digest('unexpected-transcription.txt','0'*64)
     def test_unknown_partition_fails_if_no_held_page_seen(self):
         raw=source('<f1r> <! $L=A>', '<f1r.1,*P0> safe')
         with self.assertRaisesRegex(RuntimeError,'Missing or unverified'):
