@@ -51,6 +51,17 @@ class TestW47TrainingSlicer(unittest.TestCase):
         self.assertNotIn(b'special',result)
         self.assertNotIn(b'forbidden',result)
         self.assertEqual(counts['special_pages'],1)
+    def test_unknown_folio_suffix_is_rejected(self):
+        raw = source('<f1r> <! $L=A>', '<f1r.1,*P0> safe',
+                     '<f2x> <! $L=B>', '<f2x.1,*P0> forbidden')
+        with self.assertRaisesRegex(RuntimeError,'Malformed page boundary'):
+            mod.slice_pages(raw,{2})
+    def test_unknown_locus_suffix_is_rejected(self):
+        raw = source('<f1r> <! $L=A>', '<f1r.1,*P0> safe',
+                     '<f2x.1,*P0> malformed',
+                     '<f2r> <! $L=B>', '<f2r.1,*P0> forbidden')
+        with self.assertRaisesRegex(RuntimeError,'Malformed locus header'):
+            mod.slice_pages(raw,{2})
     def test_unknown_partition_fails_if_no_held_page_seen(self):
         raw=source('<f1r> <! $L=A>', '<f1r.1,*P0> safe')
         with self.assertRaisesRegex(RuntimeError,'Missing or unverified'):
