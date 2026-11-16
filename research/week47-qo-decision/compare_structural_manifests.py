@@ -79,13 +79,28 @@ def compare(reference, candidate):
         loci = {row.get("id"): row for row in locus_rows
                 if isinstance(row, dict) and isinstance(row.get("id"), str)}
         for locus_id, locus in loci.items():
-            block = blocks.get(locus.get("block_id"))
-            if block is None:
-                differences.append({"kind": "loci", "side": side, "id": locus_id,
-                                    "field": "block_id", "error": "unknown_block_reference"})
-            elif locus.get("page") != block.get("page"):
-                differences.append({"kind": "loci", "side": side, "id": locus_id,
-                                    "field": "page", "error": "block_page_mismatch"})
+            block_id = locus.get("block_id")
+            if block_id is None:
+                # Canonical ZL3b has 13 P loci outside the 740 IVTFF blocks.
+                # Include them in the 4,130-locus manifest without inventing
+                # a block or silently omitting them. They cannot create edges.
+                if locus.get("outside_block") is not True:
+                    differences.append({"kind": "loci", "side": side, "id": locus_id,
+                                        "field": "outside_block", "error": "unaccounted_outside_block_locus"})
+                if locus.get("next_locus_id") is not None:
+                    differences.append({"kind": "loci", "side": side, "id": locus_id,
+                                        "field": "next_locus_id", "error": "outside_block_adjacency"})
+            else:
+                if locus.get("outside_block") is True:
+                    differences.append({"kind": "loci", "side": side, "id": locus_id,
+                                        "field": "outside_block", "error": "conflicting_block_flag"})
+                block = blocks.get(block_id)
+                if block is None:
+                    differences.append({"kind": "loci", "side": side, "id": locus_id,
+                                        "field": "block_id", "error": "unknown_block_reference"})
+                elif locus.get("page") != block.get("page"):
+                    differences.append({"kind": "loci", "side": side, "id": locus_id,
+                                        "field": "page", "error": "block_page_mismatch"})
             next_id = locus.get("next_locus_id")
             if isinstance(next_id, str):
                 successor = loci.get(next_id)
