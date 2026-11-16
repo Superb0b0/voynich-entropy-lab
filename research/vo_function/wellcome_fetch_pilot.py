@@ -4,7 +4,7 @@ import csv,hashlib,json,urllib.request
 from pathlib import Path
 src=Path("wellcome-audit-output/canvas_inventory.csv");out=Path("wellcome-audit-output");out.mkdir(exist_ok=True)
 with src.open(newline="",encoding="utf-8") as f:rows=list(csv.DictReader(f))
-selected=list(range(1,6))+list(range(len(rows)-4,len(rows)+1))
+selected=[9,27,45,63,81,99,117,135,153,171,189,207,217]
 report=[]
 for i in selected:
     row=rows[i-1];url=row["image_resource_url"];entry={"index":i,"label_unverified":row["canvas_label_unverified"],"source_url":url}
@@ -18,5 +18,5 @@ for i in selected:
         entry.update(status="DOWNLOADED_NOT_ANNOTATED",filename=name,bytes=len(data),sha256=hashlib.sha256(data).hexdigest(),content_type=ctype)
     except Exception as exc:entry.update(status="FETCH_FAILED",error_type=type(exc).__name__,error=str(exc)[:240])
     report.append(entry)
-(out/"image_fetch_report.json").write_text(json.dumps({"selection":"first_five_last_five_canvases_not_representative", "total_canvases":len(rows),"records":report},indent=2)+"\n")
+(out/"image_fetch_report.json").write_text(json.dumps({"selection":"thirteen_spaced_interior_folio_canvases_feasibility_not_representative", "total_canvases":len(rows),"records":report},indent=2)+"\n")
 print(json.dumps({"selected":len(report),"downloaded":sum(x["status"]=="DOWNLOADED_NOT_ANNOTATED" for x in report),"images_annotated":0}))
