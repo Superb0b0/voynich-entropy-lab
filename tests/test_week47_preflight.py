@@ -73,13 +73,33 @@ class TestW47Guard(unittest.TestCase):
     def test_no_runner_and_isolation_still_blocks(self):
         m={'schema_version':1,'question_type':'NULL_ONLY',
            'rivals':{'status':'NOT_APPLICABLE_NULL_ONLY'},'protocol':{},
-           'parser_evidence':{'status':'VERIFIED'},'runner':{'status':'PENDING'}}
+           'parser_evidence':{'status':'VERIFIED'},
+           'preparer':{'status':'APPROVED_TRAINING_ONLY'},
+           'partition_policy':{'status':'AUDITED_PARTITION_POLICY'},
+           'runner':{'status':'PENDING'}}
         def source(_, label, **kwargs):
             return json.dumps(protocol() if label=='protocol' else parity()).encode()
         with patch.object(g,'immutable_bytes',side_effect=source):
             with patch.object(g,'check_parser_report',return_value={}):
                 with self.assertRaisesRegex(g.GateError,'Isolated runner NOT APPROVED'):
                     g.verify(m)
+    def test_training_slicer_or_partition_policy_cannot_be_unattested(self):
+        base={'schema_version':1,'question_type':'NULL_ONLY',
+              'rivals':{'status':'NOT_APPLICABLE_NULL_ONLY'}, 'protocol':{},
+              'parser_evidence':{'status':'VERIFIED'},
+              'preparer':{'status':'PENDING'},
+              'partition_policy':{'status':'PENDING'},
+              'runner':{'status':'PENDING'}}
+        def fixture(_, label, **kwargs):
+            return json.dumps(protocol() if label=='protocol' else parity()).encode()
+        with patch.object(g,'immutable_bytes',side_effect=fixture):
+            with patch.object(g,'check_parser_report',return_value={}):
+                with self.assertRaisesRegex(g.GateError,'preparer not independently approved'):
+                    g.verify(base)
+                base['preparer']['status']='APPROVED_TRAINING_ONLY'
+                with self.assertRaisesRegex(g.GateError,'policy not independently audited'):
+                    g.verify(base)
+
     def test_only_research_evidence_paths_allowed(self):
         for path in ('/tmp/x','../../HOLDOUT.md','data/ZL3b-n.txt',
                      'research/../../HOLDOUT.md',''):
