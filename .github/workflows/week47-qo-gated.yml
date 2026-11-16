@@ -7,6 +7,7 @@ on:
       - 'tests/test_week47_preflight.py'
       - 'research/week47-qo-decision/synthetic_adjacency_fixture.py'
       - 'research/week47-qo-decision/synthetic_boundary_audit.py'
+      - 'research/week47-qo-decision/synthetic_manifest_reconcile.py'
   workflow_dispatch:
     inputs:
       run_experiment:
@@ -33,6 +34,8 @@ jobs:
           python-version: '3.11'
       - name: Verify fail-closed guard with synthetic fixtures
         run: python -m unittest discover -s tests -p 'test_week47_preflight.py' -v
+      - name: Check synthetic locus-to-block manifest reconciliation
+        run: python research/week47-qo-decision/synthetic_manifest_reconcile.py -v
       - name: Check synthetic IVTFF boundary regressions
         run: python research/week47-qo-decision/synthetic_boundary_audit.py -v
       - name: Check synthetic physical adjacency and permutation regressions
