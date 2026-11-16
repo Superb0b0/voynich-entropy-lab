@@ -30,10 +30,6 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           sparse-checkout: |
-            research/
-            tools/qo_rival_calibration.py
-          sparse-checkout-cone-mode: false
-          sparse-checkout: |
             research/week47-qo-decision/
             tests/test_week47_preflight.py
             tests/test_week47_synthetic_primitives.py
@@ -88,6 +84,10 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          sparse-checkout: |
+            research/
+            tools/qo_rival_calibration.py
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
