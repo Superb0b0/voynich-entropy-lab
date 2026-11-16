@@ -37,15 +37,25 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_week47_synthetic_primitives.py' -v
       - name: Verify synthetic structural manifest comparator
         run: python -m unittest discover -s tests -p 'test_week47_manifest_compare.py' -v
-      - name: Assert real preflight rejects missing parser evidence
+      - name: Verify negative preflight fixture without coupling to live gate status
         run: |
           set -euo pipefail
-          if python research/week47-qo-decision/preflight.py 2> /tmp/preflight_err; then
-            echo 'ERROR: incomplete scientific protocol was unexpectedly permitted'
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          original = Path("research/week47-qo-decision/gate.json")
+          fixture = Path("research/week47-qo-decision/.negative-preflight-fixture.json")
+          manifest = json.loads(original.read_text())
+          manifest["parser_evidence"]["status"] = "PENDING"
+          fixture.write_text(json.dumps(manifest))
+          PY
+          if python research/week47-qo-decision/preflight.py --manifest research/week47-qo-decision/.negative-preflight-fixture.json 2> /tmp/preflight_err; then
+            echo 'ERROR: missing parser evidence was unexpectedly permitted'
             exit 1
           fi
           grep -q 'Parser parity evidence PENDING' /tmp/preflight_err
-          echo 'PASS: missing parser evidence caused an automatic refusal'
+          rm research/week47-qo-decision/.negative-preflight-fixture.json
+          echo 'PASS: synthetic negative preflight refused; live gate remains independent'
   preflight:
     if: github.event_name == 'workflow_dispatch'
     needs: guard-tests
