@@ -51,6 +51,26 @@ class ManifestCompareTests(unittest.TestCase):
         b["blocks"].append(dict(b["blocks"][0]))
         self.assertTrue(any(d["error"] == "duplicate_id" for d in m.compare(a, b)["differences"]))
 
+    def test_both_missing_same_required_field_rejected(self):
+        a, b = fixture(), fixture()
+        del a["loci"][0]["next_locus_id"]
+        del b["loci"][0]["next_locus_id"]
+        result = m.compare(a, b)
+        self.assertEqual(result["status"], "DIFFERENCES")
+        self.assertTrue(any(d["error"] == "missing_required_field" for d in result["differences"]))
+
+    def test_both_invalid_token_types_rejected(self):
+        a, b = fixture(), fixture()
+        a["loci"][0]["tokens"] = "ab cd"
+        b["loci"][0]["tokens"] = "ab cd"
+        self.assertEqual(m.compare(a, b)["status"], "DIFFERENCES")
+
+    def test_both_invalid_indices_rejected(self):
+        a, b = fixture(), fixture()
+        a["loci"][0]["physical_index"] = True
+        b["loci"][0]["physical_index"] = True
+        self.assertEqual(m.compare(a, b)["status"], "DIFFERENCES")
+
     def test_missing_required_field(self):
         a, b = fixture(), fixture()
         del b["loci"][0]["physical_index"]
