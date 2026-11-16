@@ -2,6 +2,7 @@
 import importlib.util
 import json
 import pathlib
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -99,6 +100,58 @@ class TestW47Guard(unittest.TestCase):
                 base['preparer']['status']='APPROVED_TRAINING_ONLY'
                 with self.assertRaisesRegex(g.GateError,'policy not independently audited'):
                     g.verify(base)
+
+    def test_gate_approval_must_be_committed_by_cutoff(self):
+        # No Voynich content is used; this exercises only Git approval metadata.
+        approved={'schema_version':1,'question_type':'NULL_ONLY'}
+        fake_sha='1'*40
+        fake_head='2'*40
+        with tempfile.TemporaryDirectory() as directory:
+            root=pathlib.Path(directory)
+            path=root / g.GATE_PATH
+            path.parent.mkdir(parents=True)
+            content=(json.dumps(approved,sort_keys=True)+'\\n').encode()
+            path.write_bytes(content)
+            def git_for(timestamp):
+                def read(*args):
+                    if args[0]=='log':return fake_sha.encode()
+                    if args[0]=='rev-parse':return fake_head.encode()
+                    if args[0]=='merge-base':return b''
+                    if args[0]=='show' and '--format=%cI' in args:return timestamp.encode()
+                    if args[0]=='show' and args[1]==f'{fake_sha}:{g.GATE_PATH}':
+                        return content
+                    raise AssertionError(f'Unexpected mock Git request: {args}')
+                return read
+            with patch.object(g,'ROOT',root):
+                with patch.object(g,'git',side_effect=git_for('2026-11-20T16:59:59+00:00')):
+                    self.assertEqual(g.check_gate_manifest_frozen_before_cutoff(approved),
+                                     fake_sha)
+                with patch.object(g,'git',side_effect=git_for('2026-11-20T17:00:01+00:00')):
+                    with self.assertRaisesRegex(g.GateError,'not frozen by 20 Nov'):
+                        g.check_gate_manifest_frozen_before_cutoff(approved)
+                with patch.object(g,'git',side_effect=git_for('2026-11-20T16:59:59+00:00')):
+                    with self.assertRaisesRegex(g.GateError,'must match canonical'):
+                        g.check_gate_manifest_frozen_before_cutoff(
+                            {'schema_version':1,'question_type':'GENERATOR_COMPARISON'})
+    def test_gate_rejects_inconsistent_committed_bytes(self):
+        approved={'schema_version':1,'question_type':'NULL_ONLY'}
+        with tempfile.TemporaryDirectory() as directory:
+            root=pathlib.Path(directory)
+            p=root / g.GATE_PATH
+            p.parent.mkdir(parents=True)
+            p.write_text(json.dumps(approved))
+            def fake(*args):
+                if args[0]=='log':return ('1'*40).encode()
+                if args[0]=='rev-parse':return ('2'*40).encode()
+                if args[0]=='merge-base':return b''
+                if args[0]=='show' and '--format=%cI' in args:
+                    return b'2026-11-19T12:00:00+00:00'
+                if args[0]=='show' and ':' in args[1]:
+                    return b'\\x00'
+                raise AssertionError(args)
+            with patch.object(g,'ROOT',root),patch.object(g,'git',side_effect=fake):
+                with self.assertRaisesRegex(g.GateError,'differs from the last committed'):
+                    g.check_gate_manifest_frozen_before_cutoff(approved)
 
     def test_only_research_evidence_paths_allowed(self):
         for path in ('/tmp/x','../../HOLDOUT.md','data/ZL3b-n.txt',
