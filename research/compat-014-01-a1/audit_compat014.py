@@ -65,12 +65,14 @@ def audit(input_path: Path, parser_path: Path, m2_path: Path, private_csv: Path)
     old_rows = collections.defaultdict(list)
     m2_all = []
     m2_candidate = 0
+    m2_candidate_by_lang = collections.Counter()
     page = ""
     leaf = 0
     para = 0
     page_lang = {}
     structural_rows = []
     p_headers = 0
+    rc_candidate_by_lang = collections.Counter()
     marker_opens = marker_closes = 0
     page_header_re = re.compile(r"^<(f(?:\d+[rv]\d*|Ros))>\s*(.*)$")
     for physical_line, line in enumerate(text.splitlines(), 1):
@@ -86,6 +88,7 @@ def audit(input_path: Path, parser_path: Path, m2_path: Path, private_csv: Path)
             if tag in P_TAGS:
                 p_headers += 1
                 pg = locus.split(".")[0]
+                rc_candidate_by_lang[page_lang.get(pg, "UNKNOWN")] += 1
                 try:
                     line_index = int(locus.rsplit(".", 1)[-1])
                 except ValueError:
@@ -110,6 +113,7 @@ def audit(input_path: Path, parser_path: Path, m2_path: Path, private_csv: Path)
         if "P" not in loc:
             continue
         m2_candidate += 1
+        m2_candidate_by_lang[page_lang.get(mm.group(1), "UNKNOWN")] += 1
         if "*P" in loc or "@P" in loc:
             para += 1
         cleaned = re.sub(r"<!.*?>|<[^>]*>|\{[^}]*\}|\[[^]]*\]", "", body)
@@ -199,8 +203,12 @@ def audit(input_path: Path, parser_path: Path, m2_path: Path, private_csv: Path)
     rc_edges = collections.Counter()
     rc_valid_units = 0
     rc_valid_pairs_by_page = collections.Counter()
+    rc_valid_units_by_page = collections.Counter()
+    rc_units_by_page = collections.Counter()
     rc_block_count = len(block_rows)
     for bid, rows in enumerate(block_rows):
+        block_lang = rows[0]["lang"] if rows else "UNKNOWN"
+        rc_units_by_page[block_lang] += 1
         ordered = sorted(rows, key=lambda r: r["physical"])
         valid_here = 0
         for left, right in zip(ordered, ordered[1:]):
@@ -214,6 +222,16 @@ def audit(input_path: Path, parser_path: Path, m2_path: Path, private_csv: Path)
                     rc_valid_pairs_by_page[left["lang"]] += 1
         if valid_here:
             rc_valid_units += 1
+            rc_valid_units_by_page[block_lang] += 1
+
+    m2_units_by_page = collections.Counter()
+    m2_valid_units_by_page = collections.Counter()
+    for unit, rows in old_rows.items():
+        unit_lang = rows[0]["lang"] if rows else "UNKNOWN"
+        m2_units_by_page[unit_lang] += 1
+        ordered = sorted(rows, key=lambda r: (r["line_index"], r["first"]))
+        if any(right["line_index"] == left["line_index"] + 1 for left, right in zip(ordered, ordered[1:])):
+            m2_valid_units_by_page[unit_lang] += 1
 
     def split_summary(keys):
         out = {}
@@ -223,6 +241,24 @@ def audit(input_path: Path, parser_path: Path, m2_path: Path, private_csv: Path)
             result = {"loci_RC12": len(ks & rc_keys), "loci_M2": len(ks & m2_keys),
                       "loci_common": len(common_split), "loci_solo_RC12": len((ks & rc_keys) - m2_keys),
                       "loci_solo_005": len((ks & m2_keys) - rc_keys)}
+            langs = tuple(sorted(set(rc_candidate_by_lang) | set(m2_candidate_by_lang) |
+                                 set(m2_units_by_page) | set(rc_units_by_page))) if split == "ALL" else (split,)
+            result["P_candidates"] = {"RC12": sum(rc_candidate_by_lang[lang] for lang in langs),
+                                      "M2": sum(m2_candidate_by_lang[lang] for lang in langs)}
+            result["P_skipped_after_cleaning"] = {"RC12": result["P_candidates"]["RC12"] - result["loci_RC12"],
+                                                   "M2": result["P_candidates"]["M2"] - result["loci_M2"]}
+            rc_recs = [rc_map[k] for k in (ks & rc_keys)]
+            m2_recs = [m2_map[k] for k in (ks & m2_keys)]
+            result["token_totals"] = {"RC12_full_tokens": sum(len(r["tokens"]) for r in rc_recs),
+                                      "M2_full_tokens_before_tok0": sum(len(r["tokens"]) for r in m2_recs),
+                                      "M2_first_token_observations": len(m2_recs),
+                                      "RC12_types": len({t for r in rc_recs for t in r["tokens"]}),
+                                      "M2_full_types": len({t for r in m2_recs for t in r["tokens"]}),
+                                      "M2_first_token_types": len({r["first"] for r in m2_recs})}
+            result["units"] = {"M2_tag_paragraphs": sum(m2_units_by_page[lang] for lang in langs),
+                               "M2_with_valid_pair": sum(m2_valid_units_by_page[lang] for lang in langs),
+                               "RC12_IVTFF_blocks": sum(rc_units_by_page[lang] for lang in langs),
+                               "RC12_with_valid_pair": sum(rc_valid_units_by_page[lang] for lang in langs)}
             cats = collections.Counter()
             signs = collections.Counter()
             first_equal = first_class_equal = token_equal = 0
