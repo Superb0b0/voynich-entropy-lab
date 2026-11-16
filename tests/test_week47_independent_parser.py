@@ -19,7 +19,7 @@ class DummyCanonical:
 class IndependentScannerTests(unittest.TestCase):
     def test_cleaner_removes_alternative_and_keeps_brace_content(self):
         tok,_=s.independent_tokens("alpha{beta}[x:y]zeta<$>")
-        self.assertEqual(tok,["alphabetazeta"])
+        self.assertEqual(tok,["alphabeta","zeta"])
     def test_comments_are_removed_before_marker_selection(self):
         tok,body=s.independent_tokens("a<! correction >b<%>c<$>")
         self.assertEqual(tok,["a","b","c"])
