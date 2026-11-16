@@ -110,9 +110,44 @@ jobs:
           path: training-snapshot/
           retention-days: 5
           if-no-files-found: error
+  prepare-input:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_experiment == true && needs.preflight.outputs.ready == 'true'
+    needs: [guard-tests, preflight]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            data/ZL3b-n.txt
+            data/IT2a-n.txt
+            tools/qo_rival_calibration.py
+            research/week47-qo-decision/training_preflight.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reject protected policy file before preparing allowed input
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test -f data/ZL3b-n.txt
+          test -f data/IT2a-n.txt
+      - name: Prepare hash-checked training-only ZL3b and IT2a
+        run: |
+          set -euo pipefail
+          python research/week47-qo-decision/training_preflight.py prepare \
+            --held-module tools/qo_rival_calibration.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: w47-frozen-training-only-input
+          path: training-snapshot/
+          if-no-files-found: error
+          retention-days: 5
   experiment:
-    if: github.event_name == 'workflow_dispatch' && inputs.run_experiment == true && needs.preflight.outputs.ready == 'true' && needs.prepare_training.result == 'success'
-    needs: [guard-tests, preflight, prepare_training]
+    if: github.event_name == 'workflow_dispatch' && inputs.run_experiment == true && needs.preflight.outputs.ready == 'true' && needs.prepare-input.result == 'success'
+    needs: [guard-tests, preflight, prepare-input]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -120,32 +155,31 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: |
-            research/week47-qo-decision/PROTOCOL.json
-            research/week47-qo-decision/training_preflight.py
-            research/week47-qo-decision/run_locked.py
+            research/week47-qo-decision/
             experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - uses: actions/download-artifact@v4
-        with:
-          name: w47-gated-training-snapshot
-          path: training-snapshot/
-      - name: Assert strict isolation in scientific evaluation
+      - name: Verify original and protected inputs absent
         run: |
           set -euo pipefail
           test ! -e HOLDOUT.md
           test ! -e data/ZL3b-n.txt
           test ! -e data/IT2a-n.txt
-      - name: Run only previously frozen, twice-replayed exploratory endpoint
+      - uses: actions/download-artifact@v4
+        with:
+          name: w47-frozen-training-only-input
+          path: training-snapshot/
+      - name: Run ONLY the pre-attested isolated runner with prepared inputs
         run: |
           set -euo pipefail
           python research/week47-qo-decision/run_locked.py
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Archive aggregated scientific result (only after gate and runner)
+        if: success()
+        uses: actions/upload-artifact@v4
         with:
-          name: w47-null-only-exploratory-result
+          name: w47-exploratory-result
           path: research-output/w47-null-only-result.json
-          if-no-files-found: warn
-          retention-days: 30
+          if-no-files-found: error
+          retention-days: 14
