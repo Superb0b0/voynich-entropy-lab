@@ -4,10 +4,14 @@ on:
     branches: [research/qo-isolated-replay-20261116]
     paths:
       - '.github/workflows/qo-isolated.yml'
+      - 'tools/qo_mech_01.py'
+      - 'research/qo-mech-01-protocol.md'
   pull_request:
     paths:
       - '.github/workflows/qo-isolated.yml'
       - 'tools/qo_isolated_runner.py'
+      - 'tools/qo_mech_01.py'
+      - 'research/qo-mech-01-protocol.md'
   workflow_dispatch:
 permissions:
   contents: read
@@ -49,6 +53,8 @@ jobs:
             tools/qo_isolated_runner.py
             tools/qo_rival_calibration.py
             tools/qo_rival_circular_shift.py
+            tools/qo_mech_01.py
+            research/qo-mech-01-protocol.md
             tests/test_qo_rival.py
             research/qo-rival-protocol.md
           sparse-checkout-cone-mode: false
@@ -63,6 +69,8 @@ jobs:
           path: training-snapshot/
       - name: Replay qo rivalry and circular-shift control twice
         run: python tools/qo_isolated_runner.py analyze
+      - name: QO-MECH-01 two-direction predictive test and deterministic replay
+        run: python tools/qo_mech_01.py
       - name: Archive executed results, parameters and verdict
         if: always()
         uses: actions/upload-artifact@v4
