@@ -28,6 +28,28 @@ Separate CI failure: run [43866019316](https://github.com/Superb0b0/voynich-entr
 
 **Decision: NOT READY / PENDING EVIDENCE.** No scientific result is inferred from this structural report.
 
+## Artifact and provenance check for run 43866559030
+
+The original GitHub artifact was downloaded and checked against the Actions artifact API digest: `w47-structural-audit.zip`, **SHA-256 `979db3667b15a74b24bb98fb4af4fc3b94f274d981a36adb2b44651daf5a577b`**. The archive contains only `w47-structural-audit.json` (2,553 bytes). Its workflow provenance identifies run `43866559030`, branch `research/week47-qo-rivals-plan-20261116`, head commit `85d2ba676d7d98918e3d40dc33f6bac4faa2d9fc`; the job concluded `success`. The source and parser hashes recorded in the JSON match the canonical digests listed above.
+
+Aggregate arithmetic checks pass: 672 common blocks + 68 ZL3b-only = 740; 672 + 100 IT2a-only = 772; 2,897 shared pairs + 384 ZL3b-only = 3,281; and 2,897 + 410 IT2a-only = 3,307. ZL3b also reports 4,117 loci in blocks + 13 outside = 4,130. These checks establish consistency of the archived aggregates, **not** correctness of an independent parser-to-locus mapping.
+
+**Scope limitation:** the archived audit is full-corpus structural output and contains aggregate hashes rather than the underlying per-locus/block mapping. I did not rerun it or inspect any corpus or protected-page content. It cannot satisfy a holdout-safe independent mapping audit, and it does not establish IT2a token parity. Keep `parser_evidence.status = PENDING` and `input_isolation = PENDING` in `gate.json`.
+
+## Remaining gate conditions
+
+The frozen `NULL_ONLY` preflight remains blocked until all of these are evidenced on commits preceding any dispatch:
+
+1. **Parser evidence:** an independently reviewed, hash-bound report of the canonical parser, full ZL3b block/locus/token/adjacency alignment and IT2a correspondence, including explanations for the 13 out-of-block loci and the 384/410 pair differences. Existing aggregate hashes/counts are insufficient; no reserved sample may be opened or analyzed to produce this evidence.
+2. **Runner approval:** `run_locked.py` is present on the branch, but `gate.json` has no approved-runner commit/hash and the runner has not passed an independent code/isolation review. It must remain unapproved until that review completes.
+3. **Input isolation:** a verifiable training-only input manifest and audit showing that the analysis workspace contains neither original full corpora nor protected inventory. The current gate value is `PENDING`.
+
+For this `NULL_ONLY` question, `rivals.status = NOT_APPLICABLE_NULL_ONLY` is already the frozen choice; no Timm–Schinner rival is required. Passing synthetic CI is not a substitute for any of the three conditions and does not authorize dispatch. No protocol, baseline, gate value, or `main` branch was changed here.
+
+## Synthetic verifier correction (16 November 2026)
+
+Review found that `compare_structural_manifests.py` could return `MATCH` for identical manifests with dangling locus-to-block references, cross-page block assignments, or dangling/nonphysical next-locus references. It also raised an unstructured exception for a non-object top-level manifest. The comparator now rejects these conditions, and `tests/test_week47_manifest_compare.py` has synthetic-only regressions. No manuscript data was supplied to or read by this comparator. Local checks: 15 comparator tests PASS; RC1.2's built-in synthetic unit checks PASS. GitHub Actions status and commit are recorded after the change is pushed; these checks do not promote parser evidence or the scientific gate.
+
 ## Updated evidence, run 43866559030
 
 Artifact [14226800088](https://github.com/Superb0b0/voynich-entropy-lab/actions/runs/43866559030/artifacts/14226800088): all 13 ZL3b P loci outside blocks have a nonempty first word and lack both an opening and closing marker on their own line. This does **not** prove the reason for their exclusion. The updated comparison scopes pair identity to the containing block and gives 384 ZL3b-only, 410 IT2a-only, 2,897 shared pairs; the former 50/76 comparison did not include block identity and is superseded. No scientific gate is changed.
