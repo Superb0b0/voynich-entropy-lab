@@ -106,6 +106,19 @@ class SyntheticManifestTests(unittest.TestCase):
         with self.assertRaises(MappingError):
             reconcile(self.records, blocks)
 
+    def test_missing_canonical_p_locus_rejected(self):
+        blocks = [dict(page="f1r", status="complete", loci=[
+            dict(locus="f1r.2", physical_line=2, tag="+P0")])]
+        with self.assertRaisesRegex(MappingError, "missing canonical P locus"):
+            reconcile(self.records, blocks)
+
+    def test_duplicate_structural_position_rejected(self):
+        blocks = [dict(page="f1r", status="complete", loci=[
+            dict(locus="f1r.1", physical_line=1, tag="+P0"),
+            dict(locus="f1r.3", physical_line=1, tag="+P0")])]
+        with self.assertRaisesRegex(MappingError, "duplicate structural positions"):
+            reconcile(self.records, blocks)
+
     def test_duplicate_block_membership_rejected(self):
         block = dict(page="f1r", status="complete", loci=[
             dict(locus="f1r.1", physical_line=1, tag="+P0")])
