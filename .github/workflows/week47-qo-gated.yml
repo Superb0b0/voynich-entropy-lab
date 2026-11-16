@@ -143,25 +143,57 @@ jobs:
           path: training-snapshot/
           if-no-files-found: error
           retention-days: 5
-  experiment:
-    if: github.event_name == 'workflow_dispatch' && inputs.run_experiment == true && needs.preflight.outputs.ready == 'true' && needs.prepare-input.result == 'success'
-    needs: [guard-tests, preflight, prepare-input]
+  package-code:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_experiment == true && needs.preflight.outputs.ready == 'true'
+    needs: [guard-tests, preflight]
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
           sparse-checkout: |
-            research/week47-qo-decision/
+            research/week47-qo-decision/run_locked.py
+            research/week47-qo-decision/training_preflight.py
+            research/week47-qo-decision/PROTOCOL.json
             experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py
           sparse-checkout-cone-mode: false
+      - name: Assemble whitelist-only code for a checkout-free experiment
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test ! -e data/ZL3b-n.txt
+          test ! -e data/IT2a-n.txt
+          mkdir -p w47-code
+          cp --parents research/week47-qo-decision/run_locked.py \
+            research/week47-qo-decision/training_preflight.py \
+            research/week47-qo-decision/PROTOCOL.json \
+            experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py \
+            w47-code/
+          test "$(find w47-code -type f | wc -l)" -eq 4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: w47-reviewed-code-only
+          path: w47-code/
+          if-no-files-found: error
+          retention-days: 5
+  experiment:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_experiment == true && needs.preflight.outputs.ready == 'true' && needs.prepare-input.result == 'success' && needs.package-code.result == 'success'
+    needs: [guard-tests, preflight, prepare-input, package-code]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: w47-reviewed-code-only
+          path: .
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Verify original and protected inputs absent
         run: |
           set -euo pipefail
+          test ! -d .git
           test ! -e HOLDOUT.md
           test ! -e data/ZL3b-n.txt
           test ! -e data/IT2a-n.txt
