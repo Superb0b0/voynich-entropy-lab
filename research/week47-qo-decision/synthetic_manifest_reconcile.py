@@ -46,7 +46,9 @@ def reconcile(records, blocks):
             seen.add(lid)
             r = by_id.get(lid)
             if r is None:
-                # Non-P loci remain structural barriers; they are not errors.
+                if loc["tag"] in {"+P0", "+P1", "+Pb", "+Pc", "+Pr", "*P0", "*Pb", "=P0", "=Pt", "@P0", "@P1", "@Pb"}:
+                    raise MappingError("missing canonical P locus")
+                # Non-P loci remain structural barriers.
                 mapped.append(None)
                 continue
             if (r["page"] != block["page"] or
