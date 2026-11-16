@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path("wellcome-audit-output")
 # Candidate canvases flagged by a full 228-preview contact-sheet sweep.
 # The list deliberately includes ambiguous/vessel-only sketches; see status field.
-CANDIDATES = [146, 148, 154, 156, 160, 161, 163, 164, 167, 177, 179, 186, 192, 210, 212, 213]
+CANDIDATES = [146, 148, 153, 154, 156, 160, 177, 178, 192, 210, 212, 213]
 
 def main():
     with (ROOT / "canvas_inventory.csv").open(newline="", encoding="utf-8") as f:
