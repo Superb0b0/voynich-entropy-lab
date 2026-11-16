@@ -51,9 +51,14 @@ def immutable_bytes(item, label, *, expected_path=None):
     commit, path, digest = item.get('commit'), item.get('path'), item.get('sha256')
     require(isinstance(commit, str) and HEX40.fullmatch(commit), f'{label}: full frozen commit required')
     require(isinstance(digest, str) and HEX64.fullmatch(digest), f'{label}: full SHA-256 required')
-    path = clean_path(path)
-    if expected_path:
-        require(path == expected_path, f'{label}: wrong evidence path')
+    # The legacy policy source is the single specifically whitelisted tools/ path;
+    # all other immutable evidence stays below research/.
+    if expected_path == 'tools/qo_rival_calibration.py':
+        require(path == expected_path, f'{label}: wrong protected policy path')
+    else:
+        path = clean_path(path)
+        if expected_path:
+            require(path == expected_path, f'{label}: wrong evidence path')
     head = git('rev-parse', 'HEAD').decode().strip()
     require(head != commit, f'{label}: source commit must precede execution checkout')
     git('merge-base', '--is-ancestor', commit, head)
@@ -140,6 +145,16 @@ def verify(manifest, now=None):
     evidence = manifest.get('parser_evidence', {})
     require(evidence.get('status') == 'VERIFIED', 'Parser parity evidence PENDING')
     check_parser_report(immutable_bytes(evidence, 'parser_evidence'))
+    preparer = manifest.get('preparer', {})
+    require(preparer.get('status') == 'APPROVED_TRAINING_ONLY',
+            'Training input preparer not independently approved')
+    immutable_bytes(preparer, 'preparer',
+                    expected_path='research/week47-qo-decision/training_preflight.py')
+    partition_policy = manifest.get('partition_policy', {})
+    require(partition_policy.get('status') == 'AUDITED_PARTITION_POLICY',
+            'Protected-folio exclusion policy not independently audited')
+    immutable_bytes(partition_policy, 'partition_policy',
+                    expected_path='tools/qo_rival_calibration.py')
     runner = manifest.get('runner', {})
     require(runner.get('status') == 'APPROVED_ISOLATED', 'Isolated runner NOT APPROVED')
     immutable_bytes(runner, 'runner', expected_path=RUNNER_PATH)
