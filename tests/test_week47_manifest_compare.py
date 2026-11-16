@@ -121,6 +121,43 @@ class ManifestCompareTests(unittest.TestCase):
         self.assertTrue(any(d["error"] == "invalid_adjacency_reference"
                             for d in result["differences"]))
 
+    def test_outside_block_locus_retained_without_fabricated_block(self):
+        a,b=fixture(),fixture()
+        for item in (a,b):
+            item["loci"].append({"id":"outside13","page":"p1",
+                                "block_id":None,"outside_block":True,
+                                "physical_index":5,"tokens":["word"],
+                                "next_locus_id":None})
+        result=m.compare(a,b)
+        self.assertEqual(result["status"],"MATCH")
+        self.assertEqual(result["reference_counts"]["loci"],3)
+
+    def test_outside_block_requires_explicit_tag_and_no_adjacency(self):
+        for defect in ("missing_tag","has_next"):
+            a,b=fixture(),fixture()
+            for item in (a,b):
+                outside={"id":"outside13","page":"p1","block_id":None,
+                         "physical_index":5,"tokens":["word"],
+                         "next_locus_id":None}
+                if defect=="missing_tag":
+                    outside["outside_block"]=False
+                else:
+                    outside["outside_block"]=True
+                    outside["next_locus_id"]="l1"
+                item["loci"].append(outside)
+            with self.subTest(defect=defect):
+                result=m.compare(a,b)
+                self.assertEqual(result["status"],"DIFFERENCES")
+                expected="unaccounted_outside_block_locus" if defect=="missing_tag" else "outside_block_adjacency"
+                self.assertTrue(any(x["error"]==expected for x in result["differences"]))
+
+    def test_assigned_locus_cannot_be_flagged_outside(self):
+        a,b=fixture(),fixture()
+        for item in (a,b):item["loci"][0]["outside_block"]=True
+        result=m.compare(a,b)
+        self.assertEqual(result["status"],"DIFFERENCES")
+        self.assertTrue(any(x["error"]=="conflicting_block_flag" for x in result["differences"]))
+
     def test_non_object_manifest_fails_closed_without_exception(self):
         result = m.compare([], {})
         self.assertEqual(result["status"], "DIFFERENCES")
