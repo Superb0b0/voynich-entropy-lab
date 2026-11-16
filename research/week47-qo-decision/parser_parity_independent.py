@@ -150,7 +150,7 @@ def main():
     if canonical.run_unit_tests():raise RuntimeError("Canonical parser unit tests failed")
     z,zi=validate_one(args.zl3b,ZL3B,canonical,structural,True)
     it,ii=validate_one(args.it2a,IT2A,canonical,structural,False)
-    common_blocks=set(zi["private_blocks"])&set(ii["private_blocks"])
+    common_blocks={tuple(x[:3]) for x in zi["private_blocks"]}&{tuple(x[:3]) for x in ii["private_blocks"]}
     common_pairs=set(zi["private_pairs"])&set(ii["private_pairs"])
     report={
       "classification":"TECHNICAL_SECOND_IMPLEMENTATION_NOT_INDEPENDENT_HOLDOUT",
