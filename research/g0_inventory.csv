@@ -1,0 +1,9 @@
+historical_count,unit,transcription_attribution,source_sha256_attribution,parser_attribution,reported_inclusion,status
+33613,token,ZL3b reported,bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc,unknown,P exact; first variant reported,NON_VERIFICABILE
+3957,locus,ZL3b reported,bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc,unknown,P exact reported,NON_VERIFICABILE
+34323,token,ZL3b reported,bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc,unknown,needs identification,NON_VERIFICABILE
+4118,row,ZL3b reported,bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc,unknown,paragraph rows reported,NON_VERIFICABILE
+35492,token,ZL3b reported,bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc,RC1.2 reported,P reported; parser execution missing,NON_VERIFICABILE
+4130,locus,ZL3b reported,bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc,RC1.2 reported,P reported; parser execution missing,NON_VERIFICABILE
+177,page,unknown,unknown,unknown,page inclusion mapping missing,NON_VERIFICABILE
+178,page,unknown,unknown,unknown,page inclusion mapping missing,NON_VERIFICABILE

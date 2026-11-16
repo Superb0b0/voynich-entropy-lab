@@ -1,0 +1,32 @@
+{
+  "corpus_sha256": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+  "corpus_tokens": 35492,
+  "groups": {
+    "A": {
+      "canonical_folio_groups": 60,
+      "delta_pp": 28.000000000000004,
+      "early_n": 150,
+      "early_qo": 5,
+      "late_n": 150,
+      "late_qo": 47,
+      "page_ids": 61,
+      "paragraphs": 75
+    },
+    "B": {
+      "canonical_folio_groups": 15,
+      "delta_pp": 21.666666666666664,
+      "early_n": 60,
+      "early_qo": 6,
+      "late_n": 60,
+      "late_qo": 19,
+      "page_ids": 16,
+      "paragraphs": 30
+    }
+  },
+  "inclusion_rule": "4<=L<=9; each first four lines has between 6 and 10 [A-Za-z]+ tokens",
+  "locus_total": 4130,
+  "paragraph_rule": "EXP-SEQ-05 analysis.py: starts=<%>, ends=<$>, no crossing page; P tags, homogeneous Currier A/B",
+  "paragraphs_L_ge_4": 491,
+  "source_script_sha256": "4b40c6827b2d8520fe4f1fbdc1a3341298bc631b4242f037d1eebfec9a4b7773",
+  "status": "EXPLORATORY_REPLAY_ONLY"
+}
