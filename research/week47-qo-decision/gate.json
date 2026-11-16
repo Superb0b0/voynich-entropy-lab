@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "question_type": "NULL_ONLY",
+  "protocol": {
+    "path": "research/week47-qo-decision/PROTOCOL.json",
+    "commit": "69b32db1126c99cb4230b05c7bb33e5292aa6d45",
+    "sha256": "22b4a8bc3951f6ccf06aeffffc9e45a016e33847ee51d3fe67f1d35751494f90"
+  },
+  "parser_evidence": {
+    "status": "PENDING",
+    "path": "",
+    "commit": "",
+    "sha256": ""
+  },
+  "rivals": {
+    "status": "NOT_APPLICABLE_NULL_ONLY"
+  },
+  "runner": {
+    "status": "PENDING",
+    "path": "research/week47-qo-decision/run_locked.py",
+    "commit": "",
+    "sha256": ""
+  },
+  "input_isolation": "PENDING"
+}
