@@ -32,6 +32,7 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             research/week47-qo-decision/
+            experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py
             tests/test_week47_preflight.py
             tests/test_week47_synthetic_primitives.py
             tests/test_week47_manifest_compare.py
