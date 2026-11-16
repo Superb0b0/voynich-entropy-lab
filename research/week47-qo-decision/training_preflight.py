@@ -12,7 +12,8 @@ SOURCES={'ZL3b-n.txt':'bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09
          'IT2a-n.txt':'7f27a8b0feed8f6de0a99900df6bf912dd1d295c38e5f830bac8b41c3f536fb5'}
 RC12='8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5'
 PAGE=re.compile(r'^<(?P<page>f(?:\d+[rv]\d*|Ros))>[ \t]*<!')
-ANY_PAGE_HEADER=re.compile(r'^<(?P<page>f(?:\d+[rv]\d*|Ros))>')
+ANY_PAGE_HEADER=re.compile(r'^<(?P<page>f[^>,]*)>')
+ANY_LOCUS_HEADER=re.compile(r'^<(?P<locus>f[^>,]+),(?P<tag>[^>]+)>')
 LOCUS=re.compile(r'^<(?P<locus>f(?:\d+[rv]\d*|Ros)\.\d+),(?P<tag>[^>]+)>[ \t]*(?P<body>.*)$')
 LEAF=re.compile(r'^f(\d+)[rv]\d*$')
 def sha(b):return hashlib.sha256(b).hexdigest()
@@ -35,6 +36,8 @@ def slice_pages(raw,held):
    included=bool(leaf and int(leaf.group(1)) not in held)
    stats['included_pages' if included else ('held_pages' if leaf else 'special_pages')]+=1
   locus=LOCUS.match(s)
+  if ANY_LOCUS_HEADER.match(s) and not locus:
+   raise RuntimeError('Malformed locus header: refusing ambiguous protected-page transition')
   if locus and locus.group('locus').split('.')[0]!=active_page:
    raise RuntimeError('Locus page mismatch: refusing ambiguous protected-page transition')
   if included:kept.append(s)
@@ -51,6 +54,8 @@ def slice_pages(raw,held):
    if not leaf or int(leaf.group(1)) in held:
     raise RuntimeError('Excluded page leaked into prepared snapshot')
   locus=LOCUS.match(s)
+  if ANY_LOCUS_HEADER.match(s) and not locus:
+   raise RuntimeError('Malformed locus in prepared snapshot')
   if locus and locus.group('locus').split('.')[0]!=active_page:
    raise RuntimeError('Nonmatching locus in prepared snapshot')
  return out,dict(stats)
