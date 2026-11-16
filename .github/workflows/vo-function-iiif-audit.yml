@@ -6,10 +6,8 @@ on:
       - 'research/vo_function/**'
       - '.github/workflows/vo-function-iiif-audit.yml'
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   inventory:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.ref == 'research/vo-func-iiif-audit'
@@ -17,15 +15,19 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch public British Library IIIF manifest and inventory canvases
+      - name: Fetch public British Library IIIF manifest
         run: python3 research/vo_function/iiif_inventory.py --out iiif-audit-output
-      - name: Fetch ten preregistered public preview images (no analysis)
+      - name: Fetch ten public BL previews (no scientific analysis)
         run: python3 research/vo_function/iiif_fetch_pilot.py --inventory iiif-audit-output/canvas_inventory.csv --out iiif-audit-output
-      - name: Upload audit outputs even if image fetch fails
+      - name: Inventory Wellcome MS.22 IIIF using catalogue-provided manifest
+        run: python3 research/vo_function/wellcome_inventory.py
+      - name: Upload documentary audit outputs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: vo-function-iiif-pilot
-          path: iiif-audit-output/
+          name: vo-function-multisource-inventory
+          path: |
+            iiif-audit-output/
+            wellcome-audit-output/
           retention-days: 14
           if-no-files-found: warn
