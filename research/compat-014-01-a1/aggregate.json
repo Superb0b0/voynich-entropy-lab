@@ -1,0 +1,242 @@
+{
+  "P_candidates": {
+    "M2": 3319,
+    "RC12": 3319,
+    "raw_allowed_structural_tags": 3319
+  },
+  "accepted_loci": {
+    "M2": 3319,
+    "RC12": 3319,
+    "common": 3319,
+    "solo_005": 0,
+    "solo_RC12": 0
+  },
+  "adjacency": {
+    "M2_legacy_valid_arcs": 3097,
+    "M2_valid_units": 206,
+    "RC12_strict_valid_arcs": 2655,
+    "RC12_valid_units": 600,
+    "common": 2654,
+    "common_pct_of_union": 85.668173,
+    "solo_005": 443,
+    "solo_RC12": 1,
+    "union_denominator": 3098
+  },
+  "audit_script_sha256": "670d8ddfc12d75f47233d87c0468f65fd950cd754f8ede6a7a95a474605ec9c7",
+  "common_locus_comparison": {
+    "delta_signs_RC12_minus_M2": {
+      "<0": 0,
+      "=0": 2564,
+      ">0": 755
+    },
+    "denominator": 3319,
+    "first_class_equal": 3306,
+    "first_token_equal": 3225,
+    "token_count_equal": 2564,
+    "total_token_delta_RC12_minus_M2": 957
+  },
+  "duplicate_locus_ids_disambiguated_by_source_order": {
+    "M2": 0,
+    "RC12": 0
+  },
+  "epistemic_limit": "same manuscript and training subset; technical compatibility only, not independent scientific validation",
+  "hashes": {
+    "M2_source_commit": "c27a149313ed6d809ec30f9e384011b21b299c63",
+    "M2_source_sha256": "c522868b488707d8fe87e5a1d78683e29de28e9663c6eb1144d232f773e0118e",
+    "RC1.2_sha256": "8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5",
+    "input_sha256": "dea09c32de148c2bbf592b00e3042993cc57d967c615159ccef458e82270cbe9"
+  },
+  "input_bytes": 323741,
+  "partition": {
+    "M2_coassigned_pairs": 43623,
+    "RC12_coassigned_pairs": 11664,
+    "coassigned_pair_agreement_pct": 26.59309,
+    "common": 11614,
+    "loci_with_same_coassignment_neighborhood": 723,
+    "solo_005": 32009,
+    "solo_RC12": 50,
+    "union_denominator": 43673
+  },
+  "private_locus_diff_rows": 3319,
+  "private_locus_diff_sha256": "2d7992aaf23326a8c58af6f3249171190eeddaf37a247e32d1c675ca8b644a0c",
+  "record_id": "COMPAT-014-01-A1",
+  "scope": "technical parser compatibility only; no M2 fitting",
+  "secondary_status": "NON_EQUIVALENT / CONCORDANZA INSUFFICIENTE",
+  "secondary_thresholds": {
+    "arc_union_denominator": 3098,
+    "arcs_at_least_99pct_of_union": false,
+    "coassignment_pairs_at_least_99pct_of_union": false,
+    "coassignment_union_denominator": 43673,
+    "first_class_equal_at_least_99pct": true,
+    "first_token_equal_at_least_99pct": false,
+    "token_counts_at_least_99pct": false
+  },
+  "split_total_A_B": {
+    "A": {
+      "arcs": {
+        "M2": 1155,
+        "RC12": 1088,
+        "common": 1088,
+        "common_pct_of_union": 94.199134,
+        "solo_005": 67,
+        "solo_RC12": 0,
+        "union_denominator": 1155
+      },
+      "categories_common_token": {
+        "comune_token_RC12_maggiori": 420,
+        "comune_token_uguali": 856
+      },
+      "coassignment_pairs": {
+        "M2": 8141,
+        "RC12": 5177,
+        "common": 5177,
+        "common_pct_of_union": 63.591696,
+        "union_denominator": 8141
+      },
+      "first_class_equal_pct": 99.216301,
+      "first_token_equal_pct": 96.081505,
+      "loci_M2": 1276,
+      "loci_RC12": 1276,
+      "loci_common": 1276,
+      "loci_same_coassignment_neighborhood": 564,
+      "loci_solo_005": 0,
+      "loci_solo_RC12": 0,
+      "token_count_equal_pct": 67.084639,
+      "token_delta_signs": {
+        "=0": 856,
+        ">0": 420
+      }
+    },
+    "ALL": {
+      "arcs": {
+        "M2": 3097,
+        "RC12": 2655,
+        "common": 2654,
+        "common_pct_of_union": 85.668173,
+        "solo_005": 443,
+        "solo_RC12": 1,
+        "union_denominator": 3098
+      },
+      "categories_common_token": {
+        "comune_token_RC12_maggiori": 755,
+        "comune_token_uguali": 2564
+      },
+      "coassignment_pairs": {
+        "M2": 43623,
+        "RC12": 11664,
+        "common": 11614,
+        "common_pct_of_union": 26.59309,
+        "union_denominator": 43673
+      },
+      "first_class_equal_pct": 99.608316,
+      "first_token_equal_pct": 97.167822,
+      "loci_M2": 3319,
+      "loci_RC12": 3319,
+      "loci_common": 3319,
+      "loci_same_coassignment_neighborhood": 723,
+      "loci_solo_005": 0,
+      "loci_solo_RC12": 0,
+      "token_count_equal_pct": 77.252184,
+      "token_delta_signs": {
+        "=0": 2564,
+        ">0": 755
+      }
+    },
+    "B": {
+      "arcs": {
+        "M2": 1906,
+        "RC12": 1534,
+        "common": 1533,
+        "common_pct_of_union": 80.388044,
+        "solo_005": 373,
+        "solo_RC12": 1,
+        "union_denominator": 1907
+      },
+      "categories_common_token": {
+        "comune_token_RC12_maggiori": 322,
+        "comune_token_uguali": 1677
+      },
+      "coassignment_pairs": {
+        "M2": 35338,
+        "RC12": 6355,
+        "common": 6305,
+        "common_pct_of_union": 17.816774,
+        "union_denominator": 35388
+      },
+      "first_class_equal_pct": 99.849925,
+      "first_token_equal_pct": 97.798899,
+      "loci_M2": 1999,
+      "loci_RC12": 1999,
+      "loci_common": 1999,
+      "loci_same_coassignment_neighborhood": 124,
+      "loci_solo_005": 0,
+      "loci_solo_RC12": 0,
+      "token_count_equal_pct": 83.891946,
+      "token_delta_signs": {
+        "=0": 1677,
+        ">0": 322
+      }
+    },
+    "UNKNOWN": {
+      "arcs": {
+        "M2": 36,
+        "RC12": 33,
+        "common": 33,
+        "common_pct_of_union": 91.666667,
+        "solo_005": 3,
+        "solo_RC12": 0,
+        "union_denominator": 36
+      },
+      "categories_common_token": {
+        "comune_token_RC12_maggiori": 13,
+        "comune_token_uguali": 31
+      },
+      "coassignment_pairs": {
+        "M2": 144,
+        "RC12": 132,
+        "common": 132,
+        "common_pct_of_union": 91.666667,
+        "union_denominator": 144
+      },
+      "first_class_equal_pct": 100.0,
+      "first_token_equal_pct": 100.0,
+      "loci_M2": 44,
+      "loci_RC12": 44,
+      "loci_common": 44,
+      "loci_same_coassignment_neighborhood": 35,
+      "loci_solo_005": 0,
+      "loci_solo_RC12": 0,
+      "token_count_equal_pct": 70.454545,
+      "token_delta_signs": {
+        "=0": 31,
+        ">0": 13
+      }
+    }
+  },
+  "status": "NON_EQUIVALENTE",
+  "strict_checks": {
+    "block_map_well_formed": true,
+    "first_class_equal": false,
+    "first_token_equal": false,
+    "locus_sets_equal": true,
+    "partition_equal": false,
+    "per_locus_full_token_counts_equal": false,
+    "valid_arcs_equal": false
+  },
+  "token_counts_complete": {
+    "M2_before_first_token": 27681,
+    "M2_first_token_types": 1570,
+    "M2_full_types": 6305,
+    "RC12": 28638,
+    "RC12_types": 6081
+  },
+  "units": {
+    "M2_tag_paragraphs": 211,
+    "M2_units_with_valid_pair": 206,
+    "RC12_IVTFF_blocks": 601,
+    "RC12_block_map_differences": {},
+    "RC12_blocks_with_valid_pair": 600,
+    "RC12_end_markers": 601,
+    "RC12_start_markers": 601
+  }
+}
