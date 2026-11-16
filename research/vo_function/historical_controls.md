@@ -3,8 +3,8 @@
 Status: DOCUMENTARY CONTROLS SELECTED, NOT VISUALLY CODED. 2026-11-16.
 
 ## Positive operational control: Wellcome Collection MS.22
-- Primary catalogue: https://wellcomecollection.org/works/akn92u5z
-- Digital viewer: https://wellcomecollection.org/works/akn92u5z/items
+- Primary catalogue: https://wellcomecollection.org/works/ugn23v6p
+- Digital viewer: https://wellcomecollection.org/works/ugn23v6p/items
 - 15th-century Italian-language alchemical recipe manuscript, 106 leaves, **228 digital images**, Public Domain Mark.
 - Institutional description explicitly documents directions for alchemical medicines, quintessences and distillations and **12 drawings of apparatus**.
 - A *positive operational control* on external catalogued contents, **not** proof that every image contains apparatus or sequence. Image URLs/canvas IDs not yet inventoried or coded.
