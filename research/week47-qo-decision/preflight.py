@@ -20,6 +20,7 @@ ZL3B = 'bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc'
 RC12 = '8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5'
 PROTOCOL_PATH = 'research/week47-qo-decision/PROTOCOL.json'
 RUNNER_PATH = 'research/week47-qo-decision/run_locked.py'
+GATE_PATH = 'research/week47-qo-decision/gate.json'
 HEX40 = re.compile(r'^[a-f0-9]{40}$')
 HEX64 = re.compile(r'^[a-f0-9]{64}$')
 
@@ -132,6 +133,35 @@ def check_parser_report(data):
     # Attestation checks alone do not prove independent parser equivalence.
     return p
 
+def check_gate_manifest_frozen_before_cutoff(manifest):
+    """Verify the WHOLE approval manifest was committed by the W47 deadline.
+
+    This is a provenance/sequence check, not proof of independent scientific
+    review or a trusted external timestamp. It prevents late approval using
+    otherwise old evidence refs.
+    """
+    actual = (ROOT / GATE_PATH).read_bytes()
+    try:
+        checked = json.loads(actual)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        raise GateError('Approval gate manifest is not valid JSON')
+    require(checked == manifest, 'Approved evidence must match canonical gate.json')
+    commit = git('log', '-1', '--format=%H', '--', GATE_PATH).decode().strip()
+    require(bool(HEX40.fullmatch(commit)), 'Approval manifest lacks a full Git commit')
+    head = git('rev-parse', 'HEAD').decode().strip()
+    git('merge-base', '--is-ancestor', commit, head)
+    try:
+        when = dt.datetime.fromisoformat(
+            git('show', '-s', '--format=%cI', commit).decode().strip()
+        )
+    except ValueError as exc:
+        raise GateError('Approval commit timestamp invalid') from exc
+    require(when.tzinfo is not None and when <= CUTOFF,
+            'Approval manifest was not frozen by 20 Nov 2026 18:00 Europe/Rome')
+    require(git('show', f'{commit}:{GATE_PATH}') == actual,
+            'Approval manifest differs from the last committed approval')
+    return commit
+
 def verify(manifest, now=None):
     now = now or dt.datetime.now(dt.timezone.utc)
     require(isinstance(manifest, dict) and manifest.get('schema_version') == 1,
@@ -160,7 +190,9 @@ def verify(manifest, now=None):
     immutable_bytes(runner, 'runner', expected_path=RUNNER_PATH)
     require(manifest.get('input_isolation') == 'VERIFIED_TRAINING_ONLY',
             'No proof of isolated training-only input')
-    # Pre-cutoff evidence can support an approved 21–22 Nov experiment.
+    # Gate APPROVAL itself must be committed by cutoff, not only its sources.
+    check_gate_manifest_frozen_before_cutoff(manifest)
+    # Pre-cutoff frozen approvals can support a controlled 21–22 Nov run.
     return 'READY_TO_RUN_EXPLORATORY_NULL_ONLY'
 
 def main():
