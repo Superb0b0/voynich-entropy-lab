@@ -4,11 +4,35 @@ on:
     paths:
       - 'research/week47-qo-decision/training_preflight.py'
       - '.github/workflows/week47-training-preflight.yml'
+      - 'tests/test_week47_training_slicer.py'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
+  synthetic-filter-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            research/week47-qo-decision/training_preflight.py
+            tests/test_week47_training_slicer.py
+          sparse-checkout-cone-mode: false
+      - name: Reject original corpus in synthetic test workspace
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test ! -e data/ZL3b-n.txt
+          test ! -e data/IT2a-n.txt
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test fail-closed page and locus filtering with fake text only
+        run: python -m unittest discover -s tests -p 'test_week47_training_slicer.py' -v
   prepare:
+    needs: synthetic-filter-tests
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
