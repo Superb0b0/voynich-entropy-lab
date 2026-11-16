@@ -55,3 +55,46 @@ Prima di eseguire occorre fissare:
 - Dopo tre controlli improduttivi il gate si ferma; un umano non deve ricevere la stessa promessa riciclata. I modelli GPT producono ipotesi/codice, non audit indipendente del proprio output.
 
 **Questa PR/branch conserva solo il piano e le evidenze già esaminate. Nessun esperimento nuovo, nessuna modifica ai gate, nessun risultato inventato.**
+
+
+## ADDENDUM W47-FC-01 | Gate di comparabilità e arresto (16 novembre 2026)
+
+**Questo addendum aggiorna le decisioni operative precedenti e prevale su ogni formulazione precedente che possa suggerire di eseguire il nuovo esperimento prima del superamento dei gate.** Non riesegue il manoscritto e non cambia i verdetti storici.
+
+### 1. Distinguere verdetto interno da comparabilità
+
+- `QO-MECH-01` **NON COMPARABILE con EXP-SEQ-05 / effetto posizionale `qo-`** finché il parser del test non coincide con RC1.2 e la delimitazione IVTFF `<%>…<$>`. Il risultato già verificato (`−0.00201135`, `+0.00996002` nat/coppia) resta soltanto **criterio interno di vantaggio Markov non raggiunto** sul precedente protocollo, e non rappresenta un'evidenza contro la struttura posizionale `qo-`.
+- `qo→qo` fra righe consecutive, `qo-` come apertura nella posizione 3–4 e **ripetizione esatta della prima parola** sono tre endpoint diversi: nessuna sostituzione surrettizia. Un test su un endpoint non valida né falsifica gli altri.
+
+### 2. GATE-PARSER: fail-closed (precede tutto)
+
+Per dichiarare `PARSER_COMPATIBLE` occorrono **TUTTI** i seguenti controlli sul medesimo input ZL3b con hash canonico, senza accesso a holdout riservati:
+
+1. Inventario strutturale di **740 blocchi IVTFF** identificati da `<%>` e `<$>`, con regole identiche per pagina, inizio, fine e casi incompleti; confrontare **ID e confini blocco uno per uno**, non soltanto il totale. La conta 740 è l'inventario strutturale dei blocchi, **non** il numero di blocchi eleggibili per filtri 4–9/6–10.
+2. **4130 loci P, 35492 token, 6980 tipi** sul corpus completo e stesso hash RC1.2. Per ogni locus verificare stesso identificatore, stessi token puliti, appartenenza al blocco, ordine e regola di adiacenza; differenze elencate una per una con causa.
+3. Nessun cambio retroattivo al parser canonico per far combaciare gli output; eventuale adattatore nuovo è **versionato e identificato da hash**, con test sintetici espliciti e distinzione fra coorte completa e training-only. Se il parser completo conta correttamente, il training-only può avere conteggi inferiori **per esclusioni documentate**, non deve artificialmente mostrare 35492 token.
+
+Se manca un controllo, stato `PARSER_NOT_VERIFIABLE`; non partire con il confronto.
+
+### 3. GATE-RIVALS: provenienza e confronto equo
+
+- Timm–Schinner: usare i 30 output storici solo se sono **autenticati** rispetto a sorgente/versione/configurazione/semi/digest *e* se rigenerazione o provenienza verificabile ne consente un audit. Trenta file con 30 impronte riferite da un manifest non equivalgono a una rigenerazione confermata.
+- Stabilire **prima dei risultati** come ottenere la stessa unità statistica: delimitazione dei blocchi, distribuzione delle lunghezze di blocco e di riga, inventario e denominatori, status delle classi Currier A/B. Se i generatori non possiedono classi comparabili A/B e non esiste un'etichettatura o matching difendibile **predefinito**, il confronto A/B non è lecito. Non inventare categorie per far passare il gate.
+- Nulla vieta un confronto descrittivo non stratificato, ma soltanto se è progettato esplicitamente come **altro confronto**, senza riusare le inferenze A/B né proclamarne conferma. Se non ci sono rivali attestati con geometria confrontabile, segnare `RIVAL_NOT_VERIFIABLE` ed escluderli.
+- Il precedente rapporto **O/E ≈0,08 per Voynich vs ≈3 per Timm–Schinner** è soltanto un **candidato di ipotesi già esplorata**, non risultato confrontabile finché non si verifica che osservati, attesi, modelli nulli, delimitazioni, campioni e denominatori sono davvero identici. Non trattare la somiglianza di denominazione O/E come identità statistica.
+
+### 4. GATE-PRECOMMIT: blocco di esecuzione
+
+Prima di qualsiasi nuovo risultato di confronto, **congelare e rendere verificabili su commit antecedente al run**:
+`endpoint_primario`, `scope`, `input_sha256`, `parser_sha256`, `blocco_perimetro`, `rivali_e_versioni`, `null_model`, `soglie_numeriche`, `criteri_di_fallimento`, `controlli_negativi`, `molteplicità`, `seed`, `unità_cluster`, `politica_holdout`, `comando` e `output_atteso`. La CI deve validare schema e integrità prima dell'esecuzione, senza dedurre da un commit una conferma indipendente.
+
+### 5. Stop automatico, senza eccezioni narrative
+
+**Scadenza improrogabile di preflight:** **20 novembre 2026, ore 18:00, Europe/Rome**.
+
+- Se a tale istante manca anche uno solo di `PARSER_COMPATIBLE`, `RIVALS_ATTESTED_AND_COMPARABLE`, `PRECOMMIT_VALID`, il confronto **NON PARTE**. La conclusione settimanale è `NOT VERIFIABLE — prerequisiti non soddisfatti entro la scadenza`, con elenco di ciascuna prova mancante, link e commit. Questo è un esito valido e non va aggirato spostando il deadline, cambiando l'endpoint o escogitando un rivale sostitutivo dopo aver guardato i risultati.
+- Se tutti i gate sono soddisfatti, si autorizza **un solo** test, mantenendo la classificazione epistemica `EXPLORATORY` perché la famiglia di segnali era già nota. A fine test sono consentiti soltanto `SUPPORTED`, `FALSIFIED`, `INCONCLUSIVE` o `NOT VERIFIABLE` **per il modello e il criterio specifico**, non per una decifrazione.
+- Lo stato `NON COMPARABILE` è un **flag metodologico di confronto trasversale**: finché presente blocca il nuovo test e porta a `NOT VERIFIABLE` alla scadenza. Non riscrive il verdetto interno di un test precedente.
+- Nessun task orario GPT, nuova CI di test o replay numerico può attivarsi in forza di questo piano: attivazione solo dopo gate verificati. `main`, baseline G0 e RC1.4.2 restano immutati.
+
+**Stato al 16/11/2026:** `QO-MECH-01 VS RC1.2 = NON COMPARABILE`; `PARSER_COMPATIBLE = PENDING`; `RIVALS_ATTESTED_AND_COMPARABLE = PENDING`; `PRECOMMIT_VALID = PENDING`; `NEW_EXPERIMENT = BLOCKED`.
