@@ -1,5 +1,10 @@
-name: VOY-FUNCTION-01 IIIF access audit (manual)
+name: VOY-FUNCTION-01 IIIF access audit
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'research/vo_function/iiif_inventory.py'
+      - '.github/workflows/vo-function-iiif-audit.yml'
   workflow_dispatch:
 
 permissions:
@@ -7,6 +12,7 @@ permissions:
 
 jobs:
   inventory:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.ref == 'research/vo-func-iiif-audit'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
