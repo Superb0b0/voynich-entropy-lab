@@ -70,11 +70,11 @@ def census(path, original, full=True):
  if start is not None:diff['unclosed_end']+=1
  pairs=[];blocked=Counter();langbreak=Counter();boundary=[]
  for i,b in enumerate(blocks):
-  boundary.append([b['page'],b['start'],b['end'],b['start_physical'],b['end_physical'],len(b['rows'])])
+  boundary.append([b['page'],b['start'],b['end'],b['start_physical'],b['end_physical'],len(b['rows']),b['rows'][0][-1]])
   langbreak[b['rows'][0][-1]]+=1
   for l,r in zip(b['rows'],b['rows'][1:]):
    if r[3]==l[3]+1 and r[0]==l[0]+1:
-    pairs.append([l[2],r[2]]);blocked['strict_adjacent_pairs']+=1
+    pairs.append([b['page'],b['start'],b['end'],l[2],r[2]]);blocked['strict_adjacent_pairs']+=1
    elif r[3]==l[3]+1:blocked['index_adjacent_nonphysical']+=1
    else:blocked['gap_or_out_of_order']+=1
  locus_digest=fingerprint([[row[2], row[0], row[3], sha(json.dumps(row[6]).encode())] for row in lines])
@@ -103,8 +103,13 @@ def main():
  z_pairs=z.pop('pair_ids');it_pairs=it.pop('pair_ids')
  zs=set(tuple(k[:3]) for k in z_blocks);its=set(tuple(k[:3]) for k in it_blocks)
  zp=set(tuple(k) for k in z_pairs);ip=set(tuple(k) for k in it_pairs)
+ zmeta={tuple(k[:3]):k[-1] for k in z_blocks}
+ imeta={tuple(k[:3]):k[-1] for k in it_blocks}
  discrepancies={'ZL3b_only_blocks':len(zs-its),'IT2a_only_blocks':len(its-zs),
-               'ZL3b_only_pairs':len(zp-ip),'IT2a_only_pairs':len(ip-zp)}
+               'common_blocks':len(zs&its),
+               'common_blocks_with_different_currier':sum(zmeta[k]!=imeta[k] for k in zs&its),
+               'ZL3b_only_pairs':len(zp-ip),'IT2a_only_pairs':len(ip-zp),
+               'common_pairs_in_identical_blocks':len(zp&ip)}
  report={
   'audit_class':'STRUCTURAL_ONLY_NOT_SCIENTIFIC','canonical_parser_sha256':RC12,
   'ZL3b':z,'IT2a':it,'transcription_mapping':discrepancies,
