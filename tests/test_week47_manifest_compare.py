@@ -1,12 +1,19 @@
 """Synthetic-only regression tests for the W47 manifest comparator."""
 import importlib.util
 import pathlib
+import tempfile
 import unittest
 
 PATH = pathlib.Path(__file__).resolve().parents[1] / "research/week47-qo-decision/compare_structural_manifests.py"
 spec = importlib.util.spec_from_file_location("w47_manifest_compare", PATH)
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
+
+PARSER_PATH = pathlib.Path(__file__).resolve().parents[1] / \
+    "experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py"
+parser_spec = importlib.util.spec_from_file_location("w47_rc12_parser", PARSER_PATH)
+rc12 = importlib.util.module_from_spec(parser_spec)
+parser_spec.loader.exec_module(rc12)
 
 
 def fixture():
@@ -119,6 +126,33 @@ class ManifestCompareTests(unittest.TestCase):
         self.assertEqual(result["status"], "DIFFERENCES")
         self.assertTrue(any(d["error"] == "invalid_top_level_object"
                             for d in result["differences"]))
+
+    def test_rc12_synthetic_locus_mapping_and_token_cleaning(self):
+        source = ("<f1r> <! $L=A>\n"
+                  "<f1r.1,*P0> <%>alpha{beta}<$>\n"
+                  "<f1r.2,*P0> zha[xyz]o\n"
+                  "<fRos.1,*P0> <~>go\n")
+        with tempfile.TemporaryDirectory() as directory:
+            path = pathlib.Path(directory) / "synthetic.ivtff"
+            path.write_text(source, encoding="utf-8")
+            result = rc12.parse_corpus(path, verify_source=False)
+        rows = result["records"]
+        self.assertEqual(
+            [(r["physical_line"], r["locus_id"], r["folio"], r["line_index"], r["tokens"])
+             for r in rows],
+            [(2, "f1r.1", "f1r", 1, ["alphabeta"]),
+             (3, "f1r.2", "f1r", 2, ["zha", "o"]),
+             (4, "fRos.1", "fRos", 1, ["go"])])
+        self.assertEqual(result["counts"]["canonical_loci"], 3)
+        self.assertEqual(result["counts"]["token_count"], 4)
+
+    def test_rc12_synthetic_mapping_rejects_malformed_locus_id(self):
+        source = "<f1r.1a,*P0> word\n"
+        with tempfile.TemporaryDirectory() as directory:
+            path = pathlib.Path(directory) / "synthetic.ivtff"
+            path.write_text(source, encoding="utf-8")
+            with self.assertRaisesRegex(rc12.ParseFailure, "malformed locus identifier"):
+                rc12.parse_corpus(path, verify_source=False)
 
 
 if __name__ == "__main__":
