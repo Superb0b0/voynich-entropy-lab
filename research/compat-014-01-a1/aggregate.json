@@ -4,6 +4,10 @@
     "RC12": 3319,
     "raw_allowed_structural_tags": 3319
   },
+  "P_skipped_after_cleaning": {
+    "M2": 0,
+    "RC12": 0
+  },
   "accepted_loci": {
     "M2": 3319,
     "RC12": 3319,
@@ -22,7 +26,7 @@
     "solo_RC12": 1,
     "union_denominator": 3098
   },
-  "audit_script_sha256": "670d8ddfc12d75f47233d87c0468f65fd950cd754f8ede6a7a95a474605ec9c7",
+  "audit_script_sha256": "49ca388d8092a7c2cf2836ad233cce19702f3980d67d3398ec0f326b998afe03",
   "common_locus_comparison": {
     "delta_signs_RC12_minus_M2": {
       "<0": 0,
@@ -225,6 +229,7 @@
   },
   "token_counts_complete": {
     "M2_before_first_token": 27681,
+    "M2_first_token_observations": 3319,
     "M2_first_token_types": 1570,
     "M2_full_types": 6305,
     "RC12": 28638,
