@@ -68,6 +68,13 @@ def census(path, original, full=True):
     blocks.append(start)
    start=None
  if start is not None:diff['unclosed_end']+=1
+ # Aggregate-only diagnostics: classify exclusions without exposing page/locus IDs.
+ outside=Counter()
+ for row in lines:
+  if row[0] not in row_to_block:
+   outside['empty_first_word' if not row[6] else 'nonempty_first_word']+=1
+   outside['has_open_marker' if row[4] else 'no_open_marker']+=1
+   outside['has_close_marker' if row[5] else 'no_close_marker']+=1
  pairs=[];blocked=Counter();langbreak=Counter();boundary=[]
  for i,b in enumerate(blocks):
   boundary.append([b['page'],b['start'],b['end'],b['start_physical'],b['end_physical'],len(b['rows']),b['rows'][0][-1]])
@@ -87,7 +94,7 @@ def census(path, original, full=True):
   'locus_manifest_sha256':locus_digest,
   'pair_eligibility_manifest_sha256':fingerprint(pairs),
   'block_ids':boundary, 'pair_ids':pairs, # REMOVED before external report
-  'differences':dict(diff),'adjacency_categories':dict(blocked),
+  'differences':dict(diff),'outside_block_categories':dict(outside),'adjacency_categories':dict(blocked),
   'blocks_by_currier':dict(langbreak)
  }
 
