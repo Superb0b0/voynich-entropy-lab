@@ -29,6 +29,23 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          sparse-checkout: |
+            research/
+            tools/qo_rival_calibration.py
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            research/week47-qo-decision/
+            tests/test_week47_preflight.py
+            tests/test_week47_synthetic_primitives.py
+            tests/test_week47_manifest_compare.py
+            tests/test_week47_locked_runner.py
+          sparse-checkout-cone-mode: false
+      - name: Assert protected and original inputs are absent in guard workspace
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test ! -e data/ZL3b-n.txt
+          test ! -e data/IT2a-n.txt
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -74,6 +91,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Assert protected and original inputs are absent in preflight workspace
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test ! -e data/ZL3b-n.txt
+          test ! -e data/IT2a-n.txt
       - id: gate
         name: Enforce preceding frozen commit, parser parity, question and isolation
         run: |
