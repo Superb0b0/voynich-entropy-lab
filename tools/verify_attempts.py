@@ -1,123 +1,255 @@
 #!/usr/bin/env python3
-"""Fail-closed CI verifier. Uses Linux strace to audit attempt file reads."""
-import hashlib, json, os, pathlib, re, shlex, shutil, subprocess, sys, tempfile
+"""Fail-closed replay verifier for a custodian-prepared training-only bundle."""
+import argparse
+import hashlib
+import json
+import os
+import pathlib
+import re
+import shlex
+import subprocess
+import sys
+import tempfile
+
 import yaml
 
-ROOT=pathlib.Path(__file__).resolve().parents[1]
-MANIFEST=ROOT/"MANIFEST.md"
-HOLDOUT=ROOT/"HOLDOUT.md"
-NUM=re.compile(r"^[0-9a-f]{64}$")
-ATTEMPT=re.compile(r"^[0-9]{3}-[^/]+$")
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+EXCEPTIONS = ROOT / "policy" / "legacy_attempt_exceptions.json"
+PINNED_POLICY_SHA256 = "fe42da3f9302edcc653c106ce8dd3953280a4233d0e38d53a17b637dd0878b1f"
+NUM = re.compile(r"^[0-9a-f]{64}$")
+ATTEMPT = re.compile(r"^[0-9]{3}-[^/]+$")
 
-def fail(msg):
-    raise RuntimeError(msg)
 
-def hashes():
-    manifest=MANIFEST.read_text()
-    expected={}
-    for line in manifest.splitlines():
-        if not line.startswith("|"):continue
-        cells=[c.strip().strip("`") for c in line.strip().strip("|").split("|")]
-        if len(cells)>=3 and re.fullmatch(r"data/[^/]+\.txt",cells[0]) and NUM.fullmatch(cells[2]):
-            expected[cells[0]]=cells[2]
-    actual={p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes()).hexdigest()
-            for p in (ROOT/"data").glob("*.txt")}
-    if not actual or set(actual)!=set(expected):fail(f"MANIFEST file set mismatch: actual={sorted(actual)} expected={sorted(expected)}")
-    for name,digest in actual.items():
-        if digest!=expected[name]:fail(f"SHA256 mismatch: {name}")
-    return actual
+def fail(message):
+    raise RuntimeError(message)
 
-def protected():
-    text=HOLDOUT.read_text()
-    # HOLDOUT currently defines protected folio/page IDs, not independent files.
-    pages=set(re.findall(r"['\"](f\d+[rv]\d*)['\"]",text))
-    if not pages:fail("HOLDOUT.md lacks machine-readable protected page IDs")
-    return pages
 
-def sanitize(data, pages):
-    # Input is IVTFF; exclude entire protected page blocks, not just their P-lines.
-    page_re=re.compile(r"^<(f\d+[rv]\d*)>\s+<!")
-    out=[];skip=False
-    for line in data.splitlines(keepends=True):
-        m=page_re.match(line)
-        if m:skip=m.group(1) in pages
-        if not skip:out.append(line)
-    return "".join(out)
+def sha256(data):
+    return hashlib.sha256(data).hexdigest()
 
-def compare(a,b,tol,path="$"):
-    if isinstance(a,bool) or isinstance(b,bool):
-        if type(a) is not type(b) or a!=b:fail(f"{path}: boolean mismatch")
-    elif isinstance(a,(int,float)) and isinstance(b,(int,float)):
+
+def validate_training_bundle(data_dir):
+    data_dir = pathlib.Path(data_dir).resolve()
+    bundle_path = data_dir / "training_manifest.json"
+    if not bundle_path.is_file():
+        fail("training_manifest.json missing; no prepared training-only bundle")
+    try:
+        bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        fail("training_manifest.json is invalid")
+    required = {
+        "schema", "schema_version", "policy_manifest_sha256",
+        "source_holdout_blob_sha1", "source_corpus_sha256",
+        "training_corpus_sha256", "filtered_page_block_counts",
+    }
+    if not isinstance(bundle, dict) or set(bundle) != required:
+        fail("training bundle schema keys are invalid")
+    if bundle["schema"] != "voynich-training-only-bundle" or bundle["schema_version"] != 1:
+        fail("unsupported training bundle schema")
+    if bundle["policy_manifest_sha256"] != PINNED_POLICY_SHA256:
+        fail("training bundle was prepared from an unreviewed policy manifest")
+    if not re.fullmatch(r"[0-9a-f]{40}", str(bundle["source_holdout_blob_sha1"])):
+        fail("training bundle source provenance is malformed")
+    source_hashes = bundle["source_corpus_sha256"]
+    training_hashes = bundle["training_corpus_sha256"]
+    counts = bundle["filtered_page_block_counts"]
+    if not isinstance(source_hashes, dict) or not source_hashes:
+        fail("training bundle source corpus list is invalid")
+    if not isinstance(training_hashes, dict) or set(training_hashes) != set(source_hashes):
+        fail("training bundle corpus hash sets differ")
+    if not isinstance(counts, dict) or set(counts) != set(source_hashes):
+        fail("training bundle filtered-count keys differ")
+    if any(not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9_.-]+\.txt", name) for name in source_hashes):
+        fail("training bundle contains an invalid corpus filename")
+    if any(not isinstance(value, str) or not NUM.fullmatch(value) for value in source_hashes.values()):
+        fail("training bundle source corpus digest is invalid")
+    if any(not isinstance(value, str) or not NUM.fullmatch(value) for value in training_hashes.values()):
+        fail("training bundle training corpus digest is invalid")
+    if any(not isinstance(value, int) or isinstance(value, bool) or value < 1 for value in counts.values()):
+        fail("training bundle must record removed protected page blocks")
+    actual_files = {p.name for p in data_dir.glob("*.txt")}
+    if actual_files != set(training_hashes):
+        fail("training bundle file set differs from its manifest")
+    for name, expected in training_hashes.items():
+        if sha256((data_dir / name).read_bytes()) != expected:
+            fail(f"training bundle SHA-256 mismatch: {name}")
+    return bundle
+
+
+def compare(expected, actual, tolerance, path="$"):
+    if isinstance(expected, bool) or isinstance(actual, bool):
+        if type(expected) is not type(actual) or expected != actual:
+            fail(f"{path}: boolean mismatch")
+    elif isinstance(expected, (int, float)) and isinstance(actual, (int, float)):
         import math
-        if not math.isfinite(a) or not math.isfinite(b) or abs(a-b)>tol:
-            fail(f"{path}: {a} vs {b}, tolerance={tol}")
-    elif isinstance(a,dict) and isinstance(b,dict):
-        if set(a)!=set(b):fail(f"{path}: keys differ")
-        for k in a:compare(a[k],b[k],tol,path+"."+str(k))
-    elif isinstance(a,list) and isinstance(b,list):
-        if len(a)!=len(b):fail(f"{path}: lengths differ")
-        for i,(x,y) in enumerate(zip(a,b)):compare(x,y,tol,f"{path}[{i}]")
-    elif a!=b:fail(f"{path}: mismatch")
+        if not math.isfinite(expected) or not math.isfinite(actual) or abs(expected - actual) > tolerance:
+            fail(f"{path}: {expected} vs {actual}, tolerance={tolerance}")
+    elif isinstance(expected, dict) and isinstance(actual, dict):
+        if set(expected) != set(actual):
+            fail(f"{path}: keys differ")
+        for key in expected:
+            compare(expected[key], actual[key], tolerance, path + "." + str(key))
+    elif isinstance(expected, list) and isinstance(actual, list):
+        if len(expected) != len(actual):
+            fail(f"{path}: lengths differ")
+        for index, (left, right) in enumerate(zip(expected, actual)):
+            compare(left, right, tolerance, f"{path}[{index}]")
+    elif expected != actual:
+        fail(f"{path}: mismatch")
+
+
+def load_legacy_exceptions():
+    try:
+        doc = json.loads(EXCEPTIONS.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        fail("legacy exception register is missing or invalid")
+    if not isinstance(doc, dict) or set(doc) != {"schema", "schema_version", "exceptions"}:
+        fail("legacy exception register schema is invalid")
+    if doc["schema"] != "voynich-legacy-attempt-exceptions" or doc["schema_version"] != 1:
+        fail("unsupported legacy exception register")
+    entries = doc["exceptions"]
+    if not isinstance(entries, list):
+        fail("legacy exception list is invalid")
+    result = {}
+    for entry in entries:
+        if not isinstance(entry, dict) or set(entry) != {
+            "attempt_id", "status", "recorded_on", "reason", "evidence"
+        }:
+            fail("legacy exception record schema is invalid")
+        name = entry["attempt_id"]
+        if not isinstance(name, str) or not ATTEMPT.fullmatch(name):
+            fail("legacy exception attempt id is invalid")
+        if entry["status"] != "NOT_VERIFIABLE_LEGACY":
+            fail(f"{name}: only NOT_VERIFIABLE_LEGACY is accepted")
+        if not isinstance(entry["reason"], str) or not entry["reason"].strip():
+            fail(f"{name}: exception requires a reason")
+        if not isinstance(entry["evidence"], list) or not entry["evidence"]:
+            fail(f"{name}: exception requires evidence references")
+        if name in result:
+            fail(f"{name}: duplicate legacy exception")
+        result[name] = entry
+    return result
+
 
 def verify_attempt(folder, safe_dir, forbidden):
-    cfg_path=folder/"attempt.yml"
-    if not cfg_path.is_file():fail(f"{folder.name}: missing attempt.yml; cannot infer execution contract")
-    cfg=yaml.safe_load(cfg_path.read_text())
-    if not isinstance(cfg,dict):fail(f"{folder.name}: invalid attempt.yml")
-    seed=cfg.get("seed")
-    if not isinstance(seed,int) or isinstance(seed,bool):fail(f"{folder.name}: explicit integer seed required")
-    tol=cfg.get("tolerance")
-    if not isinstance(tol,(int,float)) or isinstance(tol,bool) or tol<0:fail(f"{folder.name}: nonnegative numeric tolerance required")
-    cmd=cfg.get("command")
-    if cmd is None:
-        if not (folder/"run.sh").is_file():fail(f"{folder.name}: missing run.sh and command")
-        cmd=["bash","run.sh"]
-    elif isinstance(cmd,str):cmd=shlex.split(cmd)
-    if not isinstance(cmd,list) or not cmd or not all(isinstance(x,str) and x for x in cmd):
+    cfg_path = folder / "attempt.yml"
+    if not cfg_path.is_file():
+        fail(f"{folder.name}: missing attempt.yml; cannot infer execution contract")
+    try:
+        cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, yaml.YAMLError):
+        fail(f"{folder.name}: invalid attempt.yml")
+    if not isinstance(cfg, dict):
+        fail(f"{folder.name}: invalid attempt.yml")
+    seed = cfg.get("seed")
+    if not isinstance(seed, int) or isinstance(seed, bool):
+        fail(f"{folder.name}: explicit integer seed required")
+    tolerance = cfg.get("tolerance")
+    if not isinstance(tolerance, (int, float)) or isinstance(tolerance, bool) or tolerance < 0:
+        fail(f"{folder.name}: nonnegative numeric tolerance required")
+    command = cfg.get("command")
+    if command is None:
+        if not (folder / "run.sh").is_file():
+            fail(f"{folder.name}: missing run.sh and command")
+        command = ["bash", "run.sh"]
+    elif isinstance(command, str):
+        command = shlex.split(command)
+    if not isinstance(command, list) or not command or not all(isinstance(x, str) and x for x in command):
         fail(f"{folder.name}: command must be a nonempty string or argv list")
-    expected=folder/"results.json"
-    if not expected.is_file():fail(f"{folder.name}: missing committed results.json")
-    output=folder/"results_ci.json"
+    expected = folder / "results.json"
+    if not expected.is_file():
+        fail(f"{folder.name}: missing committed results.json")
+    output = folder / "results_ci.json"
     output.unlink(missing_ok=True)
-    env=os.environ.copy()
-    env.update({"PYTHONHASHSEED":str(seed),"VOYNICH_SEED":str(seed),
-                "VOYNICH_DATA_DIR":str(safe_dir),"VOYNICH_HOLDOUT_POLICY":"TRAIN_ONLY"})
-    with tempfile.TemporaryDirectory() as td:
-        trace=pathlib.Path(td)/"trace"
-        run=subprocess.run(["strace","-f","-qq","-e","trace=open,openat,openat2,readlink,readlinkat",
-                            "-s","4096","-o",str(trace),"--",*cmd],cwd=folder,env=env,
-                           timeout=600,capture_output=True,text=True)
-        log=trace.read_text(errors="replace")
-        # Fail closed on any attempt to access the original corpus or HOLDOUT.md.
-        # strace paths can be relative to cwd or absolute.
-        for raw in re.findall(r'(?:open|openat|openat2|readlink|readlinkat)\([^\n]*?"([^"\n]+)"',log):
-            candidate=(folder/raw).resolve() if not os.path.isabs(raw) else pathlib.Path(raw).resolve()
-            if candidate in forbidden or candidate==HOLDOUT.resolve():
-                fail(f"{folder.name}: protected input access: {candidate}")
-        if run.returncode:fail(f"{folder.name}: command failed ({run.returncode}): {run.stderr[-1200:]}")
-    if not output.is_file():fail(f"{folder.name}: no results_ci.json produced")
-    compare(json.loads(expected.read_text()),json.loads(output.read_text()),tol)
+    env = {key: value for key, value in os.environ.items() if key != "VOY_HOLDOUT_HMAC_KEY"}
+    env.update({
+        "PYTHONHASHSEED": str(seed),
+        "VOYNICH_SEED": str(seed),
+        "VOYNICH_DATA_DIR": str(safe_dir),
+        "VOYNICH_HOLDOUT_POLICY": "TRAIN_ONLY",
+    })
+    with tempfile.TemporaryDirectory() as temp_dir:
+        trace = pathlib.Path(temp_dir) / "trace"
+        run = subprocess.run(
+            [
+                "strace", "-f", "-qq",
+                "-e", "trace=open,openat,openat2,readlink,readlinkat",
+                "-s", "4096", "-o", str(trace), "--", *command,
+            ],
+            cwd=folder, env=env, timeout=600, capture_output=True, text=True,
+        )
+        log = trace.read_text(errors="replace")
+        for raw_path in re.findall(r'(?:open|openat|openat2|readlink|readlinkat)\([^\n]*?"([^"\n]+)"', log):
+            candidate = (folder / raw_path).resolve() if not os.path.isabs(raw_path) else pathlib.Path(raw_path).resolve()
+            if candidate in forbidden or candidate.name == "HOLDOUT.md":
+                fail(f"{folder.name}: protected input access attempt detected")
+        if run.returncode:
+            fail(f"{folder.name}: command failed ({run.returncode}): {run.stderr[-1200:]}")
+    if not output.is_file():
+        fail(f"{folder.name}: no results_ci.json produced")
+    try:
+        compare(json.loads(expected.read_text(encoding="utf-8")),
+                json.loads(output.read_text(encoding="utf-8")), tolerance)
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        fail(f"{folder.name}: result JSON is invalid")
 
-def main():
-    hashes()
-    pages=protected()
-    if shutil.which("strace") is None:fail("strace unavailable; cannot audit reads")
-    attempts=sorted(p for p in (ROOT/"attempts").glob("*") if p.is_dir() and ATTEMPT.fullmatch(p.name))
-    if not attempts:fail("No attempts/NNN-*/ found; verification is NOT VERIFIED")
-    forbidden={p.resolve() for p in (ROOT/"data").glob("*.txt")}
-    with tempfile.TemporaryDirectory() as td:
-        safe_dir=pathlib.Path(td)/"data";safe_dir.mkdir()
-        for source in (ROOT/"data").glob("*.txt"):
-            # IVTFF folio filtering only applies to identified page-structured corpora.
-            raw=source.read_text()
-            if not re.search(r"^<f\d+[rv]\d*>\s+<!",raw,re.M):
-                fail(f"{source.name}: cannot safely remove holdout pages")
-            (safe_dir/source.name).write_text(sanitize(raw,pages))
-        for folder in attempts:verify_attempt(folder,safe_dir,forbidden)
-    print(f"VERIFIED: {len(attempts)} attempts, SHA256 manifest, traced holdout isolation")
 
-if __name__=="__main__":
-    try:main()
-    except (RuntimeError,subprocess.TimeoutExpired,ValueError,KeyError) as exc:
-        print(f"NON VERIFICATO: {exc}",file=sys.stderr)
+def main(argv=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data-dir", required=True)
+    args = parser.parse_args(argv)
+    bundle = validate_training_bundle(args.data_dir)
+    if shutil.which("strace") is None:
+        fail("strace unavailable; cannot audit reads")
+    attempts = sorted(
+        path for path in (ROOT / "attempts").glob("*")
+        if path.is_dir() and ATTEMPT.fullmatch(path.name)
+    )
+    if not attempts:
+        fail("No attempts/NNN-*/ found; verification is NOT VERIFIED")
+    exceptions = load_legacy_exceptions()
+    attempt_names = {path.name for path in attempts}
+    if set(exceptions) - attempt_names:
+        fail("legacy exception references an attempt directory that is absent")
+    verified = []
+    not_verifiable = []
+    safe_dir = pathlib.Path(args.data_dir).resolve()
+    forbidden = {
+        (ROOT / "data" / name).resolve()
+        for name in bundle["source_corpus_sha256"]
+    }
+    for folder in attempts:
+        exception = exceptions.get(folder.name)
+        if exception:
+            if (folder / "attempt.yml").exists():
+                fail(f"{folder.name}: legacy exception is obsolete because attempt.yml exists")
+            not_verifiable.append(folder.name)
+            continue
+        verify_attempt(folder, safe_dir, forbidden)
+        verified.append(folder.name)
+    if not verified:
+        fail("No active attempt was replayed; legacy exceptions do not constitute verification")
+    summary = {
+        "schema": "voynich-attempt-verification-summary",
+        "schema_version": 1,
+        "status": "VERIFIED_WITH_EXPLICIT_LEGACY_EXCEPTION" if not_verifiable else "VERIFIED",
+        "verified_attempts": verified,
+        "not_verifiable_legacy": not_verifiable,
+        "training_bundle_policy_manifest_sha256": bundle["policy_manifest_sha256"],
+    }
+    (ROOT / "verification_summary.json").write_text(
+        json.dumps(summary, sort_keys=True, indent=2) + "\n", encoding="utf-8"
+    )
+    if not_verifiable:
+        print(f"VERIFIED_WITH_EXPLICIT_LEGACY_EXCEPTION: {len(verified)} replayed; {len(not_verifiable)} not verifiable legacy")
+    else:
+        print(f"VERIFIED: {len(verified)} attempts replayed; training-only bundle hash checks passed")
+
+
+if __name__ == "__main__":
+    import shutil
+    try:
+        main()
+    except (RuntimeError, subprocess.TimeoutExpired, ValueError, KeyError, OSError) as exc:
+        print(f"NON VERIFICATO: {exc}", file=sys.stderr)
         sys.exit(1)
