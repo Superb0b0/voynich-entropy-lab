@@ -34,6 +34,40 @@ class PrepareTrainingDataTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "No protected pages matched"):
             prep.sanitize_text(text, {wrong}, key)
 
+    def test_valid_synthetic_manifest_is_accepted(self):
+        import json
+        import tempfile
+        from unittest.mock import patch
+
+        key = b"synthetic-test-key-with-32-bytes-min"
+        digest = hmac.new(key, b"f2r", hashlib.sha256).hexdigest()
+        doc = {
+            "schema": "voynich-protected-page-hmac-manifest",
+            "schema_version": 1,
+            "algorithm": "HMAC-SHA-256",
+            "normalization": "exact case-sensitive capture; no additional normalization; deduplicated",
+            "identifier_pattern": prep.EXPECTED_PATTERN,
+            "source": {
+                "path": "HOLDOUT.md",
+                "commit": "0" * 40,
+                "git_blob_sha1": "a" * 40,
+                "file_sha256": "b" * 64,
+            },
+            "identifier_count": 1,
+            "hmac_sha256": [digest],
+        }
+        raw = json.dumps(doc, ensure_ascii=True, indent=2) + "\\n"
+        with tempfile.TemporaryDirectory() as temp:
+            path = pathlib.Path(temp) / "manifest.json"
+            path.write_text(raw, encoding="utf-8")
+            expected = hashlib.sha256(raw.encode("utf-8")).hexdigest()
+            with patch.object(prep, "current_holdout_blob_sha", return_value="a" * 40):
+                values, manifest_digest = prep.load_policy_manifest(
+                    key, manifest_path=path, expected_sha256=expected
+                )
+        self.assertEqual(values, {digest})
+        self.assertEqual(manifest_digest, expected)
+
     def test_manifest_hash_pin_is_checked(self):
         import tempfile
         with tempfile.TemporaryDirectory() as temp:
