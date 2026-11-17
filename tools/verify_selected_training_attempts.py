@@ -95,7 +95,7 @@ def main():
         (root / "data" / corpus).resolve()
         for corpus in ("ZL3b-n.txt", "IT2a-n.txt")
     }
-    forbidden.add(verifier.HOLDOUT.resolve())
+    forbidden.add((verifier_path.parents[1] / "HOLDOUT.md").resolve())
 
     for name, pin in PINS.items():
         folder = root / "attempts" / name
