@@ -22,6 +22,28 @@
         "issue #23: legacy attempts must not be silently skipped or assigned a retroactive contract",
         "issue #27: WP-A17-R7 and verifier gate"
       ]
+    },
+    {
+      "attempt_id": "003-firstword-avoidance",
+      "status": "NOT_VERIFIABLE_LEGACY",
+      "recorded_on": "2026-11-17",
+      "reason": "The archived attempt has no attempt.yml. Its contemporaneous seed, command, tolerance, and input contract cannot be reconstructed from the available record; no retroactive contract is fabricated.",
+      "evidence": [
+        "Git tree at main commit f3975e91: attempt directory has no attempt.yml",
+        "issue #23: legacy attempts must not be silently skipped or assigned a retroactive contract",
+        "issue #27: WP-A17-R7 and verifier gate"
+      ]
+    },
+    {
+      "attempt_id": "004-qo-transition",
+      "status": "NOT_VERIFIABLE_LEGACY",
+      "recorded_on": "2026-11-17",
+      "reason": "The archived attempt has no attempt.yml. Its contemporaneous seed, command, tolerance, and input contract cannot be reconstructed from the available record; no retroactive contract is fabricated.",
+      "evidence": [
+        "Git tree at main commit f3975e91: attempt directory has no attempt.yml",
+        "issue #23: legacy attempts must not be silently skipped or assigned a retroactive contract",
+        "issue #27: WP-A17-R7 and verifier gate"
+      ]
     }
   ]
 }
