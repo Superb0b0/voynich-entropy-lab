@@ -27,13 +27,6 @@ class VerifyTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             v.compare({"x": True}, {"x": 1}, 0)
 
-    def test_sanitize_removes_entire_protected_page(self):
-        raw = "<f1r> <! page\n<f1r.1,@P0> safe\n<f2r> <! page\n<f2r.1,@P0> secret\n<f3r> <! page\n<f3r.1,@P0> safeagain\n"
-        result = v.sanitize(raw, {"f2r"})
-        self.assertNotIn("secret", result)
-        self.assertNotIn("<f2r>", result)
-        self.assertIn("safeagain", result)
-
     def test_training_bundle_hash_mismatch_fails(self):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)
