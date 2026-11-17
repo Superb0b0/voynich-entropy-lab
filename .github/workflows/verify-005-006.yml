@@ -22,10 +22,10 @@ jobs:
           persist-credentials: false
           path: repo
           sparse-checkout: |
-            attempts/005-refractory-qo-parameter
-            attempts/006-it2a-replication
-            tools/verify_selected_training_attempts.py
-          sparse-checkout-cone-mode: true
+            /attempts/005-refractory-qo-parameter/
+            /attempts/006-it2a-replication/
+            /tools/verify_selected_training_attempts.py
+          sparse-checkout-cone-mode: false
       - name: Checkout pinned verifier source only
         uses: actions/checkout@v4
         with:
@@ -33,8 +33,8 @@ jobs:
           ref: f3975e91c26ea109850948ed85cce1cdb47dd397
           path: reviewed-main
           sparse-checkout: |
-            tools/verify_attempts.py
-          sparse-checkout-cone-mode: true
+            /tools/verify_attempts.py
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
