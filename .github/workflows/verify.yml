@@ -61,7 +61,8 @@ jobs:
           python -m unittest discover -s tests -p 'test_prepare_training_data.py' -v
 
   prepare-training-data:
-    if: github.event_name == 'push'
+    # Fail closed until main is protected and the repository owner enables the trusted replay gate.
+    if: github.event_name == 'push' && vars.VOY_HOLDOUT_TRUSTED_MAIN == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -89,7 +90,7 @@ jobs:
           retention-days: 1
 
   verify-replay:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && vars.VOY_HOLDOUT_TRUSTED_MAIN == 'true'
     needs: prepare-training-data
     runs-on: ubuntu-24.04
     timeout-minutes: 30
