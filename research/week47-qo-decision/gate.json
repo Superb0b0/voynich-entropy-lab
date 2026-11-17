@@ -7,7 +7,6 @@
     "sha256": "22b4a8bc3951f6ccf06aeffffc9e45a016e33847ee51d3fe67f1d35751494f90"
   },
   "parser_evidence": {
-    "status": "PENDING",
     "path": "",
     "commit": "",
     "sha256": ""
@@ -16,20 +15,21 @@
     "status": "NOT_APPLICABLE_NULL_ONLY"
   },
   "runner": {
-    "status": "PENDING",
     "path": "research/week47-qo-decision/run_locked.py",
     "commit": "",
     "sha256": ""
   },
-  "input_isolation": "PENDING",
+  "input_isolation": {
+    "path": ".github/workflows/week47-qo-gated.yml",
+    "commit": "",
+    "sha256": ""
+  },
   "preparer": {
-    "status": "PENDING",
     "path": "research/week47-qo-decision/training_preflight.py",
     "commit": "",
     "sha256": ""
   },
   "partition_policy": {
-    "status": "PENDING",
     "path": "tools/qo_rival_calibration.py",
     "commit": "",
     "sha256": ""
