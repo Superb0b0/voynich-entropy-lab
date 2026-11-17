@@ -2,13 +2,95 @@
 """W47 frozen exploratory null-only runner, NOT authorized until preflight PASS.
 Never reads full originals or HOLDOUT. Exports aggregated data, no folio IDs or words.
 """
-import hashlib,importlib.util,json,math,pathlib,random,re
+import datetime as dt,hashlib,importlib.util,json,math,os,pathlib,random,re,urllib.error,urllib.request
 from collections import Counter
 
 ROOT=pathlib.Path(__file__).resolve().parents[2]
 SEED=20261116;REPS=10000;MIN_FOLIOS=20
 RC12='8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5'
 PROTOCOL_SHA='22b4a8bc3951f6ccf06aeffffc9e45a016e33847ee51d3fe67f1d35751494f90'
+GITHUB_REPO='Superb0b0/voynich-entropy-lab'
+APPROVED_BRANCH='research/week47-qo-rivals-plan-20261116'
+CUTOFF=dt.datetime.fromisoformat('2026-11-20T17:00:00+00:00')
+
+class AuthorizationError(RuntimeError):pass
+
+def _require(ok,message):
+ if not ok:raise AuthorizationError(message)
+
+def _github_json(url):
+ token=os.environ.get('GITHUB_TOKEN')
+ _require(bool(token),'GitHub Actions token missing; runner must follow preflight')
+ req=urllib.request.Request(url,headers={'Accept':'application/vnd.github+json',
+  'Authorization':f'Bearer {token}','X-GitHub-Api-Version':'2022-11-28'})
+ try:
+  with urllib.request.urlopen(req,timeout=20) as response:return json.loads(response.read())
+ except (urllib.error.URLError,json.JSONDecodeError,OSError) as exc:
+  raise AuthorizationError('Cannot verify the authorizing GitHub Actions run') from exc
+
+def require_preflight_authorization():
+ """Require a real same-run GitHub preflight and a matching approval receipt."""
+ _require(os.environ.get('GITHUB_ACTIONS')=='true','Runner is disabled outside GitHub Actions')
+ _require(os.environ.get('GITHUB_EVENT_NAME')=='workflow_dispatch',
+          'Runner requires the gated manual workflow dispatch')
+ _require(os.environ.get('GITHUB_REPOSITORY')==GITHUB_REPO,'Wrong repository context')
+ _require(os.environ.get('GITHUB_REF_NAME')==APPROVED_BRANCH,'Wrong W47 branch context')
+ try:
+  with open(os.environ['GITHUB_EVENT_PATH'],encoding='utf-8') as f:event=json.load(f)
+ except (KeyError,OSError,json.JSONDecodeError) as exc:
+  raise AuthorizationError('GitHub dispatch event is unavailable') from exc
+ run_input=(event.get('inputs') or {}).get('run_experiment')
+ _require(run_input is True or run_input=='true','Manual run_experiment acknowledgement missing')
+ run_id=os.environ.get('GITHUB_RUN_ID','');head=os.environ.get('GITHUB_SHA','')
+ _require(run_id.isdigit() and re.fullmatch(r'[a-f0-9]{40}',head) is not None,
+          'GitHub run identity is incomplete')
+ receipt_path=os.environ.get('W47_PREFLIGHT_RECEIPT')
+ _require(bool(receipt_path),'Preflight receipt missing')
+ try:
+  with open(receipt_path,encoding='utf-8') as f:receipt=json.load(f)
+ except (OSError,json.JSONDecodeError) as exc:
+  raise AuthorizationError('Preflight receipt is unreadable') from exc
+ _require(receipt.get('schema_version')==1 and
+          receipt.get('decision')=='READY_TO_RUN_EXPLORATORY_NULL_ONLY',
+          'Preflight receipt does not authorize this runner')
+ _require(receipt.get('repository')==GITHUB_REPO and
+          str(receipt.get('run_id'))==run_id and receipt.get('head_sha')==head and
+          receipt.get('workflow_path')=='.github/workflows/week47-qo-gated.yml',
+          'Preflight receipt is not bound to this workflow run and commit')
+ _require(receipt.get('review_commit')==head and
+          receipt.get('reviewer','').casefold()!='Superb0b0'.casefold(),
+          'Receipt lacks a non-author review of this exact commit')
+ try:reviewed=dt.datetime.fromisoformat(receipt['review_submitted_at'].replace('Z','+00:00'))
+ except (KeyError,TypeError,ValueError) as exc:
+  raise AuthorizationError('Receipt review timestamp is invalid') from exc
+ _require(reviewed.tzinfo is not None and reviewed<=CUTOFF,
+          'Receipt approval was submitted after the W47 cutoff')
+ _require(receipt.get('gate_sha256') and re.fullmatch(r'[a-f0-9]{64}',receipt['gate_sha256']),
+          'Receipt gate manifest digest missing')
+ _require(receipt.get('runner_sha256')==sha(pathlib.Path(__file__).read_bytes()),
+          'Runner differs from the preflight-approved source')
+ preparer_path=ROOT/'research/week47-qo-decision/training_preflight.py'
+ _require(receipt.get('preparer_sha256')==sha(preparer_path.read_bytes()),
+          'Preparer differs from the preflight-approved source')
+ _require(receipt.get('protocol_sha256')==PROTOCOL_SHA and
+          receipt.get('parser_sha256')==RC12,
+          'Receipt protocol or parser digest mismatch')
+ _require(sha((ROOT/'research/week47-qo-decision/PROTOCOL.json').read_bytes())==PROTOCOL_SHA,
+          'Packaged protocol hash mismatch')
+ _require(sha((ROOT/'experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py').read_bytes())==RC12,
+          'Packaged parser hash mismatch')
+ base=f'https://api.github.com/repos/{GITHUB_REPO}/actions/runs/{run_id}'
+ run=_github_json(base)
+ _require(run.get('status')=='in_progress' and run.get('event')=='workflow_dispatch' and
+          run.get('path')=='.github/workflows/week47-qo-gated.yml' and
+          run.get('head_branch')==APPROVED_BRANCH and run.get('head_sha')==head,
+          'GitHub API run metadata does not match the preflight receipt')
+ jobs=_github_json(base+'/jobs?per_page=100').get('jobs',[])
+ states={j.get('name'):j.get('conclusion') or j.get('status') for j in jobs}
+ for name in ('guard-tests','preflight','prepare-input','package-code'):
+  _require(states.get(name)=='success',f'Required same-run job did not pass: {name}')
+ _require(states.get('experiment')=='in_progress','Runner is not executing in the gated experiment job')
+ return receipt
 
 def sha(b):return hashlib.sha256(b).hexdigest()
 def module(path,label):
@@ -132,6 +214,7 @@ def run():
                           'IT2a is not an independent manuscript','No folio, hand or quire independence is established'])
 
 def main():
+ require_preflight_authorization()
  first=run();second=run()
  a=json.dumps(first,sort_keys=True,indent=2)+'\n'
  if a!=json.dumps(second,sort_keys=True,indent=2)+'\n':
