@@ -35,8 +35,12 @@ class PrepareTrainingDataTests(unittest.TestCase):
             prep.sanitize_text(text, {wrong}, key)
 
     def test_manifest_hash_pin_is_checked(self):
-        with self.assertRaisesRegex(RuntimeError, "SHA-256 differs"):
-            prep.load_policy_manifest(b"x" * 32, expected_sha256="0" * 64)
+        import tempfile
+        with tempfile.TemporaryDirectory() as temp:
+            path = pathlib.Path(temp) / "manifest.json"
+            path.write_text("{}", encoding="utf-8")
+            with self.assertRaisesRegex(RuntimeError, "SHA-256 differs"):
+                prep.load_policy_manifest(b"x" * 32, manifest_path=path, expected_sha256="0" * 64)
 
 
 if __name__ == "__main__":
