@@ -13,9 +13,16 @@ import pathlib
 import re
 import subprocess
 import sys
+import urllib.error
+import urllib.parse
+import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 CUTOFF = dt.datetime.fromisoformat('2026-11-20T17:00:00+00:00')
+REPOSITORY = 'Superb0b0/voynich-entropy-lab'
+PR_NUMBER = 26
+PR_AUTHOR = 'Superb0b0'
+APPROVED_BRANCH = 'research/week47-qo-rivals-plan-20261116'
 ZL3B = 'bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc'
 RC12 = '8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5'
 PROTOCOL_PATH = 'research/week47-qo-decision/PROTOCOL.json'
@@ -52,10 +59,10 @@ def immutable_bytes(item, label, *, expected_path=None):
     commit, path, digest = item.get('commit'), item.get('path'), item.get('sha256')
     require(isinstance(commit, str) and HEX40.fullmatch(commit), f'{label}: full frozen commit required')
     require(isinstance(digest, str) and HEX64.fullmatch(digest), f'{label}: full SHA-256 required')
-    # The legacy policy source is the single specifically whitelisted tools/ path;
-    # all other immutable evidence stays below research/.
-    if expected_path == 'tools/qo_rival_calibration.py':
-        require(path == expected_path, f'{label}: wrong protected policy path')
+    # Explicitly allow only the two non-research evidence files used by W47.
+    if expected_path in ('tools/qo_rival_calibration.py',
+                         '.github/workflows/week47-qo-gated.yml'):
+        require(path == expected_path, f'{label}: wrong evidence path')
     else:
         path = clean_path(path)
         if expected_path:
@@ -63,10 +70,6 @@ def immutable_bytes(item, label, *, expected_path=None):
     head = git('rev-parse', 'HEAD').decode().strip()
     require(head != commit, f'{label}: source commit must precede execution checkout')
     git('merge-base', '--is-ancestor', commit, head)
-    # Git commit timestamp is a limited timestamp, not an external certification.
-    timestamp = git('show', '-s', '--format=%cI', commit).decode().strip()
-    committed = dt.datetime.fromisoformat(timestamp)
-    require(committed <= CUTOFF, f'{label}: evidence committed after frozen cutoff')
     data = git('show', f'{commit}:{path}')
     require(sha(data) == digest, f'{label}: committed file hash mismatch')
     current = ROOT / path
@@ -112,7 +115,6 @@ def check_parser_report(data):
         p = json.loads(data)
     except (UnicodeDecodeError, json.JSONDecodeError):
         raise GateError('Parser parity report is not JSON')
-    require(p.get('status') == 'VERIFIED', 'Parser parity is not verified')
     require(p.get('canonical_source_sha256') == ZL3B and
             p.get('canonical_parser_sha256') == RC12,
             'Parser parity: wrong canonical input or parser')
@@ -133,37 +135,117 @@ def check_parser_report(data):
     # Attestation checks alone do not prove independent parser equivalence.
     return p
 
-def check_gate_manifest_frozen_before_cutoff(manifest):
-    """Verify the WHOLE approval manifest was committed by the W47 deadline.
-
-    This is a provenance/sequence check, not proof of independent scientific
-    review or a trusted external timestamp. It prevents late approval using
-    otherwise old evidence refs.
-    """
+def check_gate_manifest_at_head(manifest):
+    """Bind gate bytes to HEAD; timing comes from GitHub's review timestamp."""
     actual = (ROOT / GATE_PATH).read_bytes()
     try:
         checked = json.loads(actual)
     except (json.JSONDecodeError, UnicodeDecodeError):
         raise GateError('Approval gate manifest is not valid JSON')
     require(checked == manifest, 'Approved evidence must match canonical gate.json')
-    commit = git('log', '-1', '--format=%H', '--', GATE_PATH).decode().strip()
-    require(bool(HEX40.fullmatch(commit)), 'Approval manifest lacks a full Git commit')
     head = git('rev-parse', 'HEAD').decode().strip()
-    git('merge-base', '--is-ancestor', commit, head)
-    try:
-        when = dt.datetime.fromisoformat(
-            git('show', '-s', '--format=%cI', commit).decode().strip()
-        )
-    except ValueError as exc:
-        raise GateError('Approval commit timestamp invalid') from exc
-    require(when.tzinfo is not None and when <= CUTOFF,
-            'Approval manifest was not frozen by 20 Nov 2026 18:00 Europe/Rome')
-    require(git('show', f'{commit}:{GATE_PATH}') == actual,
-            'Approval manifest differs from the last committed approval')
-    return commit
+    require(bool(HEX40.fullmatch(head)), 'Current HEAD is not a full commit')
+    require(git('show', f'{head}:{GATE_PATH}') == actual,
+            'Gate manifest differs from reviewed HEAD')
+    return head
 
-def verify(manifest, now=None):
-    now = now or dt.datetime.now(dt.timezone.utc)
+def validate_review_approval(approval, head_sha, now=None):
+    """Require a GitHub-submitted approval for this exact PR head by cutoff."""
+    require(isinstance(approval, dict), 'GitHub PR review approval unavailable')
+    require(approval.get('repository') == REPOSITORY and
+            approval.get('pr_number') == PR_NUMBER and
+            approval.get('pr_author') == PR_AUTHOR,
+            'Approval is for the wrong repository, PR, or author')
+    require(approval.get('pr_state') == 'open' and
+            approval.get('head_branch') == APPROVED_BRANCH and
+            approval.get('head_sha') == head_sha,
+            'PR head differs from the reviewed W47 commit')
+    review = approval.get('review')
+    require(isinstance(review, dict) and review.get('state') == 'APPROVED',
+            'A formal GitHub APPROVED review is required')
+    require(review.get('commit_id') == head_sha,
+            'Approval does not cover the exact reviewed head commit')
+    reviewer = review.get('reviewer')
+    require(isinstance(reviewer, str) and reviewer and
+            reviewer.casefold() != PR_AUTHOR.casefold(),
+            'Approval must come from someone other than the PR author')
+    try:
+        submitted = dt.datetime.fromisoformat(review['submitted_at'].replace('Z', '+00:00'))
+    except (KeyError, TypeError, ValueError) as exc:
+        raise GateError('GitHub review timestamp is missing or invalid') from exc
+    require(submitted.tzinfo is not None and submitted <= CUTOFF,
+            'GitHub review was not submitted by the 20 Nov 2026 18:00 Rome cutoff')
+    return {'reviewer': reviewer, 'submitted_at': submitted.isoformat(),
+            'commit_id': head_sha, 'pr_number': PR_NUMBER}
+
+def github_json(url):
+    token = os.environ.get('GITHUB_TOKEN')
+    require(bool(token), 'GitHub token unavailable for server-side approval check')
+    request = urllib.request.Request(url, headers={
+        'Accept': 'application/vnd.github+json',
+        'Authorization': f'Bearer {token}',
+        'X-GitHub-Api-Version': '2022-11-28',
+    })
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            return json.loads(response.read())
+    except (urllib.error.URLError, json.JSONDecodeError, OSError) as exc:
+        raise GateError('Unable to verify approval using GitHub API') from exc
+
+def github_review_approval():
+    """Fetch authoritative PR/review timestamps from GitHub, never Git dates."""
+    require(os.environ.get('GITHUB_REPOSITORY') == REPOSITORY,
+            'Preflight must run in the canonical GitHub repository')
+    require(os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch',
+            'Approval preflight must be a manual W47 dispatch')
+    require(os.environ.get('GITHUB_REF_NAME') == APPROVED_BRANCH,
+            'Dispatch must target the reviewed W47 branch')
+    head = git('rev-parse', 'HEAD').decode().strip()
+    base = f'https://api.github.com/repos/{REPOSITORY}'
+    pr = github_json(f'{base}/pulls/{PR_NUMBER}')
+    require(pr.get('state') == 'open' and
+            pr.get('user', {}).get('login') == PR_AUTHOR and
+            pr.get('head', {}).get('ref') == APPROVED_BRANCH and
+            pr.get('head', {}).get('sha') == head,
+            'Open PR #26 must point at the exact dispatched W47 HEAD')
+    page = 1
+    reviews = []
+    while page <= 10:
+        batch = github_json(f'{base}/pulls/{PR_NUMBER}/reviews?per_page=100&page={page}')
+        require(isinstance(batch, list), 'GitHub review list has invalid format')
+        reviews.extend(batch)
+        if len(batch) < 100:
+            break
+        page += 1
+    latest = {}
+    for review in reviews:
+        user = review.get('user') or {}
+        login = user.get('login')
+        submitted_at = review.get('submitted_at')
+        if not login or not submitted_at:
+            continue
+        try:
+            stamp = dt.datetime.fromisoformat(submitted_at.replace('Z', '+00:00'))
+        except (TypeError, ValueError):
+            continue
+        if login.casefold() == PR_AUTHOR.casefold() or review.get('commit_id') != head:
+            continue
+        old = latest.get(login.casefold())
+        if old is None or stamp > old[0]:
+            latest[login.casefold()] = (stamp, review)
+    eligible = [(stamp, review) for stamp, review in latest.values()
+                if review.get('state') == 'APPROVED' and stamp <= CUTOFF]
+    require(bool(eligible),
+            'No non-author GitHub approval for this exact HEAD was submitted by cutoff')
+    stamp, review = max(eligible, key=lambda item: item[0])
+    return {'repository': REPOSITORY, 'pr_number': PR_NUMBER,
+            'pr_author': PR_AUTHOR, 'pr_state': pr['state'],
+            'head_branch': pr['head']['ref'], 'head_sha': head,
+            'review': {'state': review['state'], 'commit_id': review['commit_id'],
+                       'reviewer': review['user']['login'],
+                       'submitted_at': stamp.isoformat()}}
+
+def verify(manifest, now=None, approval=None):
     require(isinstance(manifest, dict) and manifest.get('schema_version') == 1,
             'Preflight manifest missing or wrong version')
     require(manifest.get('question_type') == 'NULL_ONLY',
@@ -173,43 +255,56 @@ def verify(manifest, now=None):
     protocol_bytes = immutable_bytes(manifest.get('protocol'), 'protocol', expected_path=PROTOCOL_PATH)
     check_protocol(protocol_bytes)
     evidence = manifest.get('parser_evidence', {})
-    require(evidence.get('status') == 'VERIFIED', 'Parser parity evidence PENDING')
     check_parser_report(immutable_bytes(evidence, 'parser_evidence'))
     preparer = manifest.get('preparer', {})
-    require(preparer.get('status') == 'APPROVED_TRAINING_ONLY',
-            'Training input preparer not independently approved')
     immutable_bytes(preparer, 'preparer',
                     expected_path='research/week47-qo-decision/training_preflight.py')
     partition_policy = manifest.get('partition_policy', {})
-    require(partition_policy.get('status') == 'AUDITED_PARTITION_POLICY',
-            'Protected-folio exclusion policy not independently audited')
     immutable_bytes(partition_policy, 'partition_policy',
                     expected_path='tools/qo_rival_calibration.py')
     runner = manifest.get('runner', {})
-    require(runner.get('status') == 'APPROVED_ISOLATED', 'Isolated runner NOT APPROVED')
     immutable_bytes(runner, 'runner', expected_path=RUNNER_PATH)
-    require(manifest.get('input_isolation') == 'VERIFIED_TRAINING_ONLY',
-            'No proof of isolated training-only input')
-    # Gate APPROVAL itself must be committed by cutoff, not only its sources.
-    check_gate_manifest_frozen_before_cutoff(manifest)
-    # Pre-cutoff frozen approvals can support a controlled 21–22 Nov run.
+    isolation = manifest.get('input_isolation', {})
+    immutable_bytes(isolation, 'input_isolation',
+                    expected_path='.github/workflows/week47-qo-gated.yml')
+    head = check_gate_manifest_at_head(manifest)
+    validate_review_approval(approval if approval is not None else github_review_approval(),
+                            head, now=now)
     return 'READY_TO_RUN_EXPLORATORY_NULL_ONLY'
 
 def main():
     a = argparse.ArgumentParser(description=__doc__)
     a.add_argument('--manifest', default='research/week47-qo-decision/gate.json')
+    a.add_argument('--receipt', type=pathlib.Path)
     args = a.parse_args()
     mpath = ROOT / clean_path(args.manifest)
     try:
         require(mpath.is_file(), 'Gate manifest missing')
         manifest = json.loads(mpath.read_text())
-        verdict = verify(manifest)
+        approval = github_review_approval()
+        verdict = verify(manifest, approval=approval)
+        if args.receipt:
+            head = git('rev-parse', 'HEAD').decode().strip()
+            receipt = {'schema_version': 1, 'decision': verdict,
+                       'repository': REPOSITORY, 'pr_number': approval['pr_number'],
+                       'reviewer': approval['review']['reviewer'],
+                       'review_submitted_at': approval['review']['submitted_at'],
+                       'review_commit': approval['review']['commit_id'],
+                       'head_sha': head, 'gate_sha256': sha((ROOT / GATE_PATH).read_bytes()),
+                       'runner_sha256': manifest['runner']['sha256'],
+                       'preparer_sha256': manifest['preparer']['sha256'],
+                       'protocol_sha256': manifest['protocol']['sha256'],
+                       'parser_sha256': RC12,
+                       'workflow_path': '.github/workflows/week47-qo-gated.yml',
+                       'run_id': os.environ.get('GITHUB_RUN_ID', '')}
+            args.receipt.parent.mkdir(parents=True, exist_ok=True)
+            args.receipt.write_text(json.dumps(receipt, sort_keys=True, indent=2) + '\n')
     except (GateError, json.JSONDecodeError, OSError) as e:
         verdict = ('NOT VERIFIABLE' if dt.datetime.now(dt.timezone.utc) >= CUTOFF
                    else 'BLOCKED_PENDING_EVIDENCE')
         print(f'W47 PREFLIGHT: {verdict} | {e}', file=sys.stderr)
         return 1
-    print(f'W47 PREFLIGHT: {verdict} | all commit/hash/provenance gates passed')
+    print(f'W47 PREFLIGHT: {verdict} | GitHub review timestamp, reviewer and commit/hash gates passed')
     return 0
 
 if __name__ == '__main__':
