@@ -1,6 +1,9 @@
 name: Verify archived attempts
+
 on:
-  push:
+  # PRs receive only synthetic regression tests. The replay job and its secret
+  # are unavailable to PR-controlled workflow/code.
+  pull_request:
     paths:
       - 'data/**'
       - 'MANIFEST.md'
@@ -8,20 +11,101 @@ on:
       - 'PROTOCOL.md'
       - 'TESTS.md'
       - 'attempts/**'
-      - 'tools/verify_attempts.py'
+      - 'tools/**'
+      - 'policy/**'
+      - 'tests/**'
       - '.github/workflows/verify.yml'
-  pull_request:
-  workflow_dispatch:
+  # Full preparation/replay is restricted to trusted pushes on main. It is not
+  # run for pull_request or arbitrary feature-branch pushes.
+  push:
+    branches: [main]
+    paths:
+      - 'data/**'
+      - 'MANIFEST.md'
+      - 'HOLDOUT.md'
+      - 'PROTOCOL.md'
+      - 'TESTS.md'
+      - 'attempts/**'
+      - 'tools/**'
+      - 'policy/**'
+      - 'tests/**'
+      - '.github/workflows/verify.yml'
+
 permissions:
   contents: read
+
 jobs:
-  verify:
+  pr-regression:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          # Sparse checkout fetches blobs lazily and excludes HOLDOUT.md and
+          # all corpus files from this untrusted PR job.
+          sparse-checkout: |
+            /tools/**
+            /tests/**
+            /policy/legacy_attempt_exceptions.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install verifier test dependency
+        run: python -m pip install 'PyYAML==6.0.2'
+      - name: Run synthetic verifier regressions
+        run: |
+          python -m unittest discover -s tests -p 'test_verify_attempts.py' -v
+          python -m unittest discover -s tests -p 'test_prepare_training_data.py' -v
+
+  prepare-training-data:
+    # Manual custodian gate; configure this Environment with required reviewers,
+    # restrict deployments to main, and store the HMAC key only as its secret.
+    environment: holdout-custodian
+    if: github.event_name == 'push' && vars.VOY_HOLDOUT_TRUSTED_MAIN == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            /MANIFEST.md
+            /data/**
+            /tools/**
+            /policy/holdout_page_hmac_manifest.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Prepare training-only corpus with custodian HMAC manifest
+        env:
+          VOY_HOLDOUT_HMAC_KEY: ${{ secrets.VOY_HOLDOUT_HMAC_KEY }}
+        run: python tools/prepare_training_data.py --output-dir "${RUNNER_TEMP}/training-only"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: training-only-data-${{ github.run_id }}
+          path: ${{ runner.temp }}/training-only/
+          if-no-files-found: error
+          retention-days: 1
+
+  verify-replay:
+    if: github.event_name == 'push' && vars.VOY_HOLDOUT_TRUSTED_MAIN == 'true'
+    needs: prepare-training-data
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          sparse-checkout: |
+            /attempts/**
+            /tools/**
+            /tests/**
+            /policy/legacy_attempt_exceptions.json
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -30,15 +114,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y strace
           python -m pip install 'PyYAML==6.0.2'
-      - name: Regression tests for verifier
-        run: python -m unittest discover -s tests -p 'test_verify_attempts.py' -v
-      - name: Verify manifest, attempts and protected input isolation
-        run: python tools/verify_attempts.py
-      - name: Upload replay results even on failure
+      - name: Download training-only corpus artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: training-only-data-${{ github.run_id }}
+          path: ${{ runner.temp }}/training-only
+      - name: Run synthetic verifier regressions
+        run: |
+          python -m unittest discover -s tests -p 'test_verify_attempts.py' -v
+          python -m unittest discover -s tests -p 'test_prepare_training_data.py' -v
+      - name: Verify attempts against training-only input
+        run: python tools/verify_attempts.py --data-dir "${RUNNER_TEMP}/training-only"
+      - name: Upload replay results and legacy status even on failure
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: attempt-replay-results
-          path: attempts/**/results_ci.json
+          name: attempt-replay-results-${{ github.run_id }}
+          path: |
+            attempts/**/results_ci.json
+            verification_summary.json
           if-no-files-found: ignore
           retention-days: 30
