@@ -43,3 +43,12 @@
 
 
 **Controllo amministrativo read-only (17 Nov).** La collection GitHub repository rulesets ha restituito `[]`. `CODEOWNERS` non esiste nei percorsi riconosciuti `/CODEOWNERS`, `.github/CODEOWNERS` e `docs/CODEOWNERS` (404). La lettura della protezione specifica del branch non è riuscita tramite l'endpoint disponibile; l'enumerazione degli Environments è fuori dai permessi dell'integrazione. Quindi ruleset e CODEOWNERS risultano assenti, mentre branch protection ed Environment restano **NOT VERIFIABLE**.
+
+
+## Addendum 17 Nov 2026 — Environment e follow-up review
+
+- Il workflow ora assegna il job `experiment` all'Environment GitHub `w47-science` (commit `c1886b80c0081fd5403e6b6c9df227c917a244fd`) e il test sintetico controlla che il vincolo resti presente. La configurazione di revisori/branch restriction dell'Environment non è impostabile o verificabile tramite l'integrazione disponibile: la sola dichiarazione nel workflow non costituisce una protezione.
+- Sul commit `95b5b07f4ca0f884aca7b331e78ac6c02dcf6976`: W47 gate #44073651097, isolamento #44073651441, parità #44073651076, audit strutturale #44073651162, preflight training #44073651016, policy #44073651176 e oracolo sintetico #44073651003 sono PASS. Il workflow gate ha saltato preflight/preparazione/esperimento; `Verify archived attempts` #44073651004 resta FAIL per il legacy 001 senza `attempt.yml`.
+- La menzione `@claude` è stata pubblicata sul diff. La richiesta formale di reviewer GitHub è stata respinta con HTTP 422 perché l'utente `claude` non è collaborator. Non risulta una review formale del nuovo head; serve un reviewer collaboratore indipendente.
+
+Lo stato scientifico resta **SCIENTIFIC_RUN_BLOCKED**. Nessun dato protetto o protocollo congelato è stato usato o modificato.
