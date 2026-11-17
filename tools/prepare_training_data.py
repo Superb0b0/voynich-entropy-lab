@@ -105,6 +105,7 @@ def sanitize_text(text, protected_hmacs, key_bytes):
     skip_page = False
     saw_header = False
     matched_page_blocks = 0
+    matched_hmacs = set()
     for line in text.splitlines(keepends=True):
         match = PAGE_HEADER.match(line)
         if match:
@@ -113,13 +114,23 @@ def sanitize_text(text, protected_hmacs, key_bytes):
             skip_page = digest in protected_hmacs
             if skip_page:
                 matched_page_blocks += 1
+                matched_hmacs.add(digest)
         if not skip_page:
             output.append(line)
     if not saw_header:
         fail("Corpus has no recognized IVTFF page headers")
     if matched_page_blocks == 0:
         fail("No protected pages matched; key, manifest, or corpus provenance is inconsistent")
-    return "".join(output), matched_page_blocks
+    return "".join(output), matched_page_blocks, matched_hmacs
+
+
+def require_manifest_coverage(protected_hmacs, observed_hmacs):
+    missing = protected_hmacs - observed_hmacs
+    if missing:
+        fail(
+            "Custodian manifest coverage incomplete: "
+            f"{len(missing)} protected entries were not found across canonical corpora"
+        )
 
 
 def main(argv=None):
@@ -136,9 +147,9 @@ def main(argv=None):
     if actual_paths != set(expected):
         fail("Canonical corpus file set differs from MANIFEST.md")
     output_dir = pathlib.Path(args.output_dir).resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
+    prepared = {}
+    observed_hmacs = set()
     source_hashes = {}
-    training_hashes = {}
     filtered_counts = {}
     for name in sorted(expected):
         source = DATA_DIR / name
@@ -150,15 +161,20 @@ def main(argv=None):
             text = raw.decode("utf-8")
         except UnicodeDecodeError:
             fail(f"Canonical corpus is not UTF-8: {name}")
-        filtered, count = sanitize_text(text, protected_hmacs, key_bytes)
+        filtered, count, matched_hmacs = sanitize_text(text, protected_hmacs, key_bytes)
         filtered_bytes = filtered.encode("utf-8")
         if filtered_bytes == raw:
             fail(f"Sanitized corpus did not change: {name}")
-        target = output_dir / name
-        target.write_bytes(filtered_bytes)
+        prepared[name] = filtered_bytes
+        observed_hmacs.update(matched_hmacs)
         source_hashes[name] = source_digest
-        training_hashes[name] = sha256(filtered_bytes)
         filtered_counts[name] = count
+    require_manifest_coverage(protected_hmacs, observed_hmacs)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    training_hashes = {}
+    for name, filtered_bytes in prepared.items():
+        (output_dir / name).write_bytes(filtered_bytes)
+        training_hashes[name] = sha256(filtered_bytes)
     bundle = {
         "schema": "voynich-training-only-bundle",
         "schema_version": 1,

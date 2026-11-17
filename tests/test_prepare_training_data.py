@@ -20,8 +20,9 @@ class PrepareTrainingDataTests(unittest.TestCase):
             "<f2r> <! page\n<f2r.1,@P0> remove-this-page\n"
             "<f3r> <! page\n<f3r.1,@P0> keep-three\n"
         )
-        result, count = prep.sanitize_text(text, {protected}, key)
+        result, count, matched = prep.sanitize_text(text, {protected}, key)
         self.assertEqual(count, 1)
+        self.assertEqual(matched, {protected})
         self.assertNotIn("<f2r>", result)
         self.assertNotIn("remove-this-page", result)
         self.assertIn("keep-one", result)
@@ -33,6 +34,21 @@ class PrepareTrainingDataTests(unittest.TestCase):
         text = "<f2r> <! page\n<f2r.1,@P0> protected\n"
         with self.assertRaisesRegex(RuntimeError, "No protected pages matched"):
             prep.sanitize_text(text, {wrong}, key)
+
+    def test_manifest_coverage_fails_closed_without_disclosing_digests(self):
+        key = b"synthetic-test-key-with-32-bytes-min"
+        present = hmac.new(key, b"f2r", hashlib.sha256).hexdigest()
+        absent = hmac.new(key, b"f9v", hashlib.sha256).hexdigest()
+        text = "<f2r> <! page\n<f2r.1,@P0> protected\n"
+        _, _, matched = prep.sanitize_text(text, {present, absent}, key)
+        with self.assertRaisesRegex(RuntimeError, "1 protected entries were not found") as raised:
+            prep.require_manifest_coverage({present, absent}, matched)
+        self.assertNotIn(present, str(raised.exception))
+        self.assertNotIn(absent, str(raised.exception))
+
+    def test_manifest_coverage_accepts_union_across_corpora(self):
+        expected = {"a" * 64, "b" * 64}
+        prep.require_manifest_coverage(expected, {"a" * 64, "b" * 64})
 
     def test_valid_synthetic_manifest_is_accepted(self):
         import json
