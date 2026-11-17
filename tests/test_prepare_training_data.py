@@ -56,7 +56,7 @@ class PrepareTrainingDataTests(unittest.TestCase):
             "identifier_count": 1,
             "hmac_sha256": [digest],
         }
-        raw = json.dumps(doc, ensure_ascii=True, indent=2) + "\\n"
+        raw = json.dumps(doc, ensure_ascii=True, indent=2) + "\n"
         with tempfile.TemporaryDirectory() as temp:
             path = pathlib.Path(temp) / "manifest.json"
             path.write_text(raw, encoding="utf-8")
