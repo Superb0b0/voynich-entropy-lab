@@ -45,6 +45,11 @@ def approval(head, submitted='2026-11-19T12:00:00+00:00', reviewer='IndependentR
                        'reviewer': reviewer, 'submitted_at': submitted}}
 
 class TestW47Guard(unittest.TestCase):
+    def test_science_job_uses_dedicated_github_environment(self):
+        workflow = SRC.parents[2] / '.github/workflows/week47-qo-gated.yml'
+        text = workflow.read_text()
+        self.assertRegex(text, r'(?ms)^  experiment:\n(?:(?!^  [a-zA-Z_-]+:).)*?^    environment: w47-science$')
+
     def test_frozen_null_protocol_accepted(self):
         self.assertEqual(g.check_protocol(json.dumps(protocol()).encode())['question_type'], 'NULL_ONLY')
 
