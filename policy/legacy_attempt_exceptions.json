@@ -1,0 +1,16 @@
+{
+  "schema": "voynich-legacy-attempt-exceptions",
+  "schema_version": 1,
+  "exceptions": [
+    {
+      "attempt_id": "001-paragraph-header-key",
+      "status": "NOT_VERIFIABLE_LEGACY",
+      "recorded_on": "2026-11-17",
+      "reason": "The archived attempt has no attempt.yml. Its contemporaneous seed, command, tolerance, and input contract cannot be reconstructed from the available record; no retroactive contract is fabricated.",
+      "evidence": [
+        "issue #23: historical general verifier failure",
+        "issue #27: WP-A17-R7 and holdout verifier gate"
+      ]
+    }
+  ]
+}
