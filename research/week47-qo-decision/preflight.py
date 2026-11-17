@@ -245,7 +245,7 @@ def github_review_approval():
                        'reviewer': review['user']['login'],
                        'submitted_at': stamp.isoformat()}}
 
-def verify(manifest, now=None, approval=None):
+def verify(manifest, now=None, approval=None, require_approval=True):
     require(isinstance(manifest, dict) and manifest.get('schema_version') == 1,
             'Preflight manifest missing or wrong version')
     require(manifest.get('question_type') == 'NULL_ONLY',
@@ -268,8 +268,9 @@ def verify(manifest, now=None, approval=None):
     immutable_bytes(isolation, 'input_isolation',
                     expected_path='.github/workflows/week47-qo-gated.yml')
     head = check_gate_manifest_at_head(manifest)
-    validate_review_approval(approval if approval is not None else github_review_approval(),
-                            head, now=now)
+    if require_approval:
+        validate_review_approval(approval if approval is not None else github_review_approval(),
+                                head, now=now)
     return 'READY_TO_RUN_EXPLORATORY_NULL_ONLY'
 
 def main():
@@ -281,8 +282,12 @@ def main():
     try:
         require(mpath.is_file(), 'Gate manifest missing')
         manifest = json.loads(mpath.read_text())
+        # Check frozen evidence first so a synthetic negative fixture proves
+        # its intended fail-closed condition without needing a live PR review.
+        verdict = verify(manifest, require_approval=False)
         approval = github_review_approval()
-        verdict = verify(manifest, approval=approval)
+        head = git('rev-parse', 'HEAD').decode().strip()
+        validate_review_approval(approval, head)
         if args.receipt:
             head = git('rev-parse', 'HEAD').decode().strip()
             receipt = {'schema_version': 1, 'decision': verdict,
