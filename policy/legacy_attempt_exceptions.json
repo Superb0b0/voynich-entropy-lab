@@ -11,6 +11,17 @@
         "issue #23: historical general verifier failure",
         "issue #27: WP-A17-R7 and holdout verifier gate"
       ]
+    },
+    {
+      "attempt_id": "002-currier-header-interaction",
+      "status": "NOT_VERIFIABLE_LEGACY",
+      "recorded_on": "2026-11-17",
+      "reason": "The archived attempt has no attempt.yml. Its contemporaneous seed, command, tolerance, and input contract cannot be reconstructed from the available record; no retroactive contract is fabricated.",
+      "evidence": [
+        "Actions run #44110677734: verifier stopped on this exact missing-contract error",
+        "issue #23: legacy attempts must not be silently skipped or assigned a retroactive contract",
+        "issue #27: WP-A17-R7 and verifier gate"
+      ]
     }
   ]
 }
