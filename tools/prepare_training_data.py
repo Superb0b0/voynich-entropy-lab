@@ -61,8 +61,8 @@ def current_holdout_blob_sha():
     return match.group(1)
 
 
-def load_policy_manifest(key_bytes, expected_sha256=PINNED_POLICY_SHA256):
-    raw = POLICY_MANIFEST.read_bytes()
+def load_policy_manifest(key_bytes, manifest_path=POLICY_MANIFEST, expected_sha256=PINNED_POLICY_SHA256):
+    raw = pathlib.Path(manifest_path).read_bytes()
     digest = sha256(raw)
     if expected_sha256 and not hmac.compare_digest(digest, expected_sha256):
         fail("Custodian manifest SHA-256 differs from the reviewed pin")
