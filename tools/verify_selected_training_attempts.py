@@ -79,7 +79,7 @@ def main():
         path = data_dir / corpus
         require(path.is_file(), f"training corpus absent: {corpus}")
         actual = sha256(path)
-        require(actual == expected, f"training corpus digest mismatch: {corpus}")
+        require(actual == expected, f"training corpus digest mismatch: {corpus}; actual={actual}; expected={expected}")
         require(bundle.get("training_corpus_sha256", {}).get(corpus) == expected,
                 f"bundle manifest digest mismatch: {corpus}")
         print(f"TRAINING_BUNDLE_HASH_PASS {corpus} {actual}")
