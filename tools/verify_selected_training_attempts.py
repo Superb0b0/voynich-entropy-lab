@@ -21,7 +21,7 @@ PINS = {
     },
     "006-it2a-replication": {
         "corpus": "IT2a-n.txt",
-        "training_sha256": "a12879dfa02f8fc8f9a9c9a9bea5bf019283959ceca09a446abdd273baced9705c",
+        "training_sha256": "a12879dfa02f8fc8f9a9c9bea5bf019283959ceca09a446abdd273baced9705c",
         "run_py_sha256": "c522868b488707d8fe87e5a1d78683e29de28e9663c6eb1144d232f773e0118e",
         "results_sha256": "31a2735d63d46b2ca38889b9583e7a5d492336c3869bb86c4bf0393445345c6f",
         "run_sh_sha256": "b29cded3a477e1aaf953f426b425f638e6f4348299ccd398f98699a77182d5ed",
