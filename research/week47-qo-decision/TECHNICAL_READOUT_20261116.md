@@ -52,3 +52,16 @@
 - La menzione `@claude` è stata pubblicata sul diff. La richiesta formale di reviewer GitHub è stata respinta con HTTP 422 perché l'utente `claude` non è collaborator. Non risulta una review formale del nuovo head; serve un reviewer collaboratore indipendente.
 
 Lo stato scientifico resta **SCIENTIFIC_RUN_BLOCKED**. Nessun dato protetto o protocollo congelato è stato usato o modificato.
+
+
+## Addendum 17 Nov 2026 — verifica del ruleset creato
+
+La precedente osservazione “ruleset assente” era corretta alla verifica iniziale, ma è superata dalla successiva creazione. Lettura API del ruleset attivo **protect-main-for-holdout-gate**, ID `27456310`, effettuata dopo la creazione:
+
+- target: solo branch predefinito (`~DEFAULT_BRANCH`), quindi **non** il branch W47 `research/week47-qo-rivals-plan-20261116`;
+- regole attive: divieto di cancellazione e force-push, PR obbligatoria, una review approvante;
+- bypass vuoto, `current_user_can_bypass=never`;
+- nessun required status check, Code Owner review disattivata, stale reviews non dismissate;
+- `CODEOWNERS` assente; la protezione dell'Environment `w47-science` tramite reviewer resta non verificata.
+
+Il ruleset migliora la protezione di `main`, ma non chiude il rischio del dispatch dal branch W47. La review esatta non autore rimane anche imposta dal preflight; nessuna review formale del head corrente è attestata. **SCIENTIFIC_RUN_BLOCKED**.
