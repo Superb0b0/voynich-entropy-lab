@@ -18,6 +18,8 @@ on:
         description: 'Acknowledged exploratory run, ONLY if all provenances are frozen'
 permissions:
   contents: read
+  pull-requests: read
+  actions: read
 concurrency:
   group: week47-qo-${{ github.ref }}
   cancel-in-progress: false
@@ -67,14 +69,14 @@ jobs:
           original = Path("research/week47-qo-decision/gate.json")
           fixture = Path("research/week47-qo-decision/.negative-preflight-fixture.json")
           manifest = json.loads(original.read_text())
-          manifest["parser_evidence"]["status"] = "PENDING"
+          manifest["parser_evidence"]["commit"] = ""
           fixture.write_text(json.dumps(manifest))
           PY
           if python research/week47-qo-decision/preflight.py --manifest research/week47-qo-decision/.negative-preflight-fixture.json 2> /tmp/preflight_err; then
             echo 'ERROR: missing parser evidence was unexpectedly permitted'
             exit 1
           fi
-          grep -q 'Parser parity evidence PENDING' /tmp/preflight_err
+          grep -q 'parser_evidence: full frozen commit required' /tmp/preflight_err
           rm research/week47-qo-decision/.negative-preflight-fixture.json
           echo 'PASS: synthetic negative preflight refused; live gate remains independent'
   preflight:
@@ -92,6 +94,7 @@ jobs:
           sparse-checkout: |
             research/
             tools/qo_rival_calibration.py
+            .github/workflows/week47-qo-gated.yml
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
@@ -103,11 +106,20 @@ jobs:
           test ! -e data/ZL3b-n.txt
           test ! -e data/IT2a-n.txt
       - id: gate
-        name: Enforce preceding frozen commit, parser parity, question and isolation
+        name: Enforce evidence and exact-head GitHub review approval
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          python research/week47-qo-decision/preflight.py
+          python research/week47-qo-decision/preflight.py \
+            --receipt w47-preflight/attestation.json
           echo 'ready=true' >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: w47-preflight-attestation
+          path: w47-preflight/attestation.json
+          if-no-files-found: error
+          retention-days: 5
   prepare-input:
     if: github.event_name == 'workflow_dispatch' && inputs.run_experiment == true && needs.preflight.outputs.ready == 'true'
     needs: [guard-tests, preflight]
@@ -190,6 +202,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: w47-preflight-attestation
+          path: .w47-preflight/
       - name: Verify original and protected inputs absent
         run: |
           set -euo pipefail
@@ -202,6 +218,9 @@ jobs:
           name: w47-frozen-training-only-input
           path: training-snapshot/
       - name: Run ONLY the pre-attested isolated runner with prepared inputs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          W47_PREFLIGHT_RECEIPT: .w47-preflight/attestation.json
         run: |
           set -euo pipefail
           python research/week47-qo-decision/run_locked.py
