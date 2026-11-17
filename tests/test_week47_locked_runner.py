@@ -1,5 +1,6 @@
 """Synthetic-only checks for W47 locked null runner; no manuscript or holdout."""
-import importlib.util,pathlib,unittest
+import importlib.util,json,os,pathlib,tempfile,unittest
+from unittest.mock import patch
 
 SOURCE=pathlib.Path(__file__).resolve().parents[1]/'research/week47-qo-decision/run_locked.py'
 spec=importlib.util.spec_from_file_location('w47_null_runner_fixture',SOURCE)
@@ -44,4 +45,63 @@ class FrozenNullSyntheticTests(unittest.TestCase):
   self.assertEqual(m.synthetic_classify(supported,supported),'SUPPORTED')
   self.assertEqual(m.synthetic_classify(falsified,falsified),'FALSIFIED')
   self.assertEqual(m.synthetic_classify(falsified,supported),'INCONCLUSIVE')
+
+class AuthorizationGateTests(unittest.TestCase):
+ def test_direct_local_launch_is_denied(self):
+  with patch.dict(os.environ,{},clear=True):
+   with self.assertRaisesRegex(m.AuthorizationError,'outside GitHub Actions'):
+    m.require_preflight_authorization()
+
+ def test_same_run_github_preflight_and_receipt_are_required(self):
+  head='a'*40;run_id='12345'
+  with tempfile.TemporaryDirectory() as tmp:
+   root=pathlib.Path(tmp);event_path=root/'event.json';receipt_path=root/'receipt.json'
+   event_path.write_text(json.dumps({'inputs':{'run_experiment':True}}))
+   receipt={'schema_version':1,'decision':'READY_TO_RUN_EXPLORATORY_NULL_ONLY',
+    'repository':m.GITHUB_REPO,'run_id':run_id,'head_sha':head,
+    'workflow_path':'.github/workflows/week47-qo-gated.yml','review_commit':head,
+    'reviewer':'IndependentReviewer','review_submitted_at':'2026-11-19T12:00:00+00:00',
+    'gate_sha256':'1'*64,'runner_sha256':m.sha(pathlib.Path(m.__file__).read_bytes()),
+    'preparer_sha256':m.sha((m.ROOT/'research/week47-qo-decision/training_preflight.py').read_bytes()),
+    'protocol_sha256':m.PROTOCOL_SHA,'parser_sha256':m.RC12}
+   receipt_path.write_text(json.dumps(receipt))
+   env={'GITHUB_ACTIONS':'true','GITHUB_EVENT_NAME':'workflow_dispatch',
+    'GITHUB_REPOSITORY':m.GITHUB_REPO,'GITHUB_REF_NAME':m.APPROVED_BRANCH,
+    'GITHUB_EVENT_PATH':str(event_path),'GITHUB_RUN_ID':run_id,'GITHUB_SHA':head,
+    'GITHUB_TOKEN':'synthetic-token','W47_PREFLIGHT_RECEIPT':str(receipt_path)}
+   run={'status':'in_progress','event':'workflow_dispatch',
+    'path':'.github/workflows/week47-qo-gated.yml','head_branch':m.APPROVED_BRANCH,
+    'head_sha':head}
+   jobs={'jobs':[{'name':name,'conclusion':'success'} for name in
+    ('guard-tests','preflight','prepare-input','package-code')]+[
+     {'name':'experiment','status':'in_progress'}]}
+   with patch.dict(os.environ,env,clear=True),patch.object(m,'_github_json',side_effect=[run,jobs]):
+    self.assertEqual(m.require_preflight_authorization(),receipt)
+
+ def test_missing_preflight_job_blocks_runner(self):
+  head='a'*40;run_id='12345'
+  with tempfile.TemporaryDirectory() as tmp:
+   root=pathlib.Path(tmp);event=root/'event.json';receipt_path=root/'receipt.json'
+   event.write_text(json.dumps({'inputs':{'run_experiment':'true'}}))
+   receipt={'schema_version':1,'decision':'READY_TO_RUN_EXPLORATORY_NULL_ONLY',
+    'repository':m.GITHUB_REPO,'run_id':run_id,'head_sha':head,
+    'workflow_path':'.github/workflows/week47-qo-gated.yml','review_commit':head,
+    'reviewer':'IndependentReviewer','review_submitted_at':'2026-11-19T12:00:00+00:00',
+    'gate_sha256':'1'*64,'runner_sha256':m.sha(pathlib.Path(m.__file__).read_bytes()),
+    'preparer_sha256':m.sha((m.ROOT/'research/week47-qo-decision/training_preflight.py').read_bytes()),
+    'protocol_sha256':m.PROTOCOL_SHA,'parser_sha256':m.RC12}
+   receipt_path.write_text(json.dumps(receipt))
+   env={'GITHUB_ACTIONS':'true','GITHUB_EVENT_NAME':'workflow_dispatch',
+    'GITHUB_REPOSITORY':m.GITHUB_REPO,'GITHUB_REF_NAME':m.APPROVED_BRANCH,
+    'GITHUB_EVENT_PATH':str(event),'GITHUB_RUN_ID':run_id,'GITHUB_SHA':head,
+    'GITHUB_TOKEN':'synthetic-token','W47_PREFLIGHT_RECEIPT':str(receipt_path)}
+   run={'status':'in_progress','event':'workflow_dispatch',
+    'path':'.github/workflows/week47-qo-gated.yml','head_branch':m.APPROVED_BRANCH,
+    'head_sha':head}
+   jobs={'jobs':[{'name':name,'conclusion':'success'} for name in
+    ('guard-tests','prepare-input','package-code')]+[
+     {'name':'experiment','status':'in_progress'}]}
+   with patch.dict(os.environ,env,clear=True),patch.object(m,'_github_json',side_effect=[run,jobs]):
+    with self.assertRaisesRegex(m.AuthorizationError,'preflight'):
+     m.require_preflight_authorization()
 if __name__=='__main__':unittest.main()
