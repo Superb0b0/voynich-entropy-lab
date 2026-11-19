@@ -227,12 +227,14 @@ def main(argv=None):
             continue
         verify_attempt(folder, safe_dir, forbidden)
         verified.append(folder.name)
-    if not verified:
-        fail("No active attempt was replayed; legacy exceptions do not constitute verification")
     summary = {
         "schema": "voynich-attempt-verification-summary",
         "schema_version": 1,
-        "status": "VERIFIED_WITH_EXPLICIT_LEGACY_EXCEPTION" if not_verifiable else "VERIFIED",
+        "status": (
+            "NOT_VERIFIED_NO_ACTIVE_ATTEMPTS" if not verified else
+            "VERIFIED_WITH_EXPLICIT_LEGACY_EXCEPTION" if not_verifiable else
+            "VERIFIED"
+        ),
         "verified_attempts": verified,
         "not_verifiable_legacy": not_verifiable,
         "training_bundle_policy_manifest_sha256": bundle["policy_manifest_sha256"],
@@ -240,6 +242,8 @@ def main(argv=None):
     (ROOT / "verification_summary.json").write_text(
         json.dumps(summary, sort_keys=True, indent=2) + "\n", encoding="utf-8"
     )
+    if not verified:
+        fail("No active attempt was replayed; legacy exceptions do not constitute verification")
     if not_verifiable:
         print(f"VERIFIED_WITH_EXPLICIT_LEGACY_EXCEPTION: {len(verified)} replayed; {len(not_verifiable)} not verifiable legacy")
     else:
