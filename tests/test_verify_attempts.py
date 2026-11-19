@@ -195,15 +195,17 @@ class Archive008Tests(unittest.TestCase):
         self.assertFalse(self.summary_path.exists())
 
     def test_traced_toy_replay_matches_then_rejects_divergence(self):
+        contract = self.archive / "attempt.yml"
+        contract.write_text(
+            "seed: 7\ntolerance: 0.000001\ncommand: " + json.dumps([sys.executable, "toy.py"]) + "\n"
+        )
+        self.assertEqual(v.yaml.safe_load(contract.read_text())["tolerance"], 0.000001)
         if not self.real_strace or subprocess.run(
             [self.real_strace, "-o", os.devnull, "--", "true"], capture_output=True
         ).returncode:
             if os.environ.get("GITHUB_ACTIONS") == "true":
                 self.fail("The GitHub runner must be able to run strace for the synthetic replay")
             self.skipTest("strace needs a Linux host with permitted ptrace")
-        (self.archive / "attempt.yml").write_text(json.dumps({
-            "seed": 7, "tolerance": 0.000001, "command": [sys.executable, "toy.py"],
-        }))
         (self.archive / "toy.py").write_text(
             "import json, os\n"
             "from pathlib import Path\n"
