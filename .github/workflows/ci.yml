@@ -1,10 +1,21 @@
 name: Model 408-OP CI
-on: [push]
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'data/voynich_source.txt'
+      - '.github/workflows/ci.yml'
 jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /src/**
+            /data/voynich_source.txt
       - name: Set up Python
         uses: actions/setup-python@v5
         with:

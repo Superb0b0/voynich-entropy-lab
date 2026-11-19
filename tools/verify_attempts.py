@@ -7,6 +7,7 @@ import os
 import pathlib
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -18,6 +19,8 @@ EXCEPTIONS = ROOT / "policy" / "legacy_attempt_exceptions.json"
 PINNED_POLICY_SHA256 = "fe42da3f9302edcc653c106ce8dd3953280a4233d0e38d53a17b637dd0878b1f"
 NUM = re.compile(r"^[0-9a-f]{64}$")
 ATTEMPT = re.compile(r"^[0-9]{3}-[^/]+$")
+# Issue #27: the first 008 result was committed before its protocol.
+ARCHIVED_008 = "008-depend-firstclass-reuse"
 
 
 def fail(message):
@@ -198,6 +201,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", required=True)
     args = parser.parse_args(argv)
+    summary_path = ROOT / "verification_summary.json"
+    summary_path.unlink(missing_ok=True)
     bundle = validate_training_bundle(args.data_dir)
     if shutil.which("strace") is None:
         fail("strace unavailable; cannot audit reads")
@@ -211,14 +216,19 @@ def main(argv=None):
     attempt_names = {path.name for path in attempts}
     if set(exceptions) - attempt_names:
         fail("legacy exception references an attempt directory that is absent")
+    if ARCHIVED_008 in exceptions:
+        fail(f"{ARCHIVED_008}: this archive requires replay and cannot be a legacy exception")
     verified = []
     not_verifiable = []
+    technical_replays = []
     safe_dir = pathlib.Path(args.data_dir).resolve()
     forbidden = {
         (ROOT / "data" / name).resolve()
         for name in bundle["source_corpus_sha256"]
     }
     for folder in attempts:
+        if folder.name.startswith("008-") and folder.name != ARCHIVED_008:
+            fail(f"{folder.name}: unrecognized archive for reserved attempt 008")
         exception = exceptions.get(folder.name)
         if exception:
             if (folder / "attempt.yml").exists():
@@ -226,7 +236,14 @@ def main(argv=None):
             not_verifiable.append(folder.name)
             continue
         verify_attempt(folder, safe_dir, forbidden)
-        verified.append(folder.name)
+        if folder.name == ARCHIVED_008:
+            technical_replays.append({
+                "attempt_id": folder.name,
+                "replay_status": "REPRODUCED",
+                "preregistration_status": "NOT_ATTESTABLE_FROM_ARCHIVE",
+            })
+        else:
+            verified.append(folder.name)
     summary = {
         "schema": "voynich-attempt-verification-summary",
         "schema_version": 1,
@@ -239,11 +256,14 @@ def main(argv=None):
         "not_verifiable_legacy": not_verifiable,
         "training_bundle_policy_manifest_sha256": bundle["policy_manifest_sha256"],
     }
-    (ROOT / "verification_summary.json").write_text(
+    if technical_replays:
+        summary["technical_replays"] = technical_replays
+        print(f"Technical replay reproduced: {ARCHIVED_008}. Preregistration not attestable from the archive.")
+    summary_path.write_text(
         json.dumps(summary, sort_keys=True, indent=2) + "\n", encoding="utf-8"
     )
     if not verified:
-        fail("No active attempt was replayed; legacy exceptions do not constitute verification")
+        fail("No active attempt was replayed. See the summary for legacy exceptions and technical replays.")
     if not_verifiable:
         print(f"VERIFIED_WITH_EXPLICIT_LEGACY_EXCEPTION: {len(verified)} replayed; {len(not_verifiable)} not verifiable legacy")
     else:
@@ -251,7 +271,6 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    import shutil
     try:
         main()
     except (RuntimeError, subprocess.TimeoutExpired, ValueError, KeyError, OSError) as exc:

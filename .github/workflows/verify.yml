@@ -53,8 +53,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install verifier test dependency
-        run: python -m pip install 'PyYAML==6.0.2'
+      - name: Install synthetic replay test dependencies
+        run: |
+          if ! command -v strace >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y strace
+          fi
+          python -m pip install 'PyYAML==6.0.2'
       - name: Run synthetic verifier regressions
         run: |
           python -m unittest discover -s tests -p 'test_verify_attempts.py' -v
