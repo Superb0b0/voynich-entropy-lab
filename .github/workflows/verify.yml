@@ -1,6 +1,8 @@
 name: Verify archived attempts
 
 on:
+  # Manual replay: no custom inputs; protected jobs are restricted to main.
+  workflow_dispatch:
   # PRs receive only synthetic regression tests. The replay job and its secret
   # are unavailable to PR-controlled workflow/code.
   pull_request:
@@ -15,8 +17,8 @@ on:
       - 'policy/**'
       - 'tests/**'
       - '.github/workflows/verify.yml'
-  # Full preparation/replay is restricted to trusted pushes on main. It is not
-  # run for pull_request or arbitrary feature-branch pushes.
+  # Full preparation/replay requires a trusted main push or manual dispatch.
+  # It is not run for pull_request or arbitrary feature-branch runs.
   push:
     branches: [main]
     paths:
@@ -69,7 +71,7 @@ jobs:
     # Manual custodian gate; configure this Environment with required reviewers,
     # restrict deployments to main, and store the HMAC key only as its secret.
     environment: holdout-custodian
-    if: github.event_name == 'push' && vars.VOY_HOLDOUT_TRUSTED_MAIN == 'true'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && vars.VOY_HOLDOUT_TRUSTED_MAIN == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -97,7 +99,7 @@ jobs:
           retention-days: 1
 
   verify-replay:
-    if: github.event_name == 'push' && vars.VOY_HOLDOUT_TRUSTED_MAIN == 'true'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && vars.VOY_HOLDOUT_TRUSTED_MAIN == 'true'
     needs: prepare-training-data
     runs-on: ubuntu-24.04
     timeout-minutes: 30
