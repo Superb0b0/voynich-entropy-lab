@@ -1,0 +1,9 @@
+{
+ "attempt": "008-depend-firstclass-reuse",
+ "corpus_training_only_sha256": "dea09c32de148c2bbf592b00e3042993cc57d967c615159ccef458e82270cbe9",
+ "run_py_sha256": "473334ea80a6544836f041d104b84f48bec27b73715d6bc4ec9112d56a2b1646",
+ "results_json_sha256": "15ea32ddec18afc13c7df380f258aa684bac364b28932284666c752df8325557",
+ "seed": 20261122,
+ "python_local": "3.12.3",
+ "ci_python": "3.11 (verify.yml)"
+}
