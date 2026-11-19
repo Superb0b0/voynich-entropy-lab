@@ -97,8 +97,11 @@ class VerifyTests(unittest.TestCase):
                     "evidence": ["issue #23", "issue #27"],
                 }],
             }), encoding="utf-8")
-            with patch.object(v, "ROOT", root), patch.object(v, "EXCEPTIONS", exceptions), \\
-                    patch.object(v, "shutil", create=True) as shutil_mock:
+            with (
+                patch.object(v, "ROOT", root),
+                patch.object(v, "EXCEPTIONS", exceptions),
+                patch.object(v, "shutil", create=True) as shutil_mock,
+            ):
                 shutil_mock.which.return_value = "/usr/bin/strace"
                 with self.assertRaisesRegex(RuntimeError, "No active attempt was replayed"):
                     v.main(["--data-dir", str(bundle_dir)])
