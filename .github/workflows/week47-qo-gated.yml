@@ -1,0 +1,236 @@
+name: W47 qo null-only gated experiment
+on:
+  pull_request:
+    paths:
+      - 'research/week47-qo-decision/**'
+      - '.github/workflows/week47-qo-gated.yml'
+      - 'tests/test_week47_preflight.py'
+      - 'tests/test_week47_synthetic_primitives.py'
+      - 'tests/test_week47_manifest_compare.py'
+      - 'tests/test_week47_locked_runner.py'
+      - 'tests/test_week47_training_slicer.py'
+  workflow_dispatch:
+    inputs:
+      run_experiment:
+        type: boolean
+        default: false
+        required: true
+        description: 'Acknowledged exploratory run, ONLY if all provenances are frozen'
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+concurrency:
+  group: week47-qo-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  guard-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            research/week47-qo-decision/
+            .github/workflows/week47-qo-gated.yml
+            experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py
+            tests/test_week47_preflight.py
+            tests/test_week47_synthetic_primitives.py
+            tests/test_week47_manifest_compare.py
+            tests/test_week47_locked_runner.py
+            tests/test_week47_training_slicer.py
+          sparse-checkout-cone-mode: false
+      - name: Assert protected and original inputs are absent in guard workspace
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test ! -e data/ZL3b-n.txt
+          test ! -e data/IT2a-n.txt
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify fail-closed guard with synthetic fixtures
+        run: python -m unittest discover -s tests -p 'test_week47_preflight.py' -v
+      - name: Run synthetic-only null and adjacency regression tests
+        run: python -m unittest discover -s tests -p 'test_week47_synthetic_primitives.py' -v
+      - name: Verify synthetic structural manifest comparator
+        run: python -m unittest discover -s tests -p 'test_week47_manifest_compare.py' -v
+      - name: Verify locked runner with synthetic-only null fixtures
+        run: python -m unittest discover -s tests -p 'test_week47_locked_runner.py' -v
+      - name: Verify no protected page can enter training snapshots (synthetic)
+        run: python -m unittest discover -s tests -p 'test_week47_training_slicer.py' -v
+      - name: Verify negative preflight fixture without coupling to live gate status
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          original = Path("research/week47-qo-decision/gate.json")
+          fixture = Path("research/week47-qo-decision/.negative-preflight-fixture.json")
+          manifest = json.loads(original.read_text())
+          manifest["parser_evidence"]["commit"] = ""
+          fixture.write_text(json.dumps(manifest))
+          PY
+          if python research/week47-qo-decision/preflight.py --manifest research/week47-qo-decision/.negative-preflight-fixture.json 2> /tmp/preflight_err; then
+            echo 'ERROR: missing parser evidence was unexpectedly permitted'
+            exit 1
+          fi
+          grep -q 'parser_evidence: full frozen commit required' /tmp/preflight_err
+          rm research/week47-qo-decision/.negative-preflight-fixture.json
+          echo 'PASS: synthetic negative preflight refused; live gate remains independent'
+  preflight:
+    if: github.event_name == 'workflow_dispatch'
+    needs: guard-tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      ready: ${{ steps.gate.outputs.ready }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            research/
+            tools/qo_rival_calibration.py
+            .github/workflows/week47-qo-gated.yml
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Assert protected and original inputs are absent in preflight workspace
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test ! -e data/ZL3b-n.txt
+          test ! -e data/IT2a-n.txt
+      - id: gate
+        name: Enforce evidence and exact-head GitHub review approval
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python research/week47-qo-decision/preflight.py \
+            --receipt w47-preflight/attestation.json
+          echo 'ready=true' >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: w47-preflight-attestation
+          path: w47-preflight/attestation.json
+          if-no-files-found: error
+          retention-days: 5
+  prepare-input:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_experiment == true && needs.preflight.outputs.ready == 'true'
+    needs: [guard-tests, preflight]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            data/ZL3b-n.txt
+            data/IT2a-n.txt
+            tools/qo_rival_calibration.py
+            research/week47-qo-decision/training_preflight.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reject protected policy file before preparing allowed input
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test -f data/ZL3b-n.txt
+          test -f data/IT2a-n.txt
+      - name: Prepare hash-checked training-only ZL3b and IT2a
+        run: |
+          set -euo pipefail
+          python research/week47-qo-decision/training_preflight.py prepare \
+            --held-module tools/qo_rival_calibration.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: w47-frozen-training-only-input
+          path: training-snapshot/
+          if-no-files-found: error
+          retention-days: 5
+  package-code:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_experiment == true && needs.preflight.outputs.ready == 'true'
+    needs: [guard-tests, preflight]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            research/week47-qo-decision/run_locked.py
+            research/week47-qo-decision/training_preflight.py
+            research/week47-qo-decision/PROTOCOL.json
+            experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py
+          sparse-checkout-cone-mode: false
+      - name: Assemble whitelist-only code for a checkout-free experiment
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test ! -e data/ZL3b-n.txt
+          test ! -e data/IT2a-n.txt
+          mkdir -p w47-code
+          cp --parents research/week47-qo-decision/run_locked.py \
+            research/week47-qo-decision/training_preflight.py \
+            research/week47-qo-decision/PROTOCOL.json \
+            experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py \
+            w47-code/
+          test "$(find w47-code -type f | wc -l)" -eq 4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: w47-reviewed-code-only
+          path: w47-code/
+          if-no-files-found: error
+          retention-days: 5
+  experiment:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_experiment == true && needs.preflight.outputs.ready == 'true' && needs.prepare-input.result == 'success' && needs.package-code.result == 'success'
+    needs: [guard-tests, preflight, prepare-input, package-code]
+    environment: w47-science
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: w47-reviewed-code-only
+          path: .
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: w47-preflight-attestation
+          path: .w47-preflight/
+      - name: Verify original and protected inputs absent
+        run: |
+          set -euo pipefail
+          test ! -d .git
+          test ! -e HOLDOUT.md
+          test ! -e data/ZL3b-n.txt
+          test ! -e data/IT2a-n.txt
+      - uses: actions/download-artifact@v4
+        with:
+          name: w47-frozen-training-only-input
+          path: training-snapshot/
+      - name: Run ONLY the pre-attested isolated runner with prepared inputs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          W47_PREFLIGHT_RECEIPT: .w47-preflight/attestation.json
+        run: |
+          set -euo pipefail
+          python research/week47-qo-decision/run_locked.py
+      - name: Archive aggregated scientific result (only after gate and runner)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: w47-exploratory-result
+          path: research-output/w47-null-only-result.json
+          if-no-files-found: error
+          retention-days: 14

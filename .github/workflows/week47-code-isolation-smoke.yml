@@ -1,0 +1,89 @@
+name: W47 checkout-free isolation smoke (code only)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/week47-qo-gated.yml'
+      - '.github/workflows/week47-code-isolation-smoke.yml'
+      - 'research/week47-qo-decision/run_locked.py'
+      - 'research/week47-qo-decision/training_preflight.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package-whitelist:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            research/week47-qo-decision/run_locked.py
+            research/week47-qo-decision/training_preflight.py
+            research/week47-qo-decision/PROTOCOL.json
+            experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py
+          sparse-checkout-cone-mode: false
+      - name: Package exactly four reviewed code files, never original data
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test ! -e data/ZL3b-n.txt
+          test ! -e data/IT2a-n.txt
+          mkdir w47-code
+          cp --parents research/week47-qo-decision/run_locked.py \
+            research/week47-qo-decision/training_preflight.py \
+            research/week47-qo-decision/PROTOCOL.json \
+            experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py \
+            w47-code/
+          test "$(find w47-code -type f | wc -l)" -eq 4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: w47-code-isolation-smoke
+          path: w47-code/
+          if-no-files-found: error
+  verify-without-checkout:
+    needs: package-whitelist
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: w47-code-isolation-smoke
+          path: .
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Assert no Git object store, corpus, holdout, or unexpected files
+        run: |
+          set -euo pipefail
+          test ! -d .git
+          test ! -e HOLDOUT.md
+          test ! -e data/ZL3b-n.txt
+          test ! -e data/IT2a-n.txt
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          expected = {
+            'research/week47-qo-decision/run_locked.py',
+            'research/week47-qo-decision/training_preflight.py',
+            'research/week47-qo-decision/PROTOCOL.json',
+            'experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py',
+          }
+          present = {p.as_posix() for p in Path('.').rglob('*') if p.is_file()}
+          if present != expected:
+              raise SystemExit('FAIL CLOSED: code artifact contains missing or extraneous files')
+          hashes = {
+            'research/week47-qo-decision/PROTOCOL.json':
+                '22b4a8bc3951f6ccf06aeffffc9e45a016e33847ee51d3fe67f1d35751494f90',
+            'experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py':
+                '8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5',
+            'research/week47-qo-decision/run_locked.py':
+                'c2ff23dc3860b662caff15591bf1e3b9b71cc853b34f914d487544811ce2d49a',
+            'research/week47-qo-decision/training_preflight.py':
+                '15e059fcce13d02db892435139902b526f61117b3211a3a8949d4e0bb3b2c438'
+          }
+          for name, expected_sha in hashes.items():
+              if hashlib.sha256(Path(name).read_bytes()).hexdigest() != expected_sha:
+                  raise SystemExit('FAIL CLOSED: source hash mismatch')
+          print('PASS: exactly four frozen code files, no .git or corpus originals')
+          PY

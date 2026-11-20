@@ -1,0 +1,70 @@
+name: W47 independent parser parity (aggregate only)
+on:
+  pull_request:
+    paths:
+      - 'research/week47-qo-decision/parser_parity_independent.py'
+      - 'tests/test_week47_independent_parser.py'
+      - '.github/workflows/week47-independent-parity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-second-parser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            research/week47-qo-decision/parser_parity_independent.py
+            tests/test_week47_independent_parser.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Synthetic first, no protected data
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+          test ! -e data/ZL3b-n.txt
+          test ! -e data/IT2a-n.txt
+          python -m unittest discover -s tests -p 'test_week47_independent_parser.py' -v
+  compare-canonical:
+    needs: synthetic-second-parser
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            data/ZL3b-n.txt
+            data/IT2a-n.txt
+            research/week47-qo-decision/structural_audit.py
+            research/week47-qo-decision/parser_parity_independent.py
+            experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: No protected partition file in parser workspace
+        run: |
+          set -euo pipefail
+          test ! -e HOLDOUT.md
+      - name: Validate all canonical loci and IVTFF edges against second implementation
+        run: |
+          set -euo pipefail
+          python research/week47-qo-decision/parser_parity_independent.py \
+            --zl3b data/ZL3b-n.txt \
+            --it2a data/IT2a-n.txt \
+            --parser experiments/line-memory/experiment/inputs/ivtff_parser_rc1_2.py \
+            --structural research/week47-qo-decision/structural_audit.py \
+            --output research-output/w47-independent-parser-parity.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: w47-independent-parser-parity-aggregate
+          path: research-output/w47-independent-parser-parity.json
+          if-no-files-found: warn
+          retention-days: 14
