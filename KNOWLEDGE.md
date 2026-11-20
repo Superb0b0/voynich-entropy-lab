@@ -18,3 +18,7 @@ Nota sulla provenienza: creato il 2026-11-13 perché assente dai due branch indi
 - [EXPLORATORY] Exact first-word repetition depletion fails two-split criterion.
 - [EXPLORATORY] qo->qo avoidance survives within-paragraph shuffling in two training folio splits, including page-shuffle and long-line controls; previous whole-corpus discovery means no independent validation.
 - [LIMIT] Rivals ms408/pykeedy not run; parser is simplified, not validated RC1.2. No translation inference.
+## 2026-11-14 (ESPLORATIVO, NON VERIFICATO)
+- Sul training di ZL3b, dentro il paragrafo, le prime parole di righe consecutive evitano la stessa classe di prefisso: le adiacenze di stessa classe sono circa meta' di quelle attese (342 attese vs 175 osservate nello split 0; 217 vs 128 nello split 1; rivale = rimescolamento dentro il paragrafo). Un solo parametro (theta circa 0,7-0,9, stabile fra split e fra ZL3b e IT2a) predice sull'altro split il totale delle adiacenze non-qo e le ripetizioni esatte della prima parola: l'evitamento della ripetizione esatta e' compatibile con una regola di classe, senza regola per parola.
+- qo->qo e' soppresso piu' di quanto preveda la regola generica (osservato circa 0,3-0,4 della previsione solo-theta). Un parametro in piu' (phi circa 1,0-1,7) lo cattura, ma con pochi conteggi (2 e 12) e phi poco stabile fra split; potenza bassa.
+- Limiti: classi per prefisso arbitrarie, ordine scambiabile nel paragrafo, nessun confronto con Timm-Schinner ne' calibrazione su generatore noto; IT2a non e' dato indipendente sul testo.

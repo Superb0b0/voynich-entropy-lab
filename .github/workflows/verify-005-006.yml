@@ -1,0 +1,69 @@
+name: Isolated technical replay 005 and 006
+on:
+  push:
+    branches:
+      - attempts-005-006
+    paths:
+      - 'attempts/005-refractory-qo-parameter/**'
+      - 'attempts/006-it2a-replication/**'
+      - 'tools/verify_selected_training_attempts.py'
+      - '.github/workflows/verify-005-006.yml'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  replay-training-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout only the pinned attempt inputs
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          path: repo
+          sparse-checkout: |
+            /attempts/005-refractory-qo-parameter/
+            /attempts/006-it2a-replication/
+            /tools/verify_selected_training_attempts.py
+          sparse-checkout-cone-mode: false
+      - name: Checkout pinned verifier source only
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: f3975e91c26ea109850948ed85cce1cdb47dd397
+          path: reviewed-main
+          sparse-checkout: |
+            /tools/verify_attempts.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install replay verifier dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y strace
+          python -m pip install 'PyYAML==6.0.2'
+      - name: Download the already prepared training-only bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: training-only-data-44110677734
+          repository: ${{ github.repository }}
+          run-id: 44110677734
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/training-only
+      - name: Validate pins and technically replay attempts 005 and 006
+        run: >-
+          python repo/tools/verify_selected_training_attempts.py
+          --root repo
+          --data-dir "${{ runner.temp }}/training-only"
+          --verifier reviewed-main/tools/verify_attempts.py
+      - name: Upload technical replay outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: replay-005-006-training-only
+          path: |
+            repo/attempts/005-refractory-qo-parameter/results_ci.json
+            repo/attempts/006-it2a-replication/results_ci.json
+          if-no-files-found: ignore
+          retention-days: 30

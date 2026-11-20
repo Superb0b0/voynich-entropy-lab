@@ -1,0 +1,12 @@
+{
+ "attempt": "006-it2a-replication",
+ "corpus": "IT2a-n.txt",
+ "corpus_full_sha256_expected": "7f27a8b0feed8f6de0a99900df6bf912dd1d295c38e5f830bac8b41c3f536fb5",
+ "corpus_training_only_sha256": "a12879dfa02f8fc8f9a9c9bea5bf019283959ceca09a446abdd273baced9705c",
+ "run_py_sha256": "c522868b488707d8fe87e5a1d78683e29de28e9663c6eb1144d232f773e0118e",
+ "results_json_sha256": "31a2735d63d46b2ca38889b9583e7a5d492336c3869bb86c4bf0393445345c6f",
+ "seed": 20261121,
+ "python_local": "3.12.3",
+ "ci_python": "3.11 (verify.yml)",
+ "local_verification": "replay entro tolleranza 1e-6 + isolamento strace OK con tools/verify_attempts.py::verify_attempt, solo per 005 e 006, 2026-11-14; verifier completo non eseguito (001-004 senza attempt.yml)"
+}
