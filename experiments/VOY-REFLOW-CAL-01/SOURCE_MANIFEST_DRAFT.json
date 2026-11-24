@@ -1,0 +1,16 @@
+{
+  "status": "DRAFT_NOT_FROZEN",
+  "source_root": "reflow_execution",
+  "files": {
+    "round5/round5.py": "558087214b93d2afc200edb8fd67cf890b076992693aa7e6230b9b53e3316651",
+    "predictor/run.py": "290420633fc1e21c175e0736f6efee65cc9beb979aec7bb713c062236913b3a3",
+    "round5/ZL3b_round5.json": "ed62d613ed7bc5e6baded89efcb56d47ec97a17e8ce46290401cc12515f98ce0",
+    "round5/IT2a_round5.json": "aacfb6d1a8af5ae7fbff2a8b745f5c03ae39ec580ef1bd1931e04c79dbb02e11",
+    "predictor/ZL3b_folds.json": "168df2da1d6ff84c4a5fa0ee4b67b55b44848fd36b07e1469c802b67f72b7a69",
+    "predictor/IT2a_folds.json": "1cc44bd2e7f7bd81d786516e326c0f6beb357d1a2eaa28b36d648e08a2bea92d",
+    "execute.py": "9c322561c39f7f907abd813d24a910f1a62b70becbc45ffee6466aa002149645",
+    "source_manifest.json": "91b9f6d01028349a311d9748c1ca959b4f8c00714bdd2b2f80183854785ba321"
+  },
+  "historical_protocol_sha256": "07c4413b0b3dfa32070c4080b813f0916fbf9caa0e8d5c8770fc780ca8feeda6",
+  "historical_results_archive_sha256": "cf97369309116cc1fe1acbff8b4f61a3eee16183f6bd66113336e33c223d4923"
+}
