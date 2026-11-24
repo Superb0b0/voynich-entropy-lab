@@ -1,0 +1,90 @@
+{
+  "status": "READY_PENDING_REMOTE_FREEZE",
+  "protocol_sha256": "07c4413b0b3dfa32070c4080b813f0916fbf9caa0e8d5c8770fc780ca8feeda6",
+  "archives": {
+    "ROUND5_EXP_SEQ_05_RESULTS.zip": "3b74001a422d50c36eae50c60f625722b8a23682d71a1566fad13367853dddb7",
+    "Round5_verifica.zip": "c90577c146215d1f394f3a55f80fa2b2f333ec5797937b86c47df3482015782d",
+    "Round5_chiusura.zip": "f1bef81b589361a01f285a80491757c7ed70c4d31b66c59e67548d4dfc2aba82",
+    "Voynich_previsione_fuori_campione.zip": "6517ec2f04aeb8a477f66172e6d68350d6019162d43302f51c4922dd2c5b48c1",
+    "G0_RC12_parser_originale_per_Claude_20261115(1).zip": "4e469ce101f5aa8aaf935f0153248f24529d0c3cdf4e37f059864bc3ba4758a7",
+    "TS_30_OUTPUT_RIGENERATI_VERIFICATI.zip": "3c5e90cc30c45f697319781ef715b84a7c3030003f64ab879ed05b3d3fd4b9dd"
+  },
+  "files": {
+    "round5/round5.py": "558087214b93d2afc200edb8fd67cf890b076992693aa7e6230b9b53e3316651",
+    "round5/analysis.py": "4b40c6827b2d8520fe4f1fbdc1a3341298bc631b4242f037d1eebfec9a4b7773",
+    "predictor/run.py": "290420633fc1e21c175e0736f6efee65cc9beb979aec7bb713c062236913b3a3",
+    "parser/ivtff_parser_rc1_2.py": "8a614436a2d5dc3cb30c282743929aaa21a379d9da7e691b4277c670ce2a91c5",
+    "parser/normalize_round5.py": "c1a50dfde5f97c3de6313562276a180dbf614f78402a20f21ca9f67b5baf5459",
+    "parser/ivtff_parser_rc1_4.py": "075b5a157c37fbcb51df284fa083df192c28de5f45d93358d5cabe1ab87e7f2d",
+    "round5/ZL3b_round5.json": "ed62d613ed7bc5e6baded89efcb56d47ec97a17e8ce46290401cc12515f98ce0",
+    "round5/ZL3b-n.txt": "bf5b6d4ac1e3a51b1847a9c388318d609020441ccd56984c901c32b09beccafc",
+    "predictor/ZL3b_folds.json": "168df2da1d6ff84c4a5fa0ee4b67b55b44848fd36b07e1469c802b67f72b7a69",
+    "round5/IT2a_round5.json": "aacfb6d1a8af5ae7fbff2a8b745f5c03ae39ec580ef1bd1931e04c79dbb02e11",
+    "round5/IT2a-n.txt": "7f27a8b0feed8f6de0a99900df6bf912dd1d295c38e5f830bac8b41c3f536fb5",
+    "predictor/IT2a_folds.json": "1cc44bd2e7f7bd81d786516e326c0f6beb357d1a2eaa28b36d648e08a2bea92d",
+    "round5/timm30_verified_manifest.json": "647de23e3ef36c8c2f2e1e5c962c0b28408c206d3258c4d56c1889e254e36002",
+    "generator/seed_01.json": "7b3c1b541e7715fff12ba1d826b6d51fd48bd480caae6f2553bbd29c0386be68",
+    "generator/seed_02.json": "40583ab4f8f667bf223c9463a83eb117cc8426571baf26dbb7f8ab52f51b8f23",
+    "generator/seed_03.json": "d007a19919f005fa5660a6289c049130573246606f9c123aab001acfa0837540",
+    "generator/seed_04.json": "f839bd244fb4dee566ba45afa5dbc0802c69b22626997a7f3acd70defa86b766",
+    "generator/seed_05.json": "923d94073818c0ceaa105b191c11377186702092d07c9a73988df3e3c1338748",
+    "generator/seed_06.json": "f6c0cf42591f2aaff244b479108672cef394549995e3cb98eac20d65005417ad",
+    "generator/seed_07.json": "3e6a349492eef570c5f7568eb4a10d76d2fca8360bfc0cfa23bec6875eeb08f3",
+    "generator/seed_08.json": "3ab5e8865e8dbc06d1bcc29cb2236b9510905b4a29e1402630c397a7072a76bb",
+    "generator/seed_09.json": "6ccf74172b90f4939fbde66d958e0757b54d62cfe598fb33f3334ee57b96708a",
+    "generator/seed_10.json": "58822b91db64664d4296dfd49d64d6607c514720efdc192de7eb712279eec2c1",
+    "generator/seed_11.json": "50546ef5c56af2dab567a4f53a2179ea3f3242b82622f9c826b4687aa65e054a",
+    "generator/seed_12.json": "a28f9b680c406162934ce245e340b515072b1a17a16ec647f272c4dda5f64dce",
+    "generator/seed_13.json": "cb0a945f1cb41f979b88dd60583099ac2a9c1555d9988e9591a04f2cf264ca50",
+    "generator/seed_14.json": "d4a783e09fece17779d754cb3a5e8b6903c62181735f36ec49d377721741971c",
+    "generator/seed_15.json": "7f27d6a31042f26dffba7bec686a273a7bb5c655e810514c6c0635bf86f4c6d9",
+    "generator/seed_16.json": "665a2f641568db4af2cfa0180149febd4033564b6cef3f4442f24774626516cf",
+    "generator/seed_17.json": "2875ae7ff157fb9cfb99a328e61475fc9b71caa15eec2c4fad53f3089bdfb3e0",
+    "generator/seed_18.json": "58195162d4ed8bbb46603872abf9602fcfd898afdbbde68745e3534faf81d52b",
+    "generator/seed_19.json": "a73cb96152ace75f659e33f38c5c8f35b4f1ed0b22c327e2f38f84ab6343a29d",
+    "generator/seed_20.json": "a6fae6163a8b03545b2890dca8de96754102e705e08354b2022c83937e2c9fbd",
+    "generator/seed_21.json": "9348c3b124e509289756cf3fd8eb7bddc9a60c381425e5945bb2443edfb116ad",
+    "generator/seed_22.json": "0237bfed1603554222e96cfb0f3f1ee189f4aabb58b675be4e3f6361c9f77280",
+    "generator/seed_23.json": "eeb5ddf49f0a9726c174517749fa6cd6e05f9c4b0126b46140bf048196c2d660",
+    "generator/seed_24.json": "8ff329f9f1be934ac30c295d80ce660f9959c35d9a1586a5ce27ab554c87f59a",
+    "generator/seed_25.json": "c39a3511fe222d25a2218beed71e8b40eb8b1ad51223a3bd878515746cc19c7b",
+    "generator/seed_26.json": "1144abc0305967b1a753875d82080aa53420f1121155d3c636d07ecaf6d03785",
+    "generator/seed_27.json": "34a84f7445ec5affb235c2b071f63391a288e48e348800461dbe7589b7e3b925",
+    "generator/seed_28.json": "65bace7aa7958d796792d50e2f5d49f5db661b7b00ac9d239a63f862725fd041",
+    "generator/seed_29.json": "3cf8382998d39bbc78ed163d7a5e12521d05b4e6bd8cdf13989c2bcd90f9477b",
+    "generator/seed_30.json": "39ebcc8f9257d7c37d833c191b98595283103479b824b369e93319075822ae5e"
+  },
+  "parser_token_parity_loci": {
+    "ZL3b": 4130,
+    "IT2a": 4118
+  },
+  "historical_fold_parity": {
+    "ZL3b": {
+      "groups": 99,
+      "transitions": 2977
+    },
+    "IT2a": {
+      "groups": 98,
+      "transitions": 2936
+    }
+  },
+  "Timm_raw_sha256_matches": 30,
+  "historical_predictor_environment": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]\n2.3.5 1.8.0 1.17.0",
+  "local_environment": {
+    "python": "3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]",
+    "numpy": "2.3.5",
+    "sklearn": "1.8.0",
+    "scipy": "1.17.0"
+  },
+  "historical_predictor": "predict(rows,[False,True],\"target_qo\",1e-3,1.0,previous_mode=\"qo_only\")",
+  "historical_fold": "SHA256(voynich-round6-20261122:<leaf>) first 16 hex modulo 5; group by leaf",
+  "historical_bootstrap": "score(): 10000 leaf resamples, numpy default_rng(20261122), quantile linear",
+  "historical_Timm_pool": "round5.py:model_paras, seeds 01–30 pooled with seed as folio, language model, paragraphs >=4 lines; for predictive control apply original hash-fold rule with seed as group; not a previously executed predictive control",
+  "seed_derivation": "SeedSequence([20261124, series_index, reflow_id]) -> default_rng; series_index ZL3b=0 IT2a=1 Timm=2, reflow_id 1..1000",
+  "N": 1000,
+  "percentile_method": "linear",
+  "runner_sha256": "9c322561c39f7f907abd813d24a910f1a62b70becbc45ffee6466aa002149645",
+  "H3_covariates": "Raw previous line token count as numeric, first two EVA characters of last previous line token as categorical, added to both base and extended models; otherwise original predictor unchanged.",
+  "estimator_replay_tolerance_nats": 1e-08,
+  "execution_adapter": "AST load original definitions, replace read() file loader by paragraph argument only; preserve original read() row logic, verify equality on original and fixed fold mappings. Reflow function extracted verbatim; assertions preserve tokens, line-length multiset, row positions and folds. Timm uses historical pooled seed grouping; no previous predictive control exists. CPU 4 workers."
+}
