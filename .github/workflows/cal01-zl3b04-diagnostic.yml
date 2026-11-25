@@ -1,0 +1,117 @@
+name: cal01-zl3b04-diagnostic
+on:
+  push:
+    branches: [research/cal01-actions-20261125]
+    paths: [.github/workflows/cal01-zl3b04-diagnostic.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: cal01-matrix-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  PYTHON_VERSION: "3.13.5"
+  FROZEN_COMMIT: "0fb8b0ddb2ab1281758834e501f166669646518e"
+  INPUT_SHA: "d962257994bb05d15e0f263d241f6d99fc28d63c4ea67b4f9dea5a6566d43da9"
+  OPENBLAS_NUM_THREADS: "1"
+  OMP_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"
+jobs:
+  archive-and-register:
+    if: ${{ github.run_attempt == 1 }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    outputs:
+      note_commit: ${{ steps.archive.outputs.note_commit }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Archive original ZIP and commit pre-retry diagnosis separately
+        id: archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          p='experiments/cal01-actions/diagnostics/ZL3b_04-attempt1'
+          test ! -e "$p"
+          mkdir -p "$p"
+          curl --fail --silent --show-error --location -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/15018135784/zip" -o "$p/diagnostic-ZL3b_04-a1.zip"
+          echo '761292fa3157b379632f2097ed44cb524af507dd4760db305138a829f3862c33  diagnostic-ZL3b_04-a1.zip' > "$p/SHA256SUMS"
+          (cd "$p" && sha256sum -c SHA256SUMS)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$p/diagnostic-ZL3b_04-a1.zip" "$p/SHA256SUMS"
+          git commit -m "Archive original CAL-01 ZL3b_04 failed artifact without modification"
+          git push origin HEAD:refs/heads/research/cal01-actions-20261125
+          cat > "$p/DIAGNOSIS_PRERUN.md" <<'NOTE'
+          # ZL3b_04: one-shot diagnostic, before retry
+          
+          Original run 45605270057, attempt 1, job 139174727950. Original diagnostic artifact 15018135784, SHA-256 761292fa3157b379632f2097ed44cb524af507dd4760db305138a829f3862c33, archived in the preceding commit. No scientific aggregation has been performed in this diagnostic. 39 job successes; one technical failure (ZL3b_04); final verification skipped. The failed 1000 rows are not qualified.
+          
+          H1 gain local 0.002997178472340152; Actions 0.002997178472345106; absolute difference 4.953936566520767e-15. H1 JSON byte equality (infrastructure gate) failed. H1 scientific endpoint remains unchanged: L0>0 and L0>=0.25*G0. Byte-identical H1 is an additional integrity requirement, not that scientific threshold. Other H1 fields differ as well. No tolerance is added. No scientific classification, rho, or aggregate calculation.
+          
+          Original logs show Ubuntu 24.04.5, Python 3.13.5, NumPy 2.3.5, SciPy 1.17.0, scikit-learn 1.8.0, OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=MKL_NUM_THREADS=1. Failed job Azure eastus image 20261116.376.1; successful ZL3b_01 AWS us-east-1 image 20261116.133.1. No lscpu or runtime BLAS configuration was recorded in either original job; CPU cause unproven.
+          
+          One diagnostic execution only, g=0,r=4, no other realization. Separate workflow/run and artifact identity, same frozen code and ZIP, same original checkpoint, same seed IDs. Three historical thread limits remain 1. Record lscpu, Python and package versions, pip freeze, numpy/scipy configuration and threadpoolctl before calculation. Preserve both success and failure outputs. No rerun of this diagnostic (run_attempt must be 1 and archive must be newly committed). Report outcome regardless. If exact local H1 repeats, environment sensitivity is supported, not a specific CPU/thread cause. If exact failed H1 repeats, the discrepancy persists on Actions; investigate historical local environment. If neither, investigate variability. Comparing gain alone is not sufficient; compare full H1 bytes and hashes. No tolerance change, no overwriting original artifacts, no final aggregation or DIRECT-05. A separate diagnostic run does not automatically unblock verify-manifests of the original run. Further decisions require review.
+          NOTE
+          git add "$p/DIAGNOSIS_PRERUN.md"
+          git commit -m "Register single CAL-01 ZL3b_04 diagnostic before execution"
+          git push origin HEAD:refs/heads/research/cal01-actions-20261125
+          echo "note_commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+  diagnostic:
+    needs: archive-and-register
+    if: ${{ needs.archive-and-register.result == 'success' && github.run_attempt == 1 }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 345
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.FROZEN_COMMIT }}
+          path: frozen
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.archive-and-register.outputs.note_commit }}
+          path: evidence
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install numpy==2.3.5 scipy==1.17.0 scikit-learn==1.8.0
+      - name: One diagnostic execution of ZL3b_04, no aggregation
+        run: |
+          set -euo pipefail
+          mkdir -p result
+          echo "$INPUT_SHA  cal01-actions-input.zip" | sha256sum -c -
+          unzip -q cal01-actions-input.zip -d cal01-input
+          test "$(git -C frozen rev-parse HEAD)" = "$FROZEN_COMMIT"
+          { lscpu; python -VV; pip freeze; python -c "import numpy, scipy, sklearn, threadpoolctl; numpy.show_config(); numpy.show_runtime(); scipy.show_config(); print(threadpoolctl.threadpool_info()); print(numpy.__version__, scipy.__version__, sklearn.__version__)"; env | grep -E "^(OPENBLAS_NUM_THREADS|OMP_NUM_THREADS|MKL_NUM_THREADS)="; } | tee result/environment.txt
+          set +e
+          python cal01-input/driver.py run --frozen frozen/experiments/VOY-REFLOW-CAL-01 --g 0 --r 4 --budget 19200 --dest "$GITHUB_WORKSPACE/out/ZL3b_04" 2>&1 | tee result/run.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "$rc" > result/exit-code.txt
+          if [ -d out/ZL3b_04 ]; then cp -a out/ZL3b_04 result/shard; else cp -a cal01-input/work/VOY-REFLOW-CAL-01/output/ZL3b_04 result/shard; fi
+          python - <<'PY'
+          import hashlib, json, zipfile
+          from pathlib import Path
+          with zipfile.ZipFile('cal01-input/VOY-REFLOW-CAL-01_CHECKPOINT.zip') as z:
+              local=z.read('VOY-REFLOW-CAL-01/output/ZL3b_04/H1.json')
+              prefix=z.read('VOY-REFLOW-CAL-01/output/ZL3b_04/reflow.csv')
+          with zipfile.ZipFile('evidence/experiments/cal01-actions/diagnostics/ZL3b_04-attempt1/diagnostic-ZL3b_04-a1.zip') as z:
+              failed=z.read('H1.json')
+          new=Path('result/shard/H1.json').read_bytes()
+          data=dict(local_sha256=hashlib.sha256(local).hexdigest(),failed_sha256=hashlib.sha256(failed).hexdigest(),retry_sha256=hashlib.sha256(new).hexdigest(),local_gain=json.loads(local)['gain'],failed_gain=json.loads(failed)['gain'],retry_gain=json.loads(new)['gain'],matches_local=new==local,matches_failed=new==failed,original_prefix_preserved=Path('result/shard/reflow.csv').read_bytes().startswith(prefix),rows=len(Path('result/shard/reflow.csv').read_bytes().splitlines())-1)
+          Path('result/H1_COMPARISON.json').write_text(json.dumps(data,indent=2)+'\n')
+          print(json.dumps(data,indent=2))
+          PY
+          exit "$rc"
+      - name: Preserve diagnostic outcome even if integrity check fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cal01-zl3b04-diagnostic-${{ github.run_id }}-a${{ github.run_attempt }}
+          path: result/
+          retention-days: 90
+          if-no-files-found: error
