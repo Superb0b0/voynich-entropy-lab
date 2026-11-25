@@ -8,6 +8,9 @@ on:
       run_matrix:
         type: boolean
         default: false
+concurrency:
+  group: cal01-matrix-${{ github.ref }}
+  cancel-in-progress: false
 permissions:
   contents: read
   actions: read
@@ -45,7 +48,7 @@ jobs:
           if-no-files-found: error
   run:
     needs: replay-gate
-    if: ${{ github.event_name == 'push' || inputs.run_matrix }}
+    if: ${{ needs.replay-gate.result == 'success' && (github.event_name == 'push' || inputs.run_matrix) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 345
     strategy:
