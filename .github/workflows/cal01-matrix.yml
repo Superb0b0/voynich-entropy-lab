@@ -1,0 +1,135 @@
+name: cal01-matrix
+on:
+  push:
+    branches: [research/cal01-actions-20261125]
+    paths: [cal01-actions-input.zip]
+  workflow_dispatch:
+    inputs:
+      run_matrix:
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  actions: read
+env:
+  PYTHON_VERSION: "3.13.5"
+  FROZEN_COMMIT: 0fb8b0ddb2ab1281758834e501f166669646518e
+  INPUT_SHA: d962257994bb05d15e0f263d241f6d99fc28d63c4ea67b4f9dea5a6566d43da9
+  OPENBLAS_NUM_THREADS: "1"
+  OMP_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"
+jobs:
+  replay-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.FROZEN_COMMIT }}
+          path: frozen
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install numpy==2.3.5 scipy==1.17.0 scikit-learn==1.8.0
+      - name: Verify input and replay frozen samples
+        run: |
+          echo "$INPUT_SHA  cal01-actions-input.zip" | sha256sum -c -
+          unzip -q cal01-actions-input.zip -d cal01-input
+          test "$(git -C frozen rev-parse HEAD)" = "$FROZEN_COMMIT"
+          python cal01-input/driver.py replay --frozen frozen/experiments/VOY-REFLOW-CAL-01
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cal01-replay-a${{ github.run_attempt }}
+          path: cal01-input/replay-report.json
+          if-no-files-found: error
+  run:
+    needs: replay-gate
+    if: ${{ github.event_name == 'push' || inputs.run_matrix }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 345
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        g: [0, 1]
+        r: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.FROZEN_COMMIT }}
+          path: frozen
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install numpy==2.3.5 scipy==1.17.0 scikit-learn==1.8.0
+      - name: Verify input and restore latest previous attempt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          G: ${{ matrix.g }}
+          R: ${{ matrix.r }}
+        run: |
+          echo "$INPUT_SHA  cal01-actions-input.zip" | sha256sum -c -
+          unzip -q cal01-actions-input.zip -d cal01-input
+          test "$(git -C frozen rev-parse HEAD)" = "$FROZEN_COMMIT"
+          if [ "$G" = 0 ]; then s=ZL3b; else s=IT2a; fi
+          key=$(printf "%s_%02d" "$s" "$R")
+          echo "KEY=$key" >> "$GITHUB_ENV"
+          names=$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" --jq '.artifacts[] | select(.expired == false) | .name')
+          latest=$(printf "%s\n" "$names" | grep -E "^cal01-${key}-a[0-9]+$" | sort -V | tail -n 1 || true)
+          if [ -n "$latest" ]; then gh run download "$GITHUB_RUN_ID" --name "$latest" --dir prior; fi
+      - name: Resume frozen realization, stop between replicas before timeout
+        env:
+          G: ${{ matrix.g }}
+          R: ${{ matrix.r }}
+        run: |
+          args=()
+          if [ -d prior ]; then args+=(--prior "$GITHUB_WORKSPACE/prior"); fi
+          python cal01-input/driver.py run --frozen frozen/experiments/VOY-REFLOW-CAL-01 --g "$G" --r "$R" --budget 19200 --dest "$GITHUB_WORKSPACE/out/$KEY" "${args[@]}"
+      - name: Preserve valid complete or partial shard
+        if: ${{ always() && env.KEY != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: cal01-${{ env.KEY }}-a${{ github.run_attempt }}
+          path: out/${{ env.KEY }}/
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Preserve raw diagnostic files on technical failure
+        if: ${{ failure() && env.KEY != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostic-${{ env.KEY }}-a${{ github.run_attempt }}
+          path: cal01-input/work/VOY-REFLOW-CAL-01/output/${{ env.KEY }}/
+          if-no-files-found: ignore
+  verify-manifests:
+    needs: run
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Collect most recent validated shard for each realization
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "$INPUT_SHA  cal01-actions-input.zip" | sha256sum -c -
+          unzip -q cal01-actions-input.zip -d cal01-input
+          names=$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" --jq '.artifacts[] | select(.expired == false) | .name')
+          mkdir collected
+          for s in ZL3b IT2a; do
+            for r in $(seq 1 20); do
+              key=$(printf "%s_%02d" "$s" "$r")
+              latest=$(printf "%s\n" "$names" | grep -E "^cal01-${key}-a[0-9]+$" | sort -V | tail -n 1)
+              test -n "$latest"
+              gh run download "$GITHUB_RUN_ID" --name "$latest" --dir "collected/$key"
+            done
+          done
+          python cal01-input/driver.py verify --collected collected
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cal01-verified-all-a${{ github.run_attempt }}
+          path: collected/
+          retention-days: 90
+          if-no-files-found: error
