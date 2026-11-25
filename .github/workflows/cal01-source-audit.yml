@@ -1,0 +1,51 @@
+name: CAL-01 source audit
+on:
+  push:
+    branches: [research/cal01-diagnostic-20261125]
+    paths: [.github/workflows/cal01-source-audit.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  extract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: b85416e36c91cdcf126557fc26ded3e7c6cf6bfa
+          path: input
+      - uses: actions/checkout@v4
+        with:
+          ref: 0fb8b0ddb2ab1281758834e501f166669646518e
+          path: frozen
+      - name: Verify and expose source only
+        run: |
+          echo "d962257994bb05d15e0f263d241f6d99fc28d63c4ea67b4f9dea5a6566d43da9  input/cal01-actions-input.zip" | sha256sum -c -
+          python3 - <<'PY'
+          import zipfile, pathlib, hashlib, json
+          root=pathlib.Path('audit-source')
+          root.mkdir()
+          manifest=json.loads(pathlib.Path('frozen/experiments/VOY-REFLOW-CAL-01/FREEZE_MANIFEST.json').read_text())
+          expected=manifest['historical_files']
+          report=[]
+          with zipfile.ZipFile('input/cal01-actions-input.zip') as z:
+              for i,n in enumerate(z.namelist()):
+                  if not n.endswith('.py'): continue
+                  b=z.read(n)
+                  h=hashlib.sha256(b).hexdigest()
+                  p=root/f'{i:04d}_{pathlib.PurePosixPath(n).name}.txt'
+                  p.write_bytes(b)
+                  report.append(dict(member=n,output=p.name,sha256=h,manifest_matches=[k for k,v in expected.items() if v==h]))
+          (root/'inventory.json').write_text(json.dumps(report,indent=2))
+          for item in report:
+              print(json.dumps(item))
+          for item in report:
+              if pathlib.PurePosixPath(item['member']).name in ('driver.py','execute.py','run.py'):
+                  print('SOURCE',item['member'])
+                  for i,line in enumerate((root/item['output']).read_text().splitlines(),1): print(f'{i}: {line}')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cal01-source-audit
+          path: audit-source/
+          if-no-files-found: error
