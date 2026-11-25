@@ -1,0 +1,99 @@
+name: cal01-diagnostic-once
+on:
+  push:
+    branches: [research/cal01-diagnostic-20261125]
+    paths: [experiments/cal01-diagnostic/PLAN.md]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: cal01-diagnostic-once
+  cancel-in-progress: false
+env:
+  OPENBLAS_NUM_THREADS: "1"
+  OMP_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"
+  INPUT_SHA: d962257994bb05d15e0f263d241f6d99fc28d63c4ea67b4f9dea5a6566d43da9
+  FROZEN_COMMIT: 0fb8b0ddb2ab1281758834e501f166669646518e
+jobs:
+  archive-original:
+    if: ${{ github.run_attempt == 1 }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    outputs:
+      archived_commit: ${{ steps.archive.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/cal01-diagnostic-20261125
+      - name: Archive original failed artifact, no computation
+        id: archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          d=experiments/cal01-diagnostic/evidence
+          mkdir -p "$d"
+          p="$d/diagnostic-ZL3b_04-a1.zip"
+          test ! -e "$p"
+          curl --fail --silent --show-error --location -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/15018135784/zip" -o "$p"
+          echo "761292fa3157b379632f2097ed44cb524af507dd4760db305138a829f3862c33  $p" | sha256sum -c -
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$p"
+          git commit -m "Archive original CAL-01 failed diagnostic artifact before one repeat"
+          git push origin HEAD:refs/heads/research/cal01-diagnostic-20261125
+          git fetch origin research/cal01-diagnostic-20261125
+          test "$(git rev-parse HEAD)" = "$(git rev-parse FETCH_HEAD)"
+          git show "FETCH_HEAD:$p" | sha256sum | grep '^761292fa3157b379632f2097ed44cb524af507dd4760db305138a829f3862c33 '
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+  diagnostic:
+    needs: archive-original
+    if: ${{ github.run_attempt == 1 && needs.archive-original.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.archive-original.outputs.archived_commit }}
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.FROZEN_COMMIT }}
+          path: frozen
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13.5"
+      - run: pip install numpy==2.3.5 scipy==1.17.0 scikit-learn==1.8.0
+      - name: Capture environment
+        run: |
+          mkdir -p diagnosis
+          lscpu | tee diagnosis/lscpu.txt
+          env | grep -E '^(OPENBLAS|OMP|MKL)_NUM_THREADS=' | tee diagnosis/threads.txt
+          pip freeze > diagnosis/pip-freeze.txt
+          python -c 'import numpy as n,scipy,sklearn,threadpoolctl,json; n.show_config(); print(json.dumps(threadpoolctl.threadpool_info(),indent=2))' | tee diagnosis/numeric-environment.txt
+      - name: Repeat exactly once with unchanged strict gate
+        run: |
+          set -euo pipefail
+          echo "$INPUT_SHA  cal01-actions-input.zip" | sha256sum -c -
+          unzip -q cal01-actions-input.zip -d cal01-input
+          test "$(git -C frozen rev-parse HEAD)" = "$FROZEN_COMMIT"
+          set +e
+          python cal01-input/driver.py run --frozen frozen/experiments/VOY-REFLOW-CAL-01 --g 0 --r 4 --budget 3000 --dest "$GITHUB_WORKSPACE/diagnosis/strict-output" > diagnosis/strict.log 2>&1
+          code=$?
+          set -e
+          cat diagnosis/strict.log
+          echo "$code" > diagnosis/exit-code.txt
+          python experiments/cal01-diagnostic/compare.py
+      - name: Preserve diagnostic evidence whether PASS or FAIL
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cal01-diagnostic-repeat-a${{ github.run_attempt }}
+          path: |
+            diagnosis/
+            cal01-input/work/VOY-REFLOW-CAL-01/output/ZL3b_04/
+          retention-days: 90
+          if-no-files-found: error
