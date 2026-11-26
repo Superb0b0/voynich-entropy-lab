@@ -40,4 +40,4 @@ with threadpool_limits(limits=1):
             gain=float(h['gain']); ci=list(map(float,h['conditional_ci95']))
             results.append(dict(geometry=series,seed=seed,n_transitions=len(rows),gain=gain,conditional_ci95=ci,H1_valid=bool(ci[0]>0 and ci[0]>=.25*gain)))
 out=dict(status='EXPLORATORY_COMPLETE',estimator='frozen historical CAL-01 predict and score via driver.setup',design='paragraph reset; opening P(q|q)=.10 P(q|other)=.30 initial=.25; iid interior .25; no reflow',results=results,counts={s:sum(r['H1_valid'] for r in results if r['geometry']==s) for s in model.SERIES})
-Path('pilot_result.json').write_text(json.dumps(out,indent=2)+'\n')
+(base.parent/'pilot_result.json').write_text(json.dumps(out,indent=2)+'\n')
