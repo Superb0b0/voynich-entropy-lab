@@ -1,0 +1,37 @@
+# CAL-01 · Ammissione documentale delle 50 righe ZL3b_04
+
+**Delibera del 26 novembre 2026, post hoc e anteriore al lancio della matrice diagnostica.** Per il solo confronto diagnostico con l'originale sono ammessi i riferimenti ZL3b_04, reflow_id 212–261 inclusi, run 45605270057, job 139174727950, artefatto 15018135784. Per questi riferimenti il digest GitHub dell'archivio, la copia committata, i digest dei tre membri e il controllo individuale delle chiavi assolvono la funzione documentale del manifest di shard mancante. Il calcolo, la qualificazione delle repliche e il fallimento stretto hanno ciascuno il proprio gate. Il riferimento locale storico è escluso dalle prove di ammissione.
+
+## Cronologia verificata in UTC
+
+| Evento | Ora | Evidenza |
+|---|---|---|
+| Freeze scientifico 0fb8b0d | 24 novembre 22:37:50 | Timestamp Git; ricevuta del checkpoint con osservazione remota alle 22:38:16 |
+| Fallimento originale sul controllo H1 | 25 novembre 11:35:57 | Log del job 139174727950 |
+| Commit 415c7e4 e push | 25 novembre 12:10:14 e 12:10:15 | Log del job archive-original 139194756174, righe con SHA e aggiornamento del ref |
+| Avvio del job diagnostic successivo | 25 novembre 12:10:21 | Metadati del run 45611166218 |
+| Prima dichiarazione di esposizione qui documentata | 25 novembre 13:07:14 | Commit 95c47ee registra una precedente esposizione a un risultato di coda; l'ora è quella del commit |
+| V2, disegno, ambiente canonico | 25 novembre 13:36:21, 14:07:56, 17:17:18 | e591ded, fc1a929, 4f89a7f |
+
+L'archiviazione precede quel diagnostico e la dichiarazione di esposizione. **L'anteriorità a qualsiasi ispezione dei margini resta indimostrata.** La differenza H1 era già nota. Esiste anche un audit precedente con campi relativi ai margini. I log datano eventi specifici; non documentano tutte le consultazioni esterne. Il digest garantisce identità dei byte rispetto all'archivio conservato, senza attestare l'ambiente o la correttezza della generazione originaria. [Log dell’archiviazione](https://github.com/Superb0b0/voynich-entropy-lab/actions/runs/45611166218/job/139194756174)
+
+## Ricevuta verificabile
+
+La copia del file experiments/cal01-diagnostic/evidence/diagnostic-ZL3b_04-a1.zip al commit 415c7e4 coincide byte per byte con l'archivio originale. SHA-256 761292fa3157b379632f2097ed44cb524af507dd4760db305138a829f3862c33. Gli altri due shard conservano il controllo tramite manifest originale.
+
+Il controllo di provenienza è stato rieseguito come processo locale. In questa directory si pubblicano il sorgente [preflight.py](preflight.py) e lo [stdout integrale](provenance.json), identico alla ricevuta precedente. Exit 0, stderr 0 byte. SHA-256 rispettivamente ec6d164e86e71f9fbcf427adf476f1d2f4bbd260ff34a390b3395bdf6f7a0e50 e b597567b7f3eed85a62bcdf61253de51b93c4bea7b79a5f1826cd02d2a375e0c. Per riprodurre, passare al programma la directory contenente i tre ZIP denominati con i rispettivi artifact_id. H1.json viene letto come byte per l'hash. Il CSV viene decodificato per identificare le righe; il campo gain_nats non viene convertito, confrontato o emesso. Ogni riga selezionata espone esclusivamente ID, seme e digest. Lo stdout consente di verificare questa singola esecuzione. Il job GitHub di estrazione dei sorgenti è un'altra operazione. La ricevuta non estende l'affermazione sull'assenza di margini ad attività pregresse o di terzi.
+
+## Sensibilità fissata prima dei diagnostici
+
+1. Il percorso primario resta quello di fc1a929: 70 ID e tre H1 su ciascuna configurazione. Prima di ogni eventuale misura restano richiesti tutti i controlli previsti. In caso di successiva autorizzazione, ripetere a fini descrittivi il confronto appaiato anche escludendo dai riferimenti originali i 50 ID ammessi per eccezione. A parità di job, configurazioni e altri dati, documentare se cambia il massimo scarto. Riportare separatamente il massimo sui soli 20 ID degli altri due shard se si esclude l'intero blocco dei 50 da entrambi i lati. Segnalare copertura e confronti mancanti. Gli H1 restano identificati separatamente. La selezione del candidato richiede comunque il pannello completo e il certificato primario conserva tutti gli scarti storici e il fattore 1.000.
+2. Resta prevista la sensibilità scientifica V2 con e senza l'intera realizzazione ZL3b_04, dopo il relativo gate. Se si intende anche una classificazione scientifica dopo aver tolto soltanto 50 re-flow, rimangono 950 righe: la regola congelata ne richiede 1.000 e p usa il denominatore 1.001. Questo emendamento registra per quella riduzione lo stato di incompletezza. Una diversa analisi scientifica a 950 richiede una specifica distinta.
+
+## Scelta infrastrutturale preregistrata
+
+Prima del lancio si fissa la regola condizionale; il suo esito dipende dai diagnostici. Gli otto processi D00–D07 mantengono le configurazioni prescritte, inclusi i controlli default. Per un eventuale ricalcolo integrale si valuta nell'ordine D05, D06, D07. Vale il primo candidato con dispatch BLAS e SIMD verificato, un thread, 70 coppie di hash e tre H1 identici su tutti i job compatibili e almeno due distinti modelli CPU. Una lacuna inspiegata su hardware compatibile invalida il candidato. Se nessuno passa, si segue V2, con inviluppo empirico 1.000 × δ_obs e D05 unica risoluzione canonica per i margini insufficienti. Se D05 non è pinzabile o verificabile, la certificazione resta sospesa. Nessuna decisione di esecuzione automatica.
+
+I log precedenti registrano AMD EPYC 9V74 e Intel Xeon 6975P-C. Entrambi riportano SkylakeX, OpenBLAS 0.3.30 e un thread nei pool NumPy e SciPy. Questi sono i due diagnostici successivi. La causa del fallimento originale rimane aperta; l'ipotesi Azure/AWS non costituisce un'attribuzione causale.
+
+Una sonda locale di sola introspezione con Python 3.12.14 e NumPy 2.3.5 ha osservato che la lista congelata, intersecata con i target compilati, sposta il loop log(float64) da AVX512_SKX ad AVX2 lasciando entrambi i pool su SkylakeX. Nessun fit o calcolo del corpus. Questa sonda verifica il funzionamento del controllo nel suo ambiente; per i runner richiesti valgono Python 3.13.5 e le wheel effettivamente installate. OpenBLAS 0.3.30 può compilare Zen come alias e il ramo force_coretype seleziona un puntatore al kernel: la stringa richiesta non certifica l'ISA supportata. Prima del lancio resta da vincolare la verifica di compatibilità alle build reali delle due librerie, registrando hash dei binari e prove ISA/OS prima di forzare un kernel. Durante l'eventuale run registrare il kernel effettivo e i target SIMD nello stesso processo di misura. L'esecuzione dei 20 job resta soggetta ad autorizzazione separata.
+
+[OpenBLAS 0.3.30, selezione del kernel](https://github.com/OpenMathLib/OpenBLAS/blob/v0.3.30/driver/others/dynamic.c) · [NumPy 2.3.5, gestione delle feature](https://github.com/numpy/numpy/blob/v2.3.5/numpy/_core/src/common/npy_cpu_features.c)
