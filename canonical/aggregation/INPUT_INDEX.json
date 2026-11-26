@@ -1,0 +1,464 @@
+{
+  "schema": 1,
+  "scope": "GitHub run/job/artifact metadata only; no downloaded archives, no scientific values; candidate for independent review",
+  "frozen_commit": "0fb8b0ddb2ab1281758834e501f166669646518e",
+  "runs": {
+    "45817324636": {
+      "head_sha": "1557e88466142f9761455ee8beed56f25e3faeb0",
+      "attempt": 1,
+      "conclusion": "failure",
+      "workflow": "CAL-01 canonical D05"
+    },
+    "45818815963": {
+      "head_sha": "29fa76f06a5db0a8db5a4018ab31fc65bf49be4f",
+      "attempt": 1,
+      "conclusion": "failure",
+      "workflow": "CAL-01 canonical D05 recovery 45817324636"
+    },
+    "45821985054": {
+      "head_sha": "8c6cb92f335f161364c880714864919c7b44547a",
+      "attempt": 1,
+      "conclusion": "success",
+      "workflow": "CAL-01 D05 final IT2a_06"
+    }
+  },
+  "excluded_jobs": [
+    {
+      "run_id": 45817324636,
+      "g": 0,
+      "r": 19,
+      "job_id": 139900319406,
+      "conclusion": "failure"
+    },
+    {
+      "run_id": 45817324636,
+      "g": 0,
+      "r": 7,
+      "job_id": 139900319532,
+      "conclusion": "failure"
+    },
+    {
+      "run_id": 45817324636,
+      "g": 1,
+      "r": 5,
+      "job_id": 139900319668,
+      "conclusion": "failure"
+    },
+    {
+      "run_id": 45817324636,
+      "g": 1,
+      "r": 6,
+      "job_id": 139900319904,
+      "conclusion": "failure"
+    },
+    {
+      "run_id": 45818815963,
+      "g": 1,
+      "r": 6,
+      "job_id": 139905405090,
+      "conclusion": "failure"
+    }
+  ],
+  "artifacts": [
+    {
+      "g": 0,
+      "r": 1,
+      "job_id": 139900319705,
+      "run_id": 45817324636,
+      "artifact_id": 15114764591,
+      "archive_sha256": "99df583c0eb82c82e07c0a4ec5da1068f642a2ec515820fd4be919f52c300f3f",
+      "size": 19417,
+      "name": "d05-45817324636-g0-r1"
+    },
+    {
+      "g": 0,
+      "r": 2,
+      "job_id": 139900319735,
+      "run_id": 45817324636,
+      "artifact_id": 15115503663,
+      "archive_sha256": "2785584d36d1622c0045cb8e00d9f844ba2506b1d0eaf76a7a22d1d00e08c684",
+      "size": 19564,
+      "name": "d05-45817324636-g0-r2"
+    },
+    {
+      "g": 0,
+      "r": 3,
+      "job_id": 139900319635,
+      "run_id": 45817324636,
+      "artifact_id": 15116023419,
+      "archive_sha256": "bea6526c251c7c64efee61f2750c13fe60acac854fbd2eca24a86784a458050c",
+      "size": 19394,
+      "name": "d05-45817324636-g0-r3"
+    },
+    {
+      "g": 0,
+      "r": 4,
+      "job_id": 139900319595,
+      "run_id": 45817324636,
+      "artifact_id": 15116622199,
+      "archive_sha256": "04dc7e05eaae9d8ce74b076ba391a7994f548578996811676e74f930b6aa557f",
+      "size": 19459,
+      "name": "d05-45817324636-g0-r4"
+    },
+    {
+      "g": 0,
+      "r": 5,
+      "job_id": 139900319043,
+      "run_id": 45817324636,
+      "artifact_id": 15115029485,
+      "archive_sha256": "31d5bb2087c44b8149a97608c22e4de36d56c81fc8e317026e48510d11bc4aac",
+      "size": 19448,
+      "name": "d05-45817324636-g0-r5"
+    },
+    {
+      "g": 0,
+      "r": 6,
+      "job_id": 139900319590,
+      "run_id": 45817324636,
+      "artifact_id": 15114979657,
+      "archive_sha256": "5134f0f2ba4224bed59dd5187d31b4454523ae2aa935f3c730c032e3ecbd7600",
+      "size": 19507,
+      "name": "d05-45817324636-g0-r6"
+    },
+    {
+      "g": 0,
+      "r": 7,
+      "job_id": 139905405485,
+      "run_id": 45818815963,
+      "artifact_id": 15117276683,
+      "archive_sha256": "bf4307a8d0136ae631c4ad403dadeb729e29c7f5d72b3ca713967682da7b1900",
+      "size": 19399,
+      "name": "d05-45818815963-g0-r7"
+    },
+    {
+      "g": 0,
+      "r": 8,
+      "job_id": 139900319521,
+      "run_id": 45817324636,
+      "artifact_id": 15115334982,
+      "archive_sha256": "5f95af2c81f5a4c07d266f6f6c906f2b51a670d55e42d3ebd55483a35f50b87a",
+      "size": 19435,
+      "name": "d05-45817324636-g0-r8"
+    },
+    {
+      "g": 0,
+      "r": 9,
+      "job_id": 139900319456,
+      "run_id": 45817324636,
+      "artifact_id": 15116133420,
+      "archive_sha256": "b62aee61622a8f7c4633d295d85426319ee191178f147d13525a83ed7a0e7cbe",
+      "size": 19317,
+      "name": "d05-45817324636-g0-r9"
+    },
+    {
+      "g": 0,
+      "r": 10,
+      "job_id": 139900319567,
+      "run_id": 45817324636,
+      "artifact_id": 15115129197,
+      "archive_sha256": "3d5780804fcebc46bb35d4d5c5f21288292c069d4944c52f84925dc4cde0256d",
+      "size": 19517,
+      "name": "d05-45817324636-g0-r10"
+    },
+    {
+      "g": 0,
+      "r": 11,
+      "job_id": 139900319551,
+      "run_id": 45817324636,
+      "artifact_id": 15116267678,
+      "archive_sha256": "211cfdb1f23b63d2169de6d3ce35817a20f32ebbd0ccb78f799bdcd940c7b14d",
+      "size": 19665,
+      "name": "d05-45817324636-g0-r11"
+    },
+    {
+      "g": 0,
+      "r": 12,
+      "job_id": 139900319488,
+      "run_id": 45817324636,
+      "artifact_id": 15115573881,
+      "archive_sha256": "a8f9c9e0051003bf950ca19ddc127d0cf1651514c7ed5ea2d908daa9f7b7f1d7",
+      "size": 19582,
+      "name": "d05-45817324636-g0-r12"
+    },
+    {
+      "g": 0,
+      "r": 13,
+      "job_id": 139900319646,
+      "run_id": 45817324636,
+      "artifact_id": 15115178956,
+      "archive_sha256": "4869d1442b66731989cab965d3e1c6a719fc8e0655b0043b7a91aee10e77d253",
+      "size": 19656,
+      "name": "d05-45817324636-g0-r13"
+    },
+    {
+      "g": 0,
+      "r": 14,
+      "job_id": 139900319907,
+      "run_id": 45817324636,
+      "artifact_id": 15115434543,
+      "archive_sha256": "ab530127fe466abfcc862cc311f55257b5ddf4cfcd4387770d0d4e30359e7e93",
+      "size": 19595,
+      "name": "d05-45817324636-g0-r14"
+    },
+    {
+      "g": 0,
+      "r": 15,
+      "job_id": 139900319470,
+      "run_id": 45817324636,
+      "artifact_id": 15114979936,
+      "archive_sha256": "57636224ebbce55b7e6e4131b016d4cd620354dfcad23520dc4f5e220ad1176a",
+      "size": 19586,
+      "name": "d05-45817324636-g0-r15"
+    },
+    {
+      "g": 0,
+      "r": 16,
+      "job_id": 139900319506,
+      "run_id": 45817324636,
+      "artifact_id": 15115888733,
+      "archive_sha256": "a41e63ab3a5033e4cee3f1170d137dc62928474352eded8b8fec65caed001868",
+      "size": 19623,
+      "name": "d05-45817324636-g0-r16"
+    },
+    {
+      "g": 0,
+      "r": 17,
+      "job_id": 139900319656,
+      "run_id": 45817324636,
+      "artifact_id": 15115319689,
+      "archive_sha256": "aa77f1f852a231968bb7c6ae5b8430b5d2f322d7ef87fd913d0f41a7277cd8cf",
+      "size": 19609,
+      "name": "d05-45817324636-g0-r17"
+    },
+    {
+      "g": 0,
+      "r": 18,
+      "job_id": 139900319610,
+      "run_id": 45817324636,
+      "artifact_id": 15116497477,
+      "archive_sha256": "6b2e17be06bbed7b55ab3633035614b8fa35828453c3c8f0c232feb93f9559a9",
+      "size": 19632,
+      "name": "d05-45817324636-g0-r18"
+    },
+    {
+      "g": 0,
+      "r": 19,
+      "job_id": 139905405465,
+      "run_id": 45818815963,
+      "artifact_id": 15117396081,
+      "archive_sha256": "f9e16bb627d9b9b053c140af24badafe4c3f45883c6f613cd9ea23c38d638286",
+      "size": 19647,
+      "name": "d05-45818815963-g0-r19"
+    },
+    {
+      "g": 0,
+      "r": 20,
+      "job_id": 139900319554,
+      "run_id": 45817324636,
+      "artifact_id": 15116725116,
+      "archive_sha256": "6fb6653f6d372dd25dd94edc4e4076a74416cdcd54e8830eed22e29a12072181",
+      "size": 19716,
+      "name": "d05-45817324636-g0-r20"
+    },
+    {
+      "g": 1,
+      "r": 1,
+      "job_id": 139900319749,
+      "run_id": 45817324636,
+      "artifact_id": 15116188098,
+      "archive_sha256": "a81c2bbdb2af5af834848d8426807e5929ced9816bc00da15c86b783d37f3825",
+      "size": 19354,
+      "name": "d05-45817324636-g1-r1"
+    },
+    {
+      "g": 1,
+      "r": 2,
+      "job_id": 139900319686,
+      "run_id": 45817324636,
+      "artifact_id": 15114999885,
+      "archive_sha256": "12fc89c47df0a811932a5b607183e1125bef4c683136bf9e79373906a88051e1",
+      "size": 19412,
+      "name": "d05-45817324636-g1-r2"
+    },
+    {
+      "g": 1,
+      "r": 3,
+      "job_id": 139900319772,
+      "run_id": 45817324636,
+      "artifact_id": 15116537862,
+      "archive_sha256": "03e77c1af2f488c709455f88838b75cc8bcc2ff6effb6e327daf82454e810c16",
+      "size": 19493,
+      "name": "d05-45817324636-g1-r3"
+    },
+    {
+      "g": 1,
+      "r": 4,
+      "job_id": 139900319492,
+      "run_id": 45817324636,
+      "artifact_id": 15117140133,
+      "archive_sha256": "84c89d72cf696a6d6d32b44b9ec55db85c1a470e16ff387fa0302ce7ade9b204",
+      "size": 19477,
+      "name": "d05-45817324636-g1-r4"
+    },
+    {
+      "g": 1,
+      "r": 5,
+      "job_id": 139905405470,
+      "run_id": 45818815963,
+      "artifact_id": 15115994872,
+      "archive_sha256": "f9e852be48a7a82b0fce6a0fc1348a64d6038d22c8450c0d329ca7500ba73b13",
+      "size": 19568,
+      "name": "d05-45818815963-g1-r5"
+    },
+    {
+      "g": 1,
+      "r": 6,
+      "job_id": 139916312304,
+      "run_id": 45821985054,
+      "artifact_id": 15118193348,
+      "archive_sha256": "6106cede117e8b0065181f8065a172a40e6abf0cf0de376a4a6aa8b89a63e827",
+      "size": 19410,
+      "name": "d05-45821985054-g1-r6"
+    },
+    {
+      "g": 1,
+      "r": 7,
+      "job_id": 139900319651,
+      "run_id": 45817324636,
+      "artifact_id": 15116243364,
+      "archive_sha256": "f47f25ab52a81aec20e19a68ce1a9bc6da1351993697b8e1ae5d32891175e54a",
+      "size": 19383,
+      "name": "d05-45817324636-g1-r7"
+    },
+    {
+      "g": 1,
+      "r": 8,
+      "job_id": 139900319837,
+      "run_id": 45817324636,
+      "artifact_id": 15117015271,
+      "archive_sha256": "89d89bb85c0d3157ee914449dc6c1ef602b4b26000b3a2c509894741788a2c88",
+      "size": 19506,
+      "name": "d05-45817324636-g1-r8"
+    },
+    {
+      "g": 1,
+      "r": 9,
+      "job_id": 139900319708,
+      "run_id": 45817324636,
+      "artifact_id": 15116507922,
+      "archive_sha256": "2b216c85f72e016e7880d2d26a4fc79cfd78f34a8caa9e6e5fbdd74f3b74ebd6",
+      "size": 19422,
+      "name": "d05-45817324636-g1-r9"
+    },
+    {
+      "g": 1,
+      "r": 10,
+      "job_id": 139900319979,
+      "run_id": 45817324636,
+      "artifact_id": 15116013810,
+      "archive_sha256": "09b7cb985f9a731a3bf9af9396402961b3d73a53b535a68b7cb5575bb15bebe1",
+      "size": 19557,
+      "name": "d05-45817324636-g1-r10"
+    },
+    {
+      "g": 1,
+      "r": 11,
+      "job_id": 139900322375,
+      "run_id": 45817324636,
+      "artifact_id": 15115179385,
+      "archive_sha256": "f382d4913f1280733291a97407c8c1e04c3c9a7620a68d73a12d82f06d2aec31",
+      "size": 19591,
+      "name": "d05-45817324636-g1-r11"
+    },
+    {
+      "g": 1,
+      "r": 12,
+      "job_id": 139900322471,
+      "run_id": 45817324636,
+      "artifact_id": 15116093746,
+      "archive_sha256": "4bbc511ef9adf16d8c43d3cc0b7dc710f62691099944dbac6263056f83dee27b",
+      "size": 19667,
+      "name": "d05-45817324636-g1-r12"
+    },
+    {
+      "g": 1,
+      "r": 13,
+      "job_id": 139900322329,
+      "run_id": 45817324636,
+      "artifact_id": 15116018910,
+      "archive_sha256": "f239fe6b74f107c1f713d4457a44e101a8e8bc283383b3eb32f96b95e5ee43e3",
+      "size": 19569,
+      "name": "d05-45817324636-g1-r13"
+    },
+    {
+      "g": 1,
+      "r": 14,
+      "job_id": 139900322799,
+      "run_id": 45817324636,
+      "artifact_id": 15115234796,
+      "archive_sha256": "4b97cc7c4bac9d449cc132368dd7572152df6bc7d48720e0e375b35c5e9714a7",
+      "size": 19693,
+      "name": "d05-45817324636-g1-r14"
+    },
+    {
+      "g": 1,
+      "r": 15,
+      "job_id": 139900322312,
+      "run_id": 45817324636,
+      "artifact_id": 15114709916,
+      "archive_sha256": "ca063d4e4ae064082cc850f002701774c4ca4560e76a281f6f168efcad92c1dc",
+      "size": 19543,
+      "name": "d05-45817324636-g1-r15"
+    },
+    {
+      "g": 1,
+      "r": 16,
+      "job_id": 139900322451,
+      "run_id": 45817324636,
+      "artifact_id": 15116915345,
+      "archive_sha256": "7ee207245b441568233c836c35a9eef4c82a2064a65eeb16f4cac52e1fbf1d17",
+      "size": 19601,
+      "name": "d05-45817324636-g1-r16"
+    },
+    {
+      "g": 1,
+      "r": 17,
+      "job_id": 139900322353,
+      "run_id": 45817324636,
+      "artifact_id": 15115559391,
+      "archive_sha256": "b9d5a901a91e8b674ad2b368e042cd803ab77aad1c8844367c7e1abfc3e84a6d",
+      "size": 19680,
+      "name": "d05-45817324636-g1-r17"
+    },
+    {
+      "g": 1,
+      "r": 18,
+      "job_id": 139900322642,
+      "run_id": 45817324636,
+      "artifact_id": 15115504428,
+      "archive_sha256": "1686eb669f453ffc0f1e41eab6c994e1b0754e03142957561487f25efb50dcc2",
+      "size": 19571,
+      "name": "d05-45817324636-g1-r18"
+    },
+    {
+      "g": 1,
+      "r": 19,
+      "job_id": 139900322610,
+      "run_id": 45817324636,
+      "artifact_id": 15117075410,
+      "archive_sha256": "711269bc6b65c88dba2884dc3b5c79b913d2b8bdd76c71aa499a2d47f716e5b7",
+      "size": 19669,
+      "name": "d05-45817324636-g1-r19"
+    },
+    {
+      "g": 1,
+      "r": 20,
+      "job_id": 139900322556,
+      "run_id": 45817324636,
+      "artifact_id": 15116676001,
+      "archive_sha256": "e541b8bfd0ec7404f9a0f7aeacfd33ead9b077931c5fc9e04e3befe38b8061db",
+      "size": 19466,
+      "name": "d05-45817324636-g1-r20"
+    }
+  ]
+}
