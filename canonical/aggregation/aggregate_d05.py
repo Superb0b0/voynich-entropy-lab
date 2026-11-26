@@ -20,6 +20,8 @@ HERE = Path(__file__).resolve().parent
 SERIES = ('ZL3b', 'IT2a')
 KEYS = [(g, r) for g in range(2) for r in range(1, 21)]
 FIELDS = 'geometry realization reflow_id seed n_transitions gain_nats status error'.split()
+# Geometry invariant from original driver.rows and canonical matrix.validate (frozen input).
+TRANSITIONS = (2977, 2936)
 MEMBERS = {'runtime.json', 'reflow.csv', 'H1.json', 'stream.sha256', 'summary.json'}
 FROZEN = '0fb8b0ddb2ab1281758834e501f166669646518e'
 RUN_SHA = 'da78911c39f9f53a33f9404d7b59696a042ec60dbc6a9731d5fc60d9b4c186ac'
@@ -117,12 +119,14 @@ def sources(args):
                 manifest_sha256=sha(manifest_raw))
     # An attestation is a procedural gate, not cryptographic proof of independence.
     lock(args.review.is_file(), 'independent source review missing')
-    review = read(args.review)
+    review_raw = args.review.read_bytes()
+    review = parse(review_raw)
     lock(review.get('approved') is True and review.get('independent_review') is True and
          isinstance(review.get('reviewer'), str) and bool(review['reviewer'].strip()) and
          re.fullmatch('[0-9a-f]{40}', review.get('reviewed_commit', '')) and
          review.get('pins') == pins and review.get('audit_allocation_approved') is True,
          'independent source review not approved for exact bytes')
+    pins['review_sha256'] = sha(review_raw)
     return parse(index_raw), parse(ref_raw), manifest, pins
 
 
@@ -162,7 +166,7 @@ def read_rows(raw, g, r, n):
     for i, row in enumerate(rows, 1):
         need(None not in row and None not in row.values() and
              [row[k] for k in FIELDS[:5]] == [SERIES[g], str(r), str(i),
-                 f'20261124:502:{g}:{r}:{i}', str((2977, 2936)[g])] and
+                 f'20261124:502:{g}:{r}:{i}', str(TRANSITIONS[g])] and
              row['status'] == 'OK' and row['error'] == '', 'row identity/status')
     return rows, lines
 
@@ -189,7 +193,7 @@ def qualify(args, index, ref, manifest, pins):
          all(type(v['rows']) is int and 0 < v['rows'] <= 1000 for v in samples.values()) and
          sum(v['rows'] for v in samples.values()) == 850, 'historical control inventory')
     shards = []
-    # No H1 or category is parsed, and no gain is converted, during the structural pass.
+    # No H1 or summary is parsed, and no gain is converted, during the structural pass.
     for e in entries:
         g, r = e['g'], e['r']
         key = label(g, r)
@@ -265,6 +269,11 @@ def qualify(args, index, ref, manifest, pins):
             s['gains'] = gains
     need(seen_rows == set(ref['rows']) and len(seen_rows) == 70 and
          seen_h1 == set(ref['h1']) and len(seen_h1) == 3, 'anchor coverage')
+    # Validate all classifier inputs and summary schema only after global structural completeness.
+    # No categories, frequencies or numerical values are emitted by qualification.
+    for s in shards:
+        h1_values(s)
+        summary_values(s)
     dataset = h.hexdigest()
     bundle = sha(canonical(dict(dataset_sha256=dataset, artifacts=entries)))
     qualification = dict(status='TECHNICAL_PASS', pins=pins, rows=40000, shards=40, historical_controls=850,
@@ -318,6 +327,27 @@ def h1_values(s):
     need(finite(h1['gain']) and isinstance(ci, list) and len(ci) == 2 and
          all(finite(x) for x in ci) and ci[0] <= ci[1], 'invalid H1')
     return h1
+
+
+def summary_values(s):
+    v = parse(s['files']['summary.json'])
+    g, r = s['entry']['g'], s['entry']['r']
+    expected = {'H1_valid', 'G0', 'L0', 'mean', 'sd', 'rho', 'k', 'p',
+                'percentiles', 'category', 'geometry', 'realization',
+                'qo_frequency', 'qo_opening_frequency'}
+    need(set(v) == expected and v['geometry'] == SERIES[g] and
+         type(v['realization']) is int and v['realization'] == r and
+         type(v['H1_valid']) is bool and type(v['k']) is int and 0 <= v['k'] <= 1000 and
+         v['category'] in ('C', 'R', 'I'), 'summary schema/identity')
+    need(all(finite(v[k]) for k in ('G0', 'L0', 'mean', 'sd', 'p',
+                                  'qo_frequency', 'qo_opening_frequency')) and
+         v['sd'] >= 0 and 0 <= v['p'] <= 1 and
+         all(0 <= v[k] <= 1 for k in ('qo_frequency', 'qo_opening_frequency')) and
+         (v['rho'] is None or finite(v['rho'])) and
+         isinstance(v['percentiles'], list) and len(v['percentiles']) == 2 and
+         all(finite(x) for x in v['percentiles']) and
+         v['percentiles'][0] <= v['percentiles'][1], 'summary numeric schema')
+    return v
 
 
 def margin_audit(shards, qualification, np):
@@ -401,10 +431,10 @@ def aggregate(shards, qualification, np, model):
         a = np.asarray(s['gains'], dtype=np.float64)
         need(a.shape == (1000,) and np.isfinite(a).all(), 'classification input size/finite')
         result = model.classify(h1, a)
-        summary = parse(s['files']['summary.json'])
+        summary = summary_values(s)
         g, r = s['entry']['g'], s['entry']['r']
         need(result['category'] in {'C', 'R', 'I'} and summary['geometry'] == SERIES[g] and summary['realization'] == r and
-             all(summary[k] == result[k] for k in ('category', 'H1_valid', 'k')), 'canonical summary disagreement')
+             all(summary[k] == result[k] for k in result), 'canonical summary disagreement')
         result.update(geometry=SERIES[g], realization=r)
         for k in ('qo_frequency', 'qo_opening_frequency'):
             need(finite(summary[k]) and 0 <= summary[k] <= 1, 'invalid frequency')
@@ -433,6 +463,7 @@ def main():
     p.add_argument('--qualification', type=Path)
     p.add_argument('--margins', type=Path)
     p.add_argument('--authorization', type=Path)
+    p.add_argument('--canonical-resolution-evidence', type=Path)
     p.add_argument('--out', type=Path, required=True)
     args = p.parse_args()
     if args.out.exists():
@@ -459,8 +490,10 @@ def main():
                      auth.get('margins_sha256') == sha(args.margins.read_bytes()) and
                      auth.get('ZL3b_04_qualified') is True, 'final review not approved for exact receipts')
                 lock(not margins['unresolved'] or (auth.get('canonical_resolution_approved') is True and
-                     isinstance(auth.get('canonical_resolution_evidence'), str) and
-                     bool(auth['canonical_resolution_evidence'].strip())), 'insufficient margins not resolved')
+                     args.canonical_resolution_evidence is not None and
+                     args.canonical_resolution_evidence.is_file() and
+                     auth.get('canonical_resolution_evidence_sha256') ==
+                     sha(args.canonical_resolution_evidence.read_bytes())), 'insufficient margins not resolved')
                 report = aggregate(shards, q, np, model)
     except Locked as exc:
         report, code = dict(status='AGGREGATION_LOCKED', reason=str(exc)), 2
