@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: candidate
-          ref: 32dac705b7f4e46d20e95ce8af44f9403d97ad12
+          ref: ef712bd1a135bbbcdd90c0690fa02e4839eacf5c
           sparse-checkout: |
             canonical
             research/VOY-GEN-01
@@ -46,5 +46,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: voy-gen01-pilot-h1-${{ github.run_id }}
-          path: pilot_result.json
+          path: ${{ github.workspace }}/pilot_result.json
           if-no-files-found: error
