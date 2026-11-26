@@ -1,0 +1,68 @@
+name: CAL-01 frozen diagnostic panel
+on:
+  push:
+    branches: [research/cal01-diagnostic-20261125]
+    paths: [.github/workflows/cal01-panel-20261126.yml]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  measure:
+    if: github.run_attempt == '1'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        slot: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+    env:
+      LC_ALL: C
+      SLOT: ${{ matrix.slot }}
+      CAL_STAGE: ${{ github.workspace }}/stage
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: candidate
+          sparse-checkout: diagnostics
+          ref: ${{ github.sha }}
+      - uses: actions/checkout@v4
+        with:
+          path: original
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /cal01-actions-input.zip
+          ref: b85416e36c91cdcf126557fc26ded3e7c6cf6bfa
+      - uses: actions/checkout@v4
+        with:
+          path: frozen
+          sparse-checkout: experiments/VOY-REFLOW-CAL-01
+          ref: 0fb8b0ddb2ab1281758834e501f166669646518e
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.13.5
+      - name: Materialize fixed inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          mkdir stage
+          cp original/cal01-actions-input.zip stage/input.zip
+          cp -r frozen/experiments/VOY-REFLOW-CAL-01 stage/frozen
+          python -m py_compile candidate/diagnostics/*.py
+          for a in 15018135784 15017881677 15018760069; do
+            gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$a/zip" > "stage/$a.zip"
+          done
+          python -m pip install --only-binary=:all: --report stage/install.json numpy==2.3.5 scipy==1.17.0 scikit-learn==1.8.0 threadpoolctl==3.8.0 joblib==1.6.0
+      - name: Run fixed design once
+        run: python candidate/diagnostics/supervisor.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cal01-design-${{ github.run_id }}-a1-${{ matrix.slot }}
+          if-no-files-found: error
+          path: |
+            stage/evidence/
+            !stage/evidence/D*/input/
+            !stage/evidence/D*/recomputed/*.checkpoint/
+            stage/install.json
