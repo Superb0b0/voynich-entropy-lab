@@ -111,6 +111,7 @@ def sources(args):
     lock(manifest['local_files']['run.py'] == RUN_SHA, 'manifest run.py pin')
     for name, digest in manifest['local_files'].items():
         lock(sha((args.frozen / name).read_bytes()) == digest, 'frozen source bytes')
+    lock(args.split_receipt.is_file(), 'split receipt missing')
     split_raw = args.split_receipt.read_bytes()
     split = parse(split_raw)
     lock(split['result'] == 'PASS' and split['source_sha256'] == RUN_SHA, 'split receipt')
