@@ -1,0 +1,29 @@
+{
+  "approved": true,
+  "independent_review": true,
+  "reviewer": "User-supplied reviewer attestation; independence self-attested, identity not independently authenticated",
+  "pins": {
+    "frozen_commit": "0fb8b0ddb2ab1281758834e501f166669646518e",
+    "run_sha256": "da78911c39f9f53a33f9404d7b59696a042ec60dbc6a9731d5fc60d9b4c186ac",
+    "code_sha256": "eb69abd8b40e97a70ec854d160e837f740688067f9d71a440a82fab7d1c76ed0",
+    "index_sha256": "c95af9b71bf885d26a1168ce0af9919207b68e4e295506a9cc7c872e729667d0",
+    "reference_sha256": "dc49ae1d3e16aa785d1c11bd6876573c86c97eea707b6f58a4c8f79273ee5c72",
+    "split_receipt_sha256": "974794f4616d79a2e3eefd2112acca5ed850feb1528cf7710aff7f230f81d8f9",
+    "manifest_sha256": "122eb9684d3d8690cb5add0a695b07c76a63aa26baeff3b7e9edad659d547196",
+    "review_sha256": "1a341945a3405cd1eb53e5b3516127c0be58f8fd6088685669e7c180f943fef7"
+  },
+  "qualification_sha256": "5c3a130aead4fa52cd17f0809242e39398deac91e6c899941c28722c375e71d8",
+  "margins_sha256": "5e56416b32b2592cf30b24df60b49372d34c0cf71d2734fd4e20f9d7d965e500",
+  "canonical_resolution_evidence_sha256": "206bf89c2b4f1cf46636c5fd0f47c0b70a1ff214447850c405fe2e32ab03e9ac",
+  "canonical_resolution_evidence_commit": "bed66452ede912b6bd07c0721e823e77bba8d5d6",
+  "ZL3b_04_qualified": true,
+  "canonical_resolution_approved": true,
+  "caveats": [
+    "EPS is an empirical envelope from 850 historical gain controls, not a universal bound.",
+    "Application of EPS to G0 and L0 is an approved conservative extension, not directly measured by that historical gain audit.",
+    "Endpoint stability is conditional on the componentwise perturbation model; no unconditional guarantee is claimed.",
+    "Final runner must independently pass all unchanged D05 gates and reproduce every summary field exactly. Prior margins runner admission does not admit a new runner.",
+    "Sensitivity excluding ZL3b_04 is descriptive only. Prior failure and exposure remain disclosed."
+  ],
+  "scope": "Explicit user-supplied final authorization, transcribed without independent identity verification. No change to scientific thresholds or classifier."
+}
