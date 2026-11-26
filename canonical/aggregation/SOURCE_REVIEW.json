@@ -1,0 +1,17 @@
+{
+  "approved": true,
+  "independent_review": true,
+  "reviewer": "Reviewer report supplied by user; independence self-attested, identity not independently authenticated",
+  "reviewed_commit": "7e499468a6150afede51af29a554bdbdcd152f1c",
+  "pins": {
+    "frozen_commit": "0fb8b0ddb2ab1281758834e501f166669646518e",
+    "run_sha256": "da78911c39f9f53a33f9404d7b59696a042ec60dbc6a9731d5fc60d9b4c186ac",
+    "code_sha256": "eb69abd8b40e97a70ec854d160e837f740688067f9d71a440a82fab7d1c76ed0",
+    "index_sha256": "c95af9b71bf885d26a1168ce0af9919207b68e4e295506a9cc7c872e729667d0",
+    "reference_sha256": "dc49ae1d3e16aa785d1c11bd6876573c86c97eea707b6f58a4c8f79273ee5c72",
+    "split_receipt_sha256": "974794f4616d79a2e3eefd2112acca5ed850feb1528cf7710aff7f230f81d8f9",
+    "manifest_sha256": "122eb9684d3d8690cb5add0a695b07c76a63aa26baeff3b7e9edad659d547196"
+  },
+  "audit_allocation_approved": true,
+  "scope": "Transcription of explicit user-supplied source approval and conservative allocation approval for technical qualification only. No final authorization."
+}
