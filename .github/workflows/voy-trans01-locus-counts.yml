@@ -1,0 +1,50 @@
+name: VOY-TRANS-01 IVTFF locus counts only
+on:
+  push:
+    branches: [research/cal01-diagnostic-20261125]
+    paths: [.github/workflows/voy-trans01-locus-counts.yml]
+permissions:
+  contents: read
+jobs:
+  pilot:
+    runs-on: ubuntu-24.04
+    env:
+      CAL_STAGE: ${{ github.workspace }}/stage
+      OPENBLAS_CORETYPE: Haswell
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NPY_DISABLE_CPU_FEATURES: AVX512F,AVX512CD,AVX512_KNL,AVX512_KNM,AVX512_SKX,AVX512_CLX,AVX512_CNL,AVX512_ICL,AVX512_SPR
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: candidate
+          ref: 2c1f19b8bcdee7d404d2e10753f59eebb1343ff4
+          sparse-checkout: |
+            canonical
+            research/VOY-TRANS-01
+      - uses: actions/checkout@v4
+        with:
+          path: original
+          ref: b85416e36c91cdcf126557fc26ded3e7c6cf6bfa
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /cal01-actions-input.zip
+      - uses: actions/checkout@v4
+        with:
+          path: frozen
+          ref: 0fb8b0ddb2ab1281758834e501f166669646518e
+          sparse-checkout: experiments/VOY-REFLOW-CAL-01
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.5'
+      - run: |
+          mkdir stage
+          cp original/cal01-actions-input.zip stage/
+          cp -r frozen/experiments/VOY-REFLOW-CAL-01 stage/frozen
+          python -m pip install --only-binary=:all: --require-hashes -r candidate/canonical/wheels.txt
+      - run: python candidate/research/VOY-TRANS-01/locus_counts.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: voy-trans01-locus-counts-${{ github.run_id }}
+          path: ${{ github.workspace }}/locus_counts.json
+          if-no-files-found: error
