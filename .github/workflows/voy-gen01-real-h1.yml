@@ -1,0 +1,50 @@
+name: VOY-GEN-01 real historical H1 reference
+on:
+  push:
+    branches: [research/cal01-diagnostic-20261125]
+    paths: [.github/workflows/voy-gen01-real-h1.yml]
+permissions:
+  contents: read
+jobs:
+  pilot:
+    runs-on: ubuntu-24.04
+    env:
+      CAL_STAGE: ${{ github.workspace }}/stage
+      OPENBLAS_CORETYPE: Haswell
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NPY_DISABLE_CPU_FEATURES: AVX512F,AVX512CD,AVX512_KNL,AVX512_KNM,AVX512_SKX,AVX512_CLX,AVX512_CNL,AVX512_ICL,AVX512_SPR
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: candidate
+          ref: 053eb05846e7e441856f686e49fe7e4980942e6b
+          sparse-checkout: |
+            canonical
+            research/VOY-GEN-01
+      - uses: actions/checkout@v4
+        with:
+          path: original
+          ref: b85416e36c91cdcf126557fc26ded3e7c6cf6bfa
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /cal01-actions-input.zip
+      - uses: actions/checkout@v4
+        with:
+          path: frozen
+          ref: 0fb8b0ddb2ab1281758834e501f166669646518e
+          sparse-checkout: experiments/VOY-REFLOW-CAL-01
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.5'
+      - run: |
+          mkdir stage
+          cp original/cal01-actions-input.zip stage/
+          cp -r frozen/experiments/VOY-REFLOW-CAL-01 stage/frozen
+          python -m pip install --only-binary=:all: --require-hashes -r candidate/canonical/wheels.txt
+      - run: python candidate/research/VOY-GEN-01/real_frozen_h1.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: voy-gen01-real-h1-${{ github.run_id }}
+          path: ${{ github.workspace }}/real_h1.json
+          if-no-files-found: error
