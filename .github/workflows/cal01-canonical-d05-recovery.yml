@@ -1,0 +1,56 @@
+name: CAL-01 canonical D05 recovery 45817324636
+on:
+  push:
+    branches: [research/cal01-diagnostic-20261125]
+    paths: [.github/workflows/cal01-canonical-d05-recovery.yml]
+permissions:
+  contents: read
+jobs:
+  recompute:
+    if: github.run_attempt == '1'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        include:
+          - {g: 0, r: 19}
+          - {g: 0, r: 7}
+          - {g: 1, r: 5}
+          - {g: 1, r: 6}
+    env:
+      LC_ALL: C
+      CAL_STAGE: ${{ github.workspace }}/stage
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: candidate
+          sparse-checkout: |
+            canonical
+            diagnostics
+      - uses: actions/checkout@v4
+        with:
+          path: original
+          ref: b85416e36c91cdcf126557fc26ded3e7c6cf6bfa
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /cal01-actions-input.zip
+      - uses: actions/checkout@v4
+        with:
+          path: frozen
+          ref: 0fb8b0ddb2ab1281758834e501f166669646518e
+          sparse-checkout: experiments/VOY-REFLOW-CAL-01
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.5'
+      - run: |
+          mkdir stage
+          cp original/cal01-actions-input.zip stage/
+          cp -r frozen/experiments/VOY-REFLOW-CAL-01 stage/frozen
+          python -m pip install --only-binary=:all: --require-hashes -r candidate/canonical/wheels.txt
+      - run: python candidate/canonical/matrix.py ${{ matrix.g }} ${{ matrix.r }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: d05-${{ github.run_id }}-g${{ matrix.g }}-r${{ matrix.r }}
+          path: stage/result/
+          if-no-files-found: error
