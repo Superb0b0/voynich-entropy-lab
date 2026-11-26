@@ -1,8 +1,6 @@
 name: EXTERNAL-DECIPHER-01 public control benchmark
 on:
-  push:
-    branches: [research/external-decipher-01]
-    paths: ['.github/workflows/external-decipher-01.yml']
+  workflow_dispatch:
 permissions: {}
 jobs:
   public-controls:
