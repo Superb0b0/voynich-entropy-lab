@@ -1,0 +1,47 @@
+name: EXTERNAL-DECIPHER-01 public control benchmark
+on:
+  push:
+    branches: [research/external-decipher-01]
+    paths: ['.github/workflows/external-decipher-01.yml']
+permissions: {}
+jobs:
+  public-controls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: bash
+    env:
+      DECIPHER_REF: 2dace19a0309e08e9ea8e6c40af81c26f29276a3
+    steps:
+      - name: Fetch pinned public upstream only
+        run: |
+          set -euo pipefail
+          git init "$RUNNER_TEMP/decipher"
+          cd "$RUNNER_TEMP/decipher"
+          git remote add origin https://github.com/matthewdgreen/decipher.git
+          git fetch --depth 1 origin "$DECIPHER_REF"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$DECIPHER_REF"
+          git log -1 --format='%H %s'
+      - name: Install public tool and record environment
+        id: setup
+        working-directory: ${{ runner.temp }}/decipher
+        run: |
+          set -euo pipefail
+          python3 --version
+          cargo --version
+          PYTHON=python3 bash scripts/setup_dev.sh
+          .venv/bin/decipher doctor --json
+      - name: Known-answer simple substitution benchmark
+        if: steps.setup.outcome == 'success'
+        working-directory: ${{ runner.temp }}/decipher
+        run: |
+          set -euo pipefail
+          .venv/bin/decipher benchmark fixtures/benchmarks/english_borg_analog --split english_borg_analog.jsonl
+      - name: Known-pipeline homophonic and transposition replay
+        if: always() && steps.setup.outcome == 'success'
+        working-directory: ${{ runner.temp }}/decipher
+        run: |
+          set -euo pipefail
+          .venv/bin/decipher benchmark fixtures/benchmarks/zodiac340_known_replay --split zodiac340_known_replay.jsonl --test-id zodiac340_known_replay --transform-search rank
