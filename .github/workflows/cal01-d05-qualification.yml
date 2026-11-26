@@ -1,0 +1,67 @@
+name: CAL-01 D05 technical qualification
+on:
+  push:
+    branches: [research/cal01-diagnostic-20261125]
+    paths: [canonical/aggregation/SOURCE_REVIEW.json]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  qualify:
+    if: github.run_attempt == '1'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: candidate
+          sparse-checkout: canonical
+      - uses: actions/checkout@v4
+        with:
+          path: original
+          ref: b85416e36c91cdcf126557fc26ded3e7c6cf6bfa
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /cal01-actions-input.zip
+      - uses: actions/checkout@v4
+        with:
+          path: frozen
+          ref: 0fb8b0ddb2ab1281758834e501f166669646518e
+          sparse-checkout: experiments/VOY-REFLOW-CAL-01
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.5'
+      - name: Verify reviewed code and procedural pins before archive retrieval
+        run: |
+          echo 'eb69abd8b40e97a70ec854d160e837f740688067f9d71a440a82fab7d1c76ed0  candidate/canonical/aggregation/aggregate_d05.py' | sha256sum -c -
+          python - <<'PY'
+          import sys, pathlib, argparse
+          base=pathlib.Path('candidate/canonical/aggregation')
+          sys.path.insert(0,str(base))
+          import aggregate_d05 as m
+          m.sources(argparse.Namespace(index=base/'INPUT_INDEX.json',reference=base.parent/'reference.json',frozen=pathlib.Path('frozen/experiments/VOY-REFLOW-CAL-01'),split_receipt=base/'SPLIT_INTEGRITY_RECEIPT.json',review=base/'SOURCE_REVIEW.json'))
+          print('Procedural source gate PASS')
+          PY
+      - name: Retrieve pinned archives as opaque ZIP bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir archives
+          python - <<'PY'
+          import json, pathlib, subprocess, hashlib
+          index=json.loads(pathlib.Path('candidate/canonical/aggregation/INPUT_INDEX.json').read_text())
+          for e in index['artifacts']:
+              p=pathlib.Path('archives')/f"{e['artifact_id']}.zip"
+              with p.open('xb') as f:
+                  subprocess.run(['gh','api',f"repos/Superb0b0/voynich-entropy-lab/actions/artifacts/{e['artifact_id']}/zip"],stdout=f,check=True)
+              if hashlib.sha256(p.read_bytes()).hexdigest()!=e['archive_sha256']:
+                  raise RuntimeError('archive digest mismatch')
+          print('40 pinned archives retrieved')
+          PY
+      - name: Technical qualification only
+        run: |
+          python candidate/canonical/aggregation/aggregate_d05.py qualify --frozen frozen/experiments/VOY-REFLOW-CAL-01 --archives archives --checkpoint-package original/cal01-actions-input.zip --review candidate/canonical/aggregation/SOURCE_REVIEW.json --out qualification.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cal01-qualification-${{ github.run_id }}
+          path: qualification.json
+          if-no-files-found: warn
