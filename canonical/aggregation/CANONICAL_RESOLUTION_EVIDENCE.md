@@ -21,7 +21,56 @@ The receipt reports strict clearance for G0_zero, L0_zero, L0_quarter_G0, row_vs
 
 The narrowest reported decision margin is row_vs_G0, approximately 5.39 times its audit bound. This is not a universal safety guarantee. Canonical discrete outcomes, if separately authorized, must come from the already recomputed and qualified D05 dataset and the unchanged classifier in an admitted D05 environment, not from historical copied values.
 
+## Per-shard decision-margin clearance
+
+The following Boolean matrix is derived from the verified margins receipt: the global minima exceed their respective bounds for all seven decision margins, and the 40 unresolved entries consist solely of adjacent_rank, one per shard. Thus each PASS below follows from the global minimum and complete key coverage; no individual numeric margin or scientific outcome is inferred or disclosed. The tail-threshold check also has no unresolved entries. The smallest decision-margin/bound ratio is approximately 5.39 (row_vs_G0); the remaining six exceed 100. This is a deduction from the existing receipt, not a new experiment.
+
+| Shard | G0_zero | L0_zero | L0_quarter_G0 | row_vs_G0 | P97_5_zero | rho_quarter | rho_three_quarters |
+|---|---|---|---|---|---|---|---|
+| ZL3b_01 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_02 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_03 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_04 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_05 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_06 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_07 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_08 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_09 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_10 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_11 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_12 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_13 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_14 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_15 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_16 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_17 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_18 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_19 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| ZL3b_20 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_01 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_02 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_03 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_04 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_05 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_06 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_07 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_08 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_09 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_10 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_11 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_12 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_13 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_14 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_15 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_16 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_17 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_18 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_19 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| IT2a_20 | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+
 ## ZL3b_04
+
+Admission criterion: the same technical qualification and the same seven decision-margin clearance requirements as every other shard, with the original provenance, fresh D05 recomputation, historical control and canonical anchor checks already verified by qualification. No additional H1-positive or outcome-dependent criterion applies. H1 failure is an allowed scientific outcome, not grounds for exclusion. The only unresolved check for this shard is adjacent_rank, resolved conditionally by the same formal argument as for the other 39. Exclusion sensitivity is descriptive (ZL3b n=19), not an alternative primary verdict or threshold.
 
 The successful technical qualification is evidence for admission of the fresh D05 recomputation, including the historical control checks, stream and canonical anchors. The original strict failure and prior exposure remain disclosed; the historical local reference is not reinstated. The final authorization must separately attest ZL3b_04_qualified and require the already implemented descriptive exclusion sensitivity. This note does not itself grant that approval.
 
