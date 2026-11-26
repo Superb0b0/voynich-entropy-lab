@@ -1,0 +1,21 @@
+# VOY-GEN-01 design decisions 01 (draft, pending review)
+
+Extends DESIGN_PREREQUISITE.md at bb0b46afb21837dab5386ef1a8ebcd5bff64a304. CAL-01 is closed: 6/40 H1-valid, requirement >=16/20 separately for each geometry, hence at least 32/40 necessary but not sufficient. No change to frozen CAL-01 sources or verdict.
+
+## 1. Operational exposure ledger
+Use D (directly encoded), F (fitted or selection target), I (indirect implication), E (evaluation-reserved), U (undetermined). Record all applicable exposure flags rather than treating D/F/I as mutually exclusive. Each cell requires mechanism/rule/parameter references (design identifiers before code, actual source references after implementation), data provenance, logical or statistical dependency argument and justification. E requires a falsifiable prospective prediction, estimator, tolerance and uncertainty rule, with an explicit argument against direct or indirect leakage. U is ineligible as independent explanatory evidence. Statistical correlation alone is not proof of deterministic implication; dependencies must be examined, and known correlations disclosed. An engineered H1 positive control is a calibration control, not a mechanistic explanation.
+
+## 2. Endpoint provenance inventory (not frozen)
+Sequential opening predictive gain, position-specific qo- anti-association, consecutive first-word repetition and d/q/y opening cycle: observed on original manuscript transcriptions. Differential sensitivity to physical line redistribution: contrast of original and reflow conditions, a second-order endpoint. Exact corpus releases, parser versions, loci, estimators, conditions, source reports and uncertainty must be verified before endpoint selection. Prior discussion is exposure, not a blind discovery. Do not equate related endpoints with independent evidence.
+
+## 3. Inference
+Separate analyses for ZL3b and IT2a, no pooled inferential confidence intervals. Both transcribe the same manuscript; consistency across transcriptions is not independent replication. Preserve the >=16/20 H1 admission rule separately for each geometry. No interpretation of the combined count as independent binomial trials.
+
+## 4. Dual reservation
+Propose both data reservation (aligned folio partitions across transcriptions; no folio crosses partitions) and property reservation (no direct encoding, fitting, tuning, candidate selection or stopping on evaluation-reserved endpoints). Known exploratory endpoint values cannot be made blind retrospectively. Reserve prospective predictions and evaluation on genuinely protected data only if provenance and access history permit. The existing CAL-01 HOLDOUT remains locked and unchanged; this draft does not redefine its membership, access it, or authorize its reuse. Before freeze, a custodian must verify the access history, eligible evaluation partition, manifest/hash, alignment, leakage risks and release policy without exposing protected values. If no suitable protected partition exists, downgrade claims to exploratory evaluation. No new HOLDOUT membership or endpoint set claimed frozen here.
+
+## 5. Procedural preregistration
+Before implementing each candidate: commit a mechanism specification, permitted inputs, parameter/fit budget, exposure ledger, hypotheses and falsifiable predictions. Before running: independently review implementation against declaration, pin code and environment, freeze exact endpoints, thresholds, estimators, controls, seeds, sample sizes, partition manifests and inference rules. Any change creates a new version with recorded reason and exposure; no retrospective reclassification of fitted targets as evaluation endpoints. Evaluate positive-control admission before any reflow. Failed candidates remain recorded. Release evaluation data only under a separately approved protocol; no tuning on released evaluation results in the same confirmatory test.
+
+## Remaining blockers
+Exact common reserved endpoint(s), verified provenance, access history and permissible protected partition, actual mechanism specifications and ledger, prospective prediction and acceptance rules, fit budget, control definitions, numerical environment and independent protocol review remain open. No experiment or implementation is authorized. No HOLDOUT access. Status DESIGN_DRAFT.
