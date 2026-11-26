@@ -1,0 +1,24 @@
+{
+  "test": "frozen main split integrity check",
+  "frozen_commit": "0fb8b0ddb2ab1281758834e501f166669646518e",
+  "source_path": "experiments/VOY-REFLOW-CAL-01/run.py",
+  "source_sha256": "da78911c39f9f53a33f9404d7b59696a042ec60dbc6a9731d5fc60d9b4c186ac",
+  "python": "3.13.5",
+  "numpy": "2.3.5",
+  "utc_runtime_clock": "2026-11-26T13:11:13.394908+00:00",
+  "result": "PASS",
+  "expression": "a=m.stream(24,m.rng(501,99,1)); b=m.stream(24,m.rng(501,99,1)); sum(m.split(a,[9,8,7]),[])==sum(m.split(b,[7,9,8]),[])",
+  "scope": "Exact frozen source verified against manifest; synthetic 24 tokens only; no corpus, fit, result artifact or HOLDOUT read. Verifies split integrity only, not pipeline invariance. Late repetition, after scientific generation but before aggregation; does not establish timing of original local execution.",
+  "prior_evidence": {
+    "run_id": 45605270057,
+    "job_id": 139174404673,
+    "job": "replay-gate",
+    "started_at": "2026-11-25T11:31:48Z",
+    "completed_at": "2026-11-25T11:32:21Z",
+    "conclusion": "success",
+    "source_audit_run": 45663477450,
+    "source_audit_job": 139379245593,
+    "source": "driver.py replay line 52 runs the same test before selected replay samples; setup checks frozen bytes, receipt commit, frozen gate and initializes historical sources.",
+    "limitation": "Evidence establishes test before the original GitHub matrix, not necessarily before local checkpoint generation. Remote observation timestamp 2026-11-24T22:38:16Z is documented in provenance amendment; original checkpoint receipt has not been independently extracted in this operation."
+  }
+}
